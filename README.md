@@ -13,7 +13,22 @@
 使用时注意：
 
 1. 软件的登录密码为空，直接点击确认即可登录，登录成功后可以修改登录密码。
-2. 注意请不要把exe文件和system_resource文件夹分开，否则软件运行不了哦。您可以为exe文件创建一个快捷方式，然后可以将快捷方式放在任意地方了。
+
+2. 注意请不要弄乱文件的相对位置，否则软件运行不了哦。
+
+3. 一些需要安装的库，及安装的方法：
+
+   ```cmd
+   pip install numpy
+   pip install windnd
+   pip install matplotlib
+   pip install moviepy
+   pip install pyperclip
+   pip install pytest-shutil
+   pip install pycryptodome
+   pip install pyautogui==0.9.50
+   pip install opencv-python==4.5.1.48
+   ```
 
 # 信安工具箱功能介绍
 
