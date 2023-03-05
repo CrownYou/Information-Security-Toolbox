@@ -7,12 +7,12 @@ from math import floor
 import random
 from random import randint
 from tkinter import ttk
-import numpy as np
-from windnd import hook_dropfiles
-import matplotlib.pyplot as plt
-import sympy as sp
-from moviepy.editor import VideoFileClip, AudioFileClip
-import pyperclip
+import numpy as np  # pip install numpy
+from windnd import hook_dropfiles  # pip install windnd
+import matplotlib.pyplot as plt  # pip install matplotlib
+import sympy as sp  # pip install sympy
+from moviepy.editor import VideoFileClip, AudioFileClip  # pip install moviepy
+import pyperclip  # pip install pyperclip
 import binascii
 import hashlib
 import shutil  # pip install pytest-shutil
@@ -32,14 +32,12 @@ import os
 import time
 import tkinter as tk
 import cv2  # pip install opencv-python==4.5.1.48
-from Crypto.Cipher import PKCS1_v1_5 as PKCS1_cipher  # pip install pycryptodome
+from Crypto.Cipher import PKCS1_v1_5 as PKCS1_cipher
 from Crypto.PublicKey import RSA
-# pkg = __import__('system_resource', fromlist=['MyEncryption', 'MySteganography', 'ToolKit', 'ToolBox'])
-# kit = pkg.ToolKit
-# Tools = kit.Tools
-# myenc = pkg.MyEncryption
-# myste = pkg.MySteganography
-# mybox = pkg.ToolBox
-from system_resource import MyEncryption as myenc, MySteganography as myste, ToolKit as kit, ToolBox as mybox
-from system_resource.ToolKit import Tools
+pkg = __import__('system_resource', fromlist=['MyEncryption', 'MySteganography', 'ToolKit', 'ToolBox'])
+kit = pkg.ToolKit
+Tools = kit.Tools
+myenc = pkg.MyEncryption
+myste = pkg.MySteganography
+mybox = pkg.ToolBox
 import main
