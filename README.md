@@ -8,9 +8,7 @@
 
 总之，这款软件可以为您提供多种加密和保护数据的解决方案，既能保证数据的安全性，又能保护用户的隐私。我相信，这个软件可以为您提供优质的数据保护服务。
 
-软件会经常更新，获取最新版软件的途径：1. 关注我的咸鱼账号（用户名：CrownYou），2. 我的QQ空间（1147978107），3. 您也可以发给我您的邮箱，我每次更新都会发一份至您的邮箱。4. 我的github账号：https://github.com/CrownYou
-
-您也可以通过我的联系方式，对软件未来的更新与发展提出您宝贵的建议。
+程序会经常更新，您也可以通过在我的github上（https://github.com/CrownYou/Information-Security-Toolbox）留言，或添加我的联系方式（QQ：1147978107），对软件未来的更新与发展提出您宝贵的建议。
 
 使用时注意：
 
@@ -18,23 +16,12 @@
 
 2. 注意请不要弄乱文件的相对位置，否则软件运行不了哦。
 
-3. 需要的python环境：经过测试，发现在python3.7解释器上运行时，文本框内无法正确显示emoji符号。但是影响不是很大，其他功能均可正常使用。在python3.11解释器上也没法运行旧版的OpenCV库。运行建议使用python3.9解释器。如果您需要可直接运行的软件（20230307版），可以访问这个百度云链接：
-
-   链接：https://pan.baidu.com/s/1Kjfe9J6bbzJpqh06SZuKYw?pwd=9jp0 
-   提取码：9jp0
+3. 需要的python环境：经过测试，发现在python3.7解释器上运行时，文本框内无法正确显示emoji符号。但是影响不是很大，其他功能均可正常使用。在python3.11解释器上也没法运行旧版的OpenCV库。**运行建议使用python3.9解释器。**
 
 4. 运行源码时需要安装的库，及安装的方法如下。配置好环境后，直接运行start.py即可。
 
    ```cmd
-   pip install numpy
-   pip install windnd
-   pip install matplotlib
-   pip install moviepy
-   pip install pyperclip
-   pip install pytest-shutil
-   pip install pycryptodome
-   pip install pyautogui==0.9.50
-   pip install opencv-python==4.5.1.48
+   pip install -r requirement.txt
    ```
 
 # 信安工具箱功能介绍

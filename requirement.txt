@@ -1,0 +1,9 @@
+numpy
+windnd
+matplotlib
+moviepy
+pyperclip
+pytest-shutil
+pycryptodome
+pyautogui==0.9.50
+opencv-python==4.5.1.48
