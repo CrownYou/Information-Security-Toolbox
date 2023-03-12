@@ -20,8 +20,8 @@
 
 3. 需要的python环境：经过测试，发现在python3.7解释器上运行时，文本框内无法正确显示emoji符号。但是影响不是很大，其他功能均可正常使用。在python3.11解释器上也没法运行旧版的OpenCV库。运行建议使用python3.9解释器。如果您需要可直接运行的软件（20230307版），可以访问这个百度云链接：
 
-   链接：https://pan.baidu.com/s/1WbN4VrRwfIb1FoM4H-xJJg?pwd=osnp 
-   提取码：osnp
+   链接：https://pan.baidu.com/s/1Kjfe9J6bbzJpqh06SZuKYw?pwd=9jp0 
+   提取码：9jp0
 
 4. 运行源码时需要安装的库，及安装的方法如下。配置好环境后，直接运行start.py即可。
 
