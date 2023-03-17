@@ -8,7 +8,7 @@
 
 总之，这款软件可以为您提供多种加密和保护数据的解决方案，既能保证数据的安全性，又能保护用户的隐私。我相信，这个软件可以为您提供优质的数据保护服务。
 
-程序会经常更新，您也可以通过在我的github上（https://github.com/CrownYou/Information-Security-Toolbox）留言，或添加我的联系方式（QQ：1147978107），对软件未来的更新与发展提出您宝贵的建议。
+程序会经常更新，建议您通过git工具将项目clone到本地，这样可以方便更新。您也可以通过在我的github上（https://github.com/CrownYou/Information-Security-Toolbox）留言，或添加我的联系方式（QQ：1147978107），对软件未来的更新与发展提出您宝贵的建议。
 
 使用时注意：
 
