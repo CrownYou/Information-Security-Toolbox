@@ -63,3 +63,8 @@ pip install -r requirement.txt
 
 本次更新内容：
 更新了零宽度字符隐写术和反查重工具
+
+20230320版exe文件链接：
+
+链接：https://pan.baidu.com/s/1gSG0PNgao7rOUdRmE4TdGA?pwd=35cs 
+提取码：35cs
