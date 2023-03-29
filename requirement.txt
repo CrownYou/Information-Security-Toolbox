@@ -8,5 +8,6 @@ pytest-shutil
 pycryptodome
 zero_width_lib
 jieba
+unvcode
 pyautogui==0.9.50
 opencv-python==4.5.1.48
