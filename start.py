@@ -30,6 +30,7 @@ from tkinter import messagebox
 import zero_width_lib as zwlib  # pip install zero_width_lib
 import jieba  # pip install jieba
 import unvcode
+from reedsolo import RSCodec
 # 上面的是其他文件需要调用的库，打包文件的时候需要用上
 import os
 import time
