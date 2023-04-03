@@ -1,3 +1,4 @@
+reedsolo
 numpy
 sympy
 windnd
