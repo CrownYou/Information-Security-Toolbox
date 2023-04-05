@@ -1,4 +1,6 @@
 reedsolo
+gmpy2
+mpyc
 numpy
 sympy
 windnd
