@@ -84,3 +84,10 @@ UI界面大更新
 
 新增了DH密钥交换算法功能
 
+20230411版exe文件链接：
+
+链接：https://pan.baidu.com/s/1r1CgjHY9_q4_-krXaAo2Gw?pwd=cbx1 
+提取码：cbx1
+
+
+
