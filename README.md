@@ -15,7 +15,7 @@
 4. 进入 "start.py"所在文件夹，在地址栏输入cmd，按回车，输入下面的指令：
 
    ```cmd
-   pip install -r requirement.txt
+   pip install -r requirement.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
    ```
 
 5. 配置好环境后，直接运行 “start.py” 或者 “信安工具箱.bat” 即可。您可以为 “信安工具箱.bat” 创建一个快捷方式，这样就可以方便地打开它了。此外，软件内还提供了一个名为“快捷方式图标.ico”的文件，您可以用它作为快捷方式的图标。
@@ -87,8 +87,10 @@ UI界面大更新
 
 20230411版exe文件链接：
 
-链接：https://pan.baidu.com/s/1r1CgjHY9_q4_-krXaAo2Gw?pwd=cbx1 
-提取码：cbx1
+链接：https://pan.baidu.com/s/17UtfIMqIcG5bnG9PNU39eA?pwd=36sm 
+提取码：36sm
+
+或者加QQ群：745373067，下载exe文件。
 
 
 
