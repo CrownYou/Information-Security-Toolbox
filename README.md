@@ -6,6 +6,8 @@
 
 程序会经常更新，建议您通过git工具将项目clone到本地，这样可以方便更新。您也可以通过在我的github上（https://github.com/CrownYou/Information-Security-Toolbox）留言，或添加我的联系方式（QQ：1147978107），对软件未来的更新与发展提出您宝贵的建议。
 
+下载exe文件的途径：1. QQ群：745373067。2. github该项目界面中的Release功能里下载。3. 百度网盘：链接：https://pan.baidu.com/s/1Ug6tZxAWrVub9VYgU1oGxg?pwd=66za 提取码：66za
+
 # 使用时注意
 
 1. 注意请不要弄乱文件的相对位置，否则软件运行不了哦。
@@ -59,11 +61,6 @@
 ## 2023.03.18 版本更新说明
 更新了零宽度字符隐写术和反查重工具
 
-20230320版exe文件链接：
-
-链接：https://pan.baidu.com/s/1gSG0PNgao7rOUdRmE4TdGA?pwd=35cs 
-提取码：35cs
-
 ## 2023.03.28 版本更新说明
 
 UI界面大更新
@@ -78,23 +75,9 @@ UI界面大更新
 
 新增了DH密钥交换算法功能
 
-20230411版exe文件链接：
-
-链接：https://pan.baidu.com/s/17UtfIMqIcG5bnG9PNU39eA?pwd=36sm 
-提取码：36sm
-
-或者加QQ群：745373067，下载exe文件。
-
 ## 2023.04.24 版本更新说明
 
 新增了将二维码图片隐藏在载体图片中的功能。可以规避平台对二维码的审核，但收信人只要从特定角度扫描即可识别。
-
-20230424版exe文件链接：
-
-链接：https://pan.baidu.com/s/1Ug6tZxAWrVub9VYgU1oGxg?pwd=66za 
-提取码：66za
-
-或者加QQ群：745373067，下载exe文件。
 
 
 
