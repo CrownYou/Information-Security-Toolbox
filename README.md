@@ -4,7 +4,7 @@
 
 这款加密软件是一款完全脱离网络的应用，这意味着在进行加密之前，数据不会离开您的设备，也不会被传输到任何其他地方。这种安全性确保了您的数据不会被黑客窃取或被其他人访问。因此，无论您是在家里还是在公共场所，您都可以使用这款软件来加密您的数据，确保它们的安全性和隐私性。
 
-程序会经常更新，建议您通过git工具将项目clone到本地，这样可以方便更新。您也可以通过在我的github上（https://github.com/CrownYou/Information-Security-Toolbox）留言，或添加我的联系方式（QQ：1147978107），对软件未来的更新与发展提出您宝贵的建议。
+程序会经常更新，建议您通过git工具将项目clone到本地，这样可以方便更新。您也可以通过在我的github上（ https://github.com/CrownYou/Information-Security-Toolbox ）留言，或添加我的联系方式（QQ：1147978107），对软件未来的更新与发展提出您宝贵的建议。
 
 下载exe文件的途径：1. QQ群：745373067。2. github该项目界面中的Release功能里下载。3. 百度网盘：链接：https://pan.baidu.com/s/1Ug6tZxAWrVub9VYgU1oGxg?pwd=66za 提取码：66za
 
