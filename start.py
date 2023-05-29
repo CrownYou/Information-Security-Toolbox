@@ -31,7 +31,6 @@ import zero_width_lib as zwlib  # pip install zero_width_lib
 import jieba  # pip install jieba
 import unvcode
 from reedsolo import RSCodec  # pip install reedsolo
-from mpyc.runtime import mpc  # pip install mpyc 还可以再 pip install gmpy2 来增强 mpyc 的表现
 from cryptography.hazmat.primitives import hashes  # pip install cryptography
 from cryptography.hazmat.primitives.asymmetric import dh
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
