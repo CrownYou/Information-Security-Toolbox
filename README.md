@@ -6,7 +6,7 @@
 
 程序会经常更新，建议您通过git工具将项目clone到本地，这样可以方便更新。您也可以通过在我的github上（ https://github.com/CrownYou/Information-Security-Toolbox ）留言，或添加我的联系方式（QQ：1147978107），对软件未来的更新与发展提出您宝贵的建议。
 
-下载exe文件的途径：1. QQ群：745373067。2. github该项目界面中的Release功能里下载。3. 百度网盘：链接：https://pan.baidu.com/s/1Ug6tZxAWrVub9VYgU1oGxg?pwd=66za 提取码：66za
+下载exe文件的途径：1. QQ群：745373067。2. github该项目界面中的 Releases 功能里下载。
 
 # 使用时注意
 
