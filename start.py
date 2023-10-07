@@ -1,3 +1,4 @@
+import scipy  # pip install scipy==1.9.3
 import base64
 import copy
 import re
@@ -33,6 +34,7 @@ from reedsolo import RSCodec  # pip install reedsolo
 from cryptography.hazmat.primitives import hashes  # pip install cryptography
 from cryptography.hazmat.primitives.asymmetric import dh
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+from blind_watermark import WaterMark  # pip install blind-watermark==0.4.4
 # 上面的是其他文件需要调用的库，打包文件的时候需要用上
 import os
 import time

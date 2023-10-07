@@ -2,6 +2,7 @@ cryptography==39.0.1
 reedsolo==2.0.13
 numpy==1.23.1
 sympy==1.11.1
+scipy==1.9.3
 windnd==1.0.7
 matplotlib==3.5.2
 moviepy==1.0.3
@@ -13,3 +14,4 @@ jieba==0.42.1
 unvcode==1.0.0
 pyautogui==0.9.50
 opencv-python==4.5.1.48
+blind-watermark==0.4.4
