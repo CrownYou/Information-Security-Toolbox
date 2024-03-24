@@ -6,6 +6,7 @@ import random
 import os
 import re
 import shutil
+import time
 import tkinter as tk
 import zlib
 from random import randint
@@ -13,11 +14,13 @@ from tkinter import messagebox
 from tkinter import ttk
 from Crypto import Random  # pip install pycryptodome
 from Crypto.PublicKey import RSA
-from Crypto.PublicKey import ECC
 from Crypto.Hash import SHA384
 from Crypto.Hash import MD4
 from Crypto.Hash import RIPEMD160
 from windnd import hook_dropfiles
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization, hashes
+from cryptography.hazmat.primitives.asymmetric import ec
 from system_resource.ToolKit import Tools  # 注意：这里没有写错，因为这句话是交给main.py执行的，必须从它的视角进行相对引用
 
 window = frm = mid_font = icon_path = colors = ind = ...
@@ -787,7 +790,7 @@ def rsa_word():
     frm_of_labelframe.pack()
 
     # 加密（左边的labelframe）
-    labelframe1 = tk.LabelFrame(frm_of_labelframe, text='加密文字', height=708, width=606, font=mid_font)
+    labelframe1 = tk.LabelFrame(frm_of_labelframe, text='RSA加密文字', height=708, width=606, font=mid_font)
     labelframe1.pack(side='left', padx=5)
     labelframe1.pack_propagate(0)  # 使组件大小不变
     frm3 = tk.Frame(labelframe1)
@@ -877,7 +880,7 @@ def rsa_word():
     text1.bind('<KeyRelease>', process)
 
     # 解密（右边的labelframe）
-    labelframe2 = tk.LabelFrame(frm_of_labelframe, text='解密文字', height=708, width=606, font=mid_font)
+    labelframe2 = tk.LabelFrame(frm_of_labelframe, text='RSA解密文字', height=708, width=606, font=mid_font)
     labelframe2.pack(side='left', padx=5)
     labelframe2.pack_propagate(0)  # 使组件大小不变
     lf2_frm1 = tk.Frame(labelframe2)
@@ -991,7 +994,7 @@ def rsa_word():
 
 def rsa_file():
     # 加密文件（夹）（左边的labelframe）
-    labelframe1 = tk.LabelFrame(frm, text='加密文件（夹）', height=741, width=606, font=mid_font)
+    labelframe1 = tk.LabelFrame(frm, text='RSA加密文件（夹）', height=741, width=606, font=mid_font)
     labelframe1.pack(side='left', padx=5, pady=5)
     labelframe1.pack_propagate(0)  # 使组件大小不变
     frm3 = tk.Frame(labelframe1)
@@ -1225,7 +1228,7 @@ def rsa_file():
     frm4.pack()
 
     # 解密文件（夹）（右边的labelframe）
-    labelframe2 = tk.LabelFrame(frm, text='解密文件（夹）', height=741, width=606, font=mid_font)
+    labelframe2 = tk.LabelFrame(frm, text='RSA解密文件（夹）', height=741, width=606, font=mid_font)
     labelframe2.pack(side='right', padx=5, pady=5)
     labelframe2.pack_propagate(0)  # 使组件大小不变
 
@@ -1645,12 +1648,12 @@ def rsa_sign_and_verify():
                 lf2_label4.pack()
             else:
                 if pubkey_verifier.verify(hasher, signature):
-                    lf2_label4 = tk.Label(lf2_frm4, font=mid_font, text='验证通过', fg=colors[ind])
+                    lf2_label4 = tk.Label(lf2_frm4, font=mid_font, text='数字签名验证通过', fg=colors[ind])
                     lf2_label4.pack()
                     lf2_label5 = tk.Label(lf2_frm4, font=mid_font, text='原信息的SHA-384数字摘要与数字签名内容一致', fg=colors[ind])
                     lf2_label5.pack()
                 else:
-                    lf2_label4 = tk.Label(lf2_frm4, font=mid_font, text='验证未能通过', fg=colors[ind])
+                    lf2_label4 = tk.Label(lf2_frm4, font=mid_font, text='数字签名验证未能通过', fg=colors[ind])
                     lf2_label4.pack()
                     lf2_label5 = tk.Label(lf2_frm4, font=mid_font, text='原信息的SHA-384数字摘要与数字签名内容不一致', fg=colors[ind])
                     lf2_label5.pack()
@@ -1680,7 +1683,7 @@ def rsa_sign_and_verify():
             # 最后检查原始文件的摘要和数字签名是否一致
             hasher = Tools.get_hasher_of_file(message_path)
             if pubkey_verifier.verify(hasher, signature):
-                lf2_label4 = tk.Label(lf2_frm4, font=mid_font, text='验证通过', fg=colors[ind])
+                lf2_label4 = tk.Label(lf2_frm4, font=mid_font, text='数字签名验证通过', fg=colors[ind])
                 lf2_label4.pack()
                 lf2_entry4 = tk.Entry(lf2_frm4, font=mid_font, width=43, fg=colors[ind])
                 lf2_entry4.insert('end', os.path.basename(message_path))
@@ -1688,7 +1691,7 @@ def rsa_sign_and_verify():
                 lf2_label5 = tk.Label(lf2_frm4, font=mid_font, text='的SHA-384数字摘要与数字签名内容一致', fg=colors[ind])
                 lf2_label5.pack()
             else:
-                lf2_label4 = tk.Label(lf2_frm4, font=mid_font, text='验证未能通过', fg=colors[ind])
+                lf2_label4 = tk.Label(lf2_frm4, font=mid_font, text='数字签名验证未能通过', fg=colors[ind])
                 lf2_label4.pack()
                 lf2_entry4 = tk.Entry(lf2_frm4, font=mid_font, width=43, fg=colors[ind])
                 lf2_entry4.insert('end', os.path.basename(message_path))
@@ -1728,11 +1731,11 @@ def rsa_sign_and_verify():
 def create_ecc_key():
     frm_of_labelframe = tk.Frame(frm)
     frm_of_labelframe.pack()
+
     # 连续随机生成
     labelframe1 = tk.LabelFrame(frm_of_labelframe, text='连续随机生成ECC密钥对', height=457, width=606, font=mid_font)
     labelframe1.pack(side='left', padx=5, pady=5)
     labelframe1.pack_propagate(0)  # 使组件大小不变
-
     frm1 = tk.Frame(labelframe1)
     frm1.pack()
     number_of_frm1 = 1
@@ -1741,15 +1744,9 @@ def create_ecc_key():
     frm2 = tk.Frame(labelframe1)
     frm2.pack()
     var1 = tk.StringVar()
-    var1.set('p256')
-    rb1 = tk.Radiobutton(frm2, variable=var1, text='p224', font=mid_font, value='p224')
+    var1.set('SECP256K1')
+    rb1 = tk.Radiobutton(frm2, variable=var1, text='SECP256K1（兼顾安全性、速度和兼容性）', font=mid_font, value='SECP256K1')
     rb1.grid(row=1, column=1, padx=10)
-    rb2 = tk.Radiobutton(frm2, variable=var1, text='p256', font=mid_font, value='p256')
-    rb2.grid(row=1, column=2, padx=10)
-    rb3 = tk.Radiobutton(frm2, variable=var1, text='p384', font=mid_font, value='p384')
-    rb3.grid(row=1, column=3, padx=10)
-    rb4 = tk.Radiobutton(frm2, variable=var1, text='p521', font=mid_font, value='p521')
-    rb4.grid(row=1, column=4, padx=10)
     frm3 = tk.Frame(labelframe1)
     frm3.pack()
     label2 = tk.Label(frm3, text=f'第 {number_of_frm1} 对密钥将保存在', font=mid_font)
@@ -1824,12 +1821,10 @@ def create_ecc_key():
                 label8 = tk.Label(frm5, text=f'第 {number_of_frm1 - 2} 对{previous_key_length}位密钥生成完成', font=mid_font)
                 label8.pack()
             window.update()
-            # 生成私钥
-            private_key = ECC.generate(curve=current_key_length)
-            private_key_str = private_key.export_key(format='PEM')
-            # 生成公钥（从私钥中推导）
-            public_key = private_key.public_key()
-            public_key_str = public_key.export_key(format='PEM')
+            # 生成密钥对
+            if var1.get() == 'SECP256K1':
+                private_key = ec.generate_private_key(ec.SECP256K1(), default_backend())
+                public_key = private_key.public_key()
             # 保存公私钥
             current_path = os.getcwd()
             keys_dir_path = current_path + '\\keys'
@@ -1841,10 +1836,11 @@ def create_ecc_key():
             else:
                 shutil.rmtree(key_path)
                 os.mkdir(key_path)
-            with open(key_path + f'\\ECC_public_key_{current_key_length}.pem', 'w', encoding='utf-8') as pubfile:
-                pubfile.write(public_key_str)
-            with open(key_path + f'\\ECC_private_key_{current_key_length}.pem', 'w', encoding='utf-8') as prifile:
-                prifile.write(private_key_str)
+            with open(key_path + f'\\ECC_private_key_{current_key_length}.pem', 'wb') as prifile:
+                prifile.write(private_key.private_bytes(encoding=serialization.Encoding.PEM, format=serialization.PrivateFormat("TraditionalOpenSSL"), encryption_algorithm=serialization.BestAvailableEncryption(b'1234')))
+            with open(key_path + f'\\ECC_public_key_{current_key_length}.pem', 'wb') as pubfile:
+                pubfile.write(public_key.public_bytes(encoding=serialization.Encoding.PEM, format=serialization.PublicFormat("X.509 subjectPublicKeyInfo with PKCS#1")))
+            time.sleep(0.1)
             new_created_key += 1
             previous_key_length = current_key_length
 
@@ -1932,10 +1928,10 @@ def create_ecc_key():
                 two_keys = os.listdir(key_path)
                 find_pub_key, find_priv_key = False, False
                 for i in two_keys:
-                    if re.findall('public_key_p\d{3}\.pem', i):
+                    if re.findall('ECC_public_key_.*\.pem', i):
                         pubkey_path = key_path + "\\" + i
                         find_pub_key = True
-                    elif re.findall('private_key_p\d{3}\.pem', i):
+                    elif re.findall('ECC_private_key_.*\.pem', i):
                         privkey_path = key_path + "\\" + i
                         find_priv_key = True
                 text1.delete('1.0', 'end')
@@ -1950,7 +1946,7 @@ def create_ecc_key():
                     text1.insert('end', '未找到ECC公钥')
                 if find_priv_key:
                     privkey_content = get_key_content(privkey_path)
-                    if 'BEGIN PRIVATE KEY' in privkey_content or '读取失败' in privkey_content:
+                    if 'BEGIN EC PRIVATE KEY' in privkey_content or '读取失败' in privkey_content:
                         text2.insert('end', privkey_content)
                     else:
                         text2.insert('end', '这不是ECC私钥')
@@ -2020,7 +2016,7 @@ def create_ecc_key():
                                 show_key_content()
                                 break
                         else:
-                            ...  # 如果没有比key_name大的，就不要执行
+                            pass  # 如果没有比key_name大的，就不要执行
 
             button2 = tk.Button(_frm8, text='上一对', font=mid_font, command=previous_pair)
             button2.grid(row=1, column=1, padx=15)
@@ -2044,7 +2040,7 @@ def create_ecc_key():
                 if privkey_path:
                     text2.delete(1.0, 'end')
                     privkey_content = get_key_content(privkey_path)
-                    if 'BEGIN PRIVATE KEY' in privkey_content or '读取失败' in privkey_content:
+                    if 'BEGIN EC PRIVATE KEY' in privkey_content or '读取失败' in privkey_content:
                         text2.insert('end', privkey_content)
                     else:
                         text2.insert('end', '这不是ECC私钥')
@@ -2128,26 +2124,25 @@ def create_ecc_key():
         lf2_label2.pack()
         window.update()
         lf2_label2.destroy()
-        # 生成私钥
-        length = lf2_var1.get()
-        private_key = ECC.generate(curve=length)
-        private_key_str = private_key.export_key(format='PEM')
-        # 生成公钥（从私钥中推导）
-        public_key = private_key.public_key()
-        public_key_str = public_key.export_key(format='PEM')
-        lf2_label3 = tk.Label(lf2_frm2, text='公钥（public key）：\n' + public_key_str[26: 30].replace('\n', ' ') + ' ... ' + public_key_str[-50: -24].replace('\n', ' '), font=mid_font)
+        # 生成密钥对
+        if var1.get() == 'SECP256K1':
+            private_key = ec.generate_private_key(ec.SECP256K1(), default_backend())
+            private_key_str = private_key.private_bytes(encoding=serialization.Encoding.PEM, format=serialization.PrivateFormat("TraditionalOpenSSL"), encryption_algorithm=serialization.BestAvailableEncryption(b'1234')).decode('utf-8')
+            public_key = private_key.public_key()
+            public_key_str = public_key.public_bytes(encoding=serialization.Encoding.PEM, format=serialization.PublicFormat("X.509 subjectPublicKeyInfo with PKCS#1")).decode('utf-8')
+        lf2_label3 = tk.Label(lf2_frm2, text=''.join(['公钥（public key）：\n', public_key_str[27: 53].replace('\n', ' '), ' ... ', public_key_str[-29: -26].replace('\n', ' ')]), font=mid_font)
         lf2_label3.pack()
-        lf2_label4 = tk.Label(lf2_frm2, font=mid_font, text='私钥（private key）：\n' + private_key_str[27: 31].replace('\n', ' ') + ' ... ' + private_key_str[-52: -26].replace('\n', ' '))
+        lf2_label4 = tk.Label(lf2_frm2, font=mid_font, text=''.join(['私钥（private key）：\n', private_key_str[110: 136].replace('\n', ' '), ' ... ', private_key_str[-33: -30].replace('\n', ' ')]))
         lf2_label4.pack()
         # 保存公私钥
         current_dir = os.getcwd()
         key_path = current_dir + '\\keys'
         if not os.path.exists(key_path):
             os.mkdir(key_path)
-        with open(key_path + f'\\ECC_public_key_{length}.pem', 'w', encoding='utf-8') as pubfile:
-            pubfile.write(public_key_str)
-        with open(key_path + f'\\ECC_private_key_{length}.pem', 'w', encoding='utf-8') as prifile:
+        with open(key_path + f'\\ECC_private_key_{var1.get()}.pem', 'w', encoding='utf-8') as prifile:
             prifile.write(private_key_str)
+        with open(key_path + f'\\ECC_public_key_{var1.get()}.pem', 'w', encoding='utf-8') as pubfile:
+            pubfile.write(public_key_str)
         lf2_label5 = tk.Label(lf2_frm2, text='公私钥已经保存至', font=mid_font)
         lf2_label5.pack()
         lf2_entry1 = tk.Entry(lf2_frm2, width=43, font=mid_font)
@@ -2159,17 +2154,11 @@ def create_ecc_key():
         lf2_label7.pack()
 
     lf2_var1 = tk.StringVar()
-    lf2_var1.set('p256')
+    lf2_var1.set('SECP256K1')
     lf2_frm1 = tk.Frame(labelframe2)
     lf2_frm1.pack()
-    lf2_rb1 = tk.Radiobutton(lf2_frm1, variable=lf2_var1, text='p224', font=mid_font, value='p224')
+    lf2_rb1 = tk.Radiobutton(lf2_frm1, variable=lf2_var1, text='SECP256K1（兼顾安全性、速度和兼容性）', font=mid_font, value='SECP256K1')
     lf2_rb1.grid(row=1, column=1, padx=10)
-    lf2_rb2 = tk.Radiobutton(lf2_frm1, variable=lf2_var1, text='p256', font=mid_font, value='p256')
-    lf2_rb2.grid(row=1, column=2, padx=10)
-    lf2_rb3 = tk.Radiobutton(lf2_frm1, variable=lf2_var1, text='p384', font=mid_font, value='p384')
-    lf2_rb3.grid(row=1, column=3, padx=10)
-    lf2_rb4 = tk.Radiobutton(lf2_frm1, variable=lf2_var1, text='p521', font=mid_font, value='p521')
-    lf2_rb4.grid(row=1, column=4, padx=10)
     lf2_button1 = tk.Button(labelframe2, text='确定', font=mid_font, command=lf2_confirm)
     lf2_button1.pack()
     lf2_frm2 = tk.Frame(labelframe2)
@@ -2198,7 +2187,7 @@ def set_pwd_of_ecc_privkey():
         if os.path.exists(key_path):
             with open(Tools.get_path_from_entry(lf1_entry1), 'rb') as f:
                 key = f.read()
-                if bytes("-----BEGIN PRIVATE KEY-----".encode('utf-8')) in key:
+                if bytes("-----BEGIN EC PRIVATE KEY-----".encode('utf-8')) in key:
                     lf1_text1.insert('end', key.decode('utf-8'))
                 else:
                     lf1_text1.insert('end', '这不是正确的私钥')
@@ -2346,7 +2335,7 @@ def set_pwd_of_ecc_privkey():
         if os.path.exists(key_path):
             with open(key_path, 'rb') as f:
                 key = f.read()
-                if bytes("-----BEGIN PRIVATE KEY-----\nEncrypted:".encode('utf-8')) in key:
+                if bytes("-----BEGIN EC PRIVATE KEY-----\nEncrypted:".encode('utf-8')) in key:
                     lf2_text1.insert('end', key.decode('utf-8'))
                 else:
                     lf2_text1.insert('end', '这不是已加密的私钥')
@@ -2438,6 +2427,710 @@ def set_pwd_of_ecc_privkey():
     lf2_label5.pack()
 
 
+def ecc_word():
+    up_frm = tk.Frame(frm)
+    up_frm.pack()
+    uf_frm1 = tk.Frame(up_frm)
+    uf_frm1.pack()
+
+    def change_uf_entry1_show():
+        Tools.change_entry_show(uf_var1, uf_entry1)
+
+    def uf_drag1(files):
+        Tools.dragged_files(files, uf_entry1)
+
+    def change_uf_entry2_show():
+        Tools.change_entry_show(uf_var2, uf_entry2)
+
+    def uf_drag2(files):
+        Tools.dragged_files(files, uf_entry2)
+
+    def change_uf_entry3_show():
+        Tools.change_entry_show(uf_var3, uf_entry3)
+
+    uf_label1 = tk.Label(uf_frm1, text='请拖入对方的公钥或输入地址：', font=mid_font)
+    uf_label1.grid(row=1, column=1, padx=5)
+    uf_var1 = tk.StringVar()
+    uf_var1.set('0')
+    uf_cb1 = tk.Checkbutton(uf_frm1, text='隐藏', variable=uf_var1, onvalue='1', offvalue='0', command=change_uf_entry1_show, font=mid_font)
+    uf_cb1.grid(row=1, column=2, padx=5)
+    uf_entry1 = tk.Entry(up_frm, font=mid_font, width=59)
+    uf_entry1.pack()
+    hook_dropfiles(uf_entry1, func=uf_drag1)
+    uf_frm2 = tk.Frame(up_frm)
+    uf_frm2.pack()
+    uf_frm3 = tk.Frame(uf_frm2)
+    uf_frm3.grid(row=1, column=1, padx=15)
+    uf_label2 = tk.Label(uf_frm3, text='请拖入自己的私钥或输入地址：', font=mid_font)
+    uf_label2.grid(row=1, column=1, padx=5)
+    uf_var2 = tk.StringVar()
+    uf_var2.set('0')
+    uf_cb2 = tk.Checkbutton(uf_frm3, text='隐藏', variable=uf_var2, onvalue='1', offvalue='0', command=change_uf_entry2_show, font=mid_font)
+    uf_cb2.grid(row=1, column=2, padx=5)
+    uf_entry2 = tk.Entry(uf_frm2, font=mid_font, width=36)
+    uf_entry2.grid(row=2, column=1, padx=15)
+    hook_dropfiles(uf_entry2, func=uf_drag2)
+    uf_frm4 = tk.Frame(uf_frm2)
+    uf_frm4.grid(row=1, column=2, padx=15)
+    uf_label3 = tk.Label(uf_frm4, text='请输入私钥的使用密码：', font=mid_font)
+    uf_label3.grid(row=1, column=1, padx=5)
+    uf_var3 = tk.StringVar()
+    uf_var3.set('1')
+    uf_cb3 = tk.Checkbutton(uf_frm4, text='隐藏', variable=uf_var3, onvalue='1', offvalue='0', command=change_uf_entry3_show, font=mid_font)
+    uf_cb3.grid(row=1, column=2, padx=5)
+    uf_entry3 = tk.Entry(uf_frm2, font=mid_font, width=30, show='*')
+    uf_entry3.grid(row=2, column=2, padx=15)
+    base64_or_emoji_frm = tk.Frame(up_frm)
+    base64_or_emoji_frm.pack()
+    be_frm_label1 = tk.Label(base64_or_emoji_frm, text='请选择密文的编码方式：', font=mid_font)
+    be_frm_label1.grid(row=1, column=1, padx=10)
+    base64_or_emoji = tk.StringVar()
+    base64_or_emoji.set('base64')
+    base64_rb = tk.Radiobutton(base64_or_emoji_frm, text='base64编码', variable=base64_or_emoji, value='base64', font=mid_font)
+    base64_rb.grid(row=1, column=2, padx=10)
+    emoji_rb = tk.Radiobutton(base64_or_emoji_frm, text='emoji编码', variable=base64_or_emoji, value='emoji', font=mid_font)
+    emoji_rb.grid(row=1, column=3, padx=10)
+    intro_emoji_button = tk.Button(base64_or_emoji_frm, text='说明', font=mid_font, command=Tools.intro_emoji, bd=0, fg='blue')
+    intro_emoji_button.grid(row=1, column=4, padx=10)
+    down_frm = tk.Frame(frm)
+    down_frm.pack()
+
+    # 加密（左边的labelframe）
+    labelframe1 = tk.LabelFrame(down_frm, text='ECC加密文字', height=560, width=606, font=mid_font)
+    labelframe1.pack(side='left', padx=5)
+    labelframe1.pack_propagate(0)  # 使组件大小不变
+    lf1_text1 = tk.Text(labelframe1, font=mid_font, width=43, height=9)
+    lf1_text1.pack()
+
+    def enc(*args):
+        if lf1_var1.get() == '0' and args:
+            return 0
+        Tools.reset(lf1_text2)
+        window.update()
+        # 通过对方的公钥和自己的私钥生成aes密钥
+        aes_key = Tools.get_aes_key_from_ecc_keys(uf_entry1, uf_entry2, uf_entry3)
+        if aes_key == 0:
+            return 0
+        # 再对文字进行加密
+        ontology_sec = b''
+        with open('_temp1.txt', 'w', encoding='utf-8') as f:
+            f.write(lf1_text1.get(1.0, 'end').rstrip('\n'))
+        with open('_temp1.txt', 'rb') as f:
+            content = f.read(16)
+            while content:
+                if len(content) < 16:
+                    content = Tools.pkcs7_padding(content)
+                en_text = aes_key.encrypt(content)
+                ontology_sec += en_text
+                content = f.read(16)
+        os.remove('_temp1.txt')
+        lf1_text2.delete(1.0, 'end')
+        res = base64.b64encode(ontology_sec).decode('utf-8')
+        if base64_or_emoji.get() == 'base64':
+            lf1_text2.insert('end', res)
+        elif base64_or_emoji.get() == 'emoji':
+            lf1_text2.insert('end', Tools.translate_base64_to_emoji(res))
+
+    def lf1_reset():
+        Tools.reset(lf1_text1)
+        Tools.reset(lf1_text2)
+
+    def lf1_copy():
+        Tools.copy(lf1_text2, lf1_button3)
+
+    lf1_frm1 = tk.Frame(labelframe1)
+    lf1_frm1.pack()
+    lf1_var1 = tk.StringVar()
+    lf1_var1.set('0')
+    lf1_cb1 = tk.Checkbutton(lf1_frm1, font=mid_font, text='实时计算', variable=lf1_var1, onvalue='1', offvalue='0')
+    lf1_cb1.grid(row=1, column=1, padx=15)
+    lf1_button1 = tk.Button(lf1_frm1, font=mid_font, text='重置', command=lf1_reset)
+    lf1_button1.grid(row=1, column=2, padx=15)
+    lf1_button2 = tk.Button(lf1_frm1, font=mid_font, text='加密', command=enc)
+    lf1_button2.grid(row=1, column=3, padx=15)
+    lf1_button3 = tk.Button(lf1_frm1, font=mid_font, text='复制密文', command=lf1_copy, fg=colors[ind])
+    lf1_button3.grid(row=1, column=4, padx=15)
+    lf1_text2 = tk.Text(labelframe1, font=mid_font, width=43, height=9)
+    lf1_text2.pack()
+    lf1_text1.bind("<KeyRelease>", enc)
+
+    # 解密（右边的labelframe)
+    labelframe2 = tk.LabelFrame(down_frm, text='ECC解密文字', height=560, width=606, font=mid_font)
+    labelframe2.pack(side='right', padx=5)
+    labelframe2.pack_propagate(0)  # 使组件大小不变
+    lf2_text1 = tk.Text(labelframe2, font=mid_font, width=43, height=9)
+    lf2_text1.pack()
+
+    def dec(*args):
+        if lf2_var1.get() == '0' and args:
+            return 0
+        Tools.reset(lf2_text2)
+        window.update()
+        # 通过对方的公钥和自己的私钥生成aes密钥
+        aes_key = Tools.get_aes_key_from_ecc_keys(uf_entry1, uf_entry2, uf_entry3)
+        if aes_key == 0:
+            return 0
+        # 再对文字进行解密
+        info = lf2_text1.get(1.0, 'end').strip('\n')
+        try:
+            if base64_or_emoji.get() == 'base64':
+                ontology_sec = base64.b64decode(info)
+            elif base64_or_emoji.get() == 'emoji':
+                ontology_sec = base64.b64decode(Tools.translate_emoji_to_base64(info))
+        except Exception:
+            if base64_or_emoji.get() == 'base64':
+                messagebox.showerror(title='密文格式错误', message="不是正确的base64编码，密文是否为emoji编码？")
+            elif base64_or_emoji.get() == 'emoji':
+                messagebox.showerror(title='密文格式错误', message="无法将输入的emoji字符转为base64编码")
+            return 0
+        ontology = b''
+        with open('_temp2.txt', 'wb') as f:
+            f.write(ontology_sec)
+        with open('_temp2.txt', 'rb') as f:
+            content = f.read(16)
+            while content:
+                try:
+                    de_text = aes_key.decrypt(content)
+                except Exception:
+                    messagebox.showerror(title='解密失败', message="解密失败，可能是密文信息被删改")
+                    return 0
+                else:
+                    next = f.read(16)
+                    if len(next) == 0:
+                        de_text = Tools.de_padding(de_text, 'pkcs7 padding')
+                    ontology += de_text
+                    content = next
+        os.remove('_temp2.txt')
+        try:
+            ontology = ontology.decode('utf-8')
+        except Exception as e:
+            print('Error:', e)
+            messagebox.showinfo(title='解密失败', message='密钥或密文可能不正确')
+        else:
+            lf2_text2.delete(1.0, 'end')
+            lf2_text2.insert('end', str(ontology))
+
+    def lf2_reset():
+        Tools.reset(lf2_text1)
+        Tools.reset(lf2_text2)
+
+    def lf2_copy():
+        Tools.copy(lf2_text2, lf2_button3)
+
+    lf2_frm1 = tk.Frame(labelframe2)
+    lf2_frm1.pack()
+    lf2_var1 = tk.StringVar()
+    lf2_var1.set('1')
+    lf2_cb1 = tk.Checkbutton(lf2_frm1, font=mid_font, text='实时计算', variable=lf2_var1, onvalue='1', offvalue='0')
+    lf2_cb1.grid(row=1, column=1, padx=15)
+    lf2_button1 = tk.Button(lf2_frm1, font=mid_font, text='重置', command=lf2_reset)
+    lf2_button1.grid(row=1, column=2, padx=15)
+    lf2_button2 = tk.Button(lf2_frm1, font=mid_font, text='加密', command=dec)
+    lf2_button2.grid(row=1, column=3, padx=15)
+    lf2_button3 = tk.Button(lf2_frm1, font=mid_font, text='复制密文', command=lf2_copy, fg=colors[ind])
+    lf2_button3.grid(row=1, column=4, padx=15)
+    lf2_text2 = tk.Text(labelframe2, font=mid_font, width=43, height=9)
+    lf2_text2.pack()
+    lf2_text1.bind("<KeyRelease>", dec)
+
+
+def ecc_file():
+    up_frm = tk.Frame(frm)
+    up_frm.pack()
+    uf_frm1 = tk.Frame(up_frm)
+    uf_frm1.pack()
+
+    def change_uf_entry1_show():
+        Tools.change_entry_show(uf_var1, uf_entry1)
+
+    def uf_drag1(files):
+        Tools.dragged_files(files, uf_entry1)
+
+    def change_uf_entry2_show():
+        Tools.change_entry_show(uf_var2, uf_entry2)
+
+    def uf_drag2(files):
+        Tools.dragged_files(files, uf_entry2)
+
+    def change_uf_entry3_show():
+        Tools.change_entry_show(uf_var3, uf_entry3)
+
+    uf_label1 = tk.Label(uf_frm1, text='请拖入对方的公钥或输入地址：', font=mid_font)
+    uf_label1.grid(row=1, column=1, padx=5)
+    uf_var1 = tk.StringVar()
+    uf_var1.set('0')
+    uf_cb1 = tk.Checkbutton(uf_frm1, text='隐藏', variable=uf_var1, onvalue='1', offvalue='0', command=change_uf_entry1_show, font=mid_font)
+    uf_cb1.grid(row=1, column=2, padx=5)
+    uf_entry1 = tk.Entry(up_frm, font=mid_font, width=59)
+    uf_entry1.pack()
+    hook_dropfiles(uf_entry1, func=uf_drag1)
+    uf_frm2 = tk.Frame(up_frm)
+    uf_frm2.pack()
+    uf_frm3 = tk.Frame(uf_frm2)
+    uf_frm3.grid(row=1, column=1, padx=15)
+    uf_label2 = tk.Label(uf_frm3, text='请拖入自己的私钥或输入地址：', font=mid_font)
+    uf_label2.grid(row=1, column=1, padx=5)
+    uf_var2 = tk.StringVar()
+    uf_var2.set('0')
+    uf_cb2 = tk.Checkbutton(uf_frm3, text='隐藏', variable=uf_var2, onvalue='1', offvalue='0', command=change_uf_entry2_show, font=mid_font)
+    uf_cb2.grid(row=1, column=2, padx=5)
+    uf_entry2 = tk.Entry(uf_frm2, font=mid_font, width=36)
+    uf_entry2.grid(row=2, column=1, padx=15)
+    hook_dropfiles(uf_entry2, func=uf_drag2)
+    uf_frm4 = tk.Frame(uf_frm2)
+    uf_frm4.grid(row=1, column=2, padx=15)
+    uf_label3 = tk.Label(uf_frm4, text='请输入私钥的使用密码：', font=mid_font)
+    uf_label3.grid(row=1, column=1, padx=5)
+    uf_var3 = tk.StringVar()
+    uf_var3.set('1')
+    uf_cb3 = tk.Checkbutton(uf_frm4, text='隐藏', variable=uf_var3, onvalue='1', offvalue='0', command=change_uf_entry3_show, font=mid_font)
+    uf_cb3.grid(row=1, column=2, padx=5)
+    uf_entry3 = tk.Entry(uf_frm2, font=mid_font, width=30, show='*')
+    uf_entry3.grid(row=2, column=2, padx=15)
+    frm_of_labelframe = tk.Frame(frm)
+    frm_of_labelframe.pack()
+
+    # 加密（左边的labelframe）
+    labelframe1 = tk.LabelFrame(frm_of_labelframe, text='ECC加密文件（夹）', height=606, width=606, font=mid_font)
+    labelframe1.pack(side='left', padx=5)
+    labelframe1.pack_propagate(0)  # 使组件大小不变
+
+    def drag2(files):
+        Tools.dragged_files(files, lf1_entry2)
+        Tools.clean_all_widget(frm4)
+
+    def _enter_length(*args):
+        Tools.enter_length(_size, _entry1, _label1, frm4, zebra_frm, lf1_button3)
+
+    lf1_label2 = tk.Label(labelframe1, text='请拖入需要加密的文件（夹）或输入地址：', font=mid_font)
+    lf1_label2.pack()
+    lf1_entry2 = tk.Entry(labelframe1, show=None, width=43, font=mid_font)
+    lf1_entry2.pack()
+    hook_dropfiles(lf1_entry2, func=drag2)
+    delete_origin = tk.StringVar()
+    delete_origin.set('0')
+    delete_origin_cb = tk.Checkbutton(labelframe1, text='加密完后删除原文件', font=mid_font, variable=delete_origin, onvalue='1', offvalue='0')
+    delete_origin_cb.pack()
+    _frm7 = tk.Frame(labelframe1)
+    _frm7.pack()
+    frm7 = tk.Frame(_frm7)
+    frm7.pack()
+    lf1_label6 = tk.Label(frm7, text="请选择加密的大小：", font=mid_font)
+    lf1_label6.grid(row=1, column=1)
+    _size = tk.StringVar()
+    _size.set("完整文件")
+    option_menu3 = tk.OptionMenu(frm7, _size, *("完整文件", "1单位", "10单位", "516单位", "5160单位", "其他长度", "斑马线加密法"),
+                                 command=_enter_length)
+    option_menu3.config(font=mid_font)
+    option_menu3.grid(row=1, column=2)
+    _entry1 = tk.Entry(frm7, width=5, font=mid_font)
+    _label1 = tk.Label(frm7, text='单位', font=mid_font)
+    intro_button = tk.Button(frm7, text="说明", font=mid_font, command=Tools.intro_enc_head, bd=0, fg='blue')
+    intro_button.grid(row=1, column=5)
+    zebra_frm = tk.Frame(_frm7)
+    zfrm1 = tk.Frame(zebra_frm)
+    zfrm1.grid(row=1)
+    zlabel1 = tk.Label(zfrm1, text='位置的显示方式：', font=mid_font)
+    zlabel1.grid(row=1, column=1, padx=10)
+    show_method = tk.StringVar()
+    show_method.set('1')
+
+    def change_show_method():
+        zentry1.delete(0, 'end')
+        zentry4.delete(0, 'end')
+        if show_method.get() == '2':
+            zlabel3.config(text=' kb ')
+            zlabel7.config(text=' kb ')
+            zscale1.grid_forget()
+            zscale2.grid_forget()
+        elif show_method.get() == '1':
+            zlabel3.config(text=' %  ')
+            zlabel7.config(text='%')
+            begin.set(0)
+            end.set(100)
+            zentry1.insert('end', '0')
+            zentry4.insert('end', '100')
+            zscale1.grid(row=3)
+            zscale2.grid(row=5)
+
+    def change_zentry1(value):
+        Tools.change_zentry(value, zentry1)
+
+    def change_zentry4(value):
+        Tools.change_zentry(value, zentry4)
+
+    def change_zscale1(*args):
+        Tools.change_zscale(show_method, zentry1, begin)
+
+    def change_zscale2(*args):
+        Tools.change_zscale(show_method, zentry4, end)
+
+    zrb1 = tk.Radiobutton(zfrm1, text='百分比', font=mid_font, variable=show_method, value='1', command=change_show_method)
+    zrb1.grid(row=1, column=2, padx=10)
+    zrb2 = tk.Radiobutton(zfrm1, text='绝对值', font=mid_font, variable=show_method, value='2', command=change_show_method)
+    zrb2.grid(row=1, column=3, padx=10)
+    zfrm2 = tk.Frame(zebra_frm)
+    zfrm2.grid(row=2)
+    zlabel2 = tk.Label(zfrm2, text='第一根黑线的起始位置：  ', font=mid_font)
+    zlabel2.grid(row=1, column=1)
+    zentry1 = tk.Entry(zfrm2, width=5, font=mid_font)
+    zentry1.grid(row=1, column=2)
+    zentry1.insert('end', '0')
+    zentry1.bind('<KeyRelease>', change_zscale1)
+    zlabel3 = tk.Label(zfrm2, text=' %  ', font=mid_font)
+    zlabel3.grid(row=1, column=3)
+    begin = tk.IntVar()
+    begin.set(0)
+    zscale1 = tk.Scale(zebra_frm, from_=0, to=100, orient=tk.HORIZONTAL, length=400, tickinterval=10, resolution=1,
+                       showvalue=0, variable=begin, command=change_zentry1)
+    zscale1.grid(row=3)
+    zfrm4 = tk.Frame(zebra_frm)
+    zfrm4.grid(row=4)
+    zlabel4 = tk.Label(zfrm4, text='黑线的宽度：            ', font=mid_font)
+    zlabel4.grid(row=1, column=1)
+    zentry2 = tk.Entry(zfrm4, width=5, font=mid_font)
+    zentry2.grid(row=1, column=2)
+    zlabel8 = tk.Label(zfrm4, text='单位', font=mid_font)
+    zlabel8.grid(row=1, column=3)
+    zlabel5 = tk.Label(zfrm4, text='黑线的根数：            ', font=mid_font)
+    zlabel5.grid(row=2, column=1)
+    zentry3 = tk.Entry(zfrm4, width=5, font=mid_font)
+    zentry3.grid(row=2, column=2)
+    zlabel9 = tk.Label(zfrm4, text='根', font=mid_font)
+    zlabel9.grid(row=2, column=3)
+    zlabel6 = tk.Label(zfrm4, text='最后一根黑线的末尾位置：', font=mid_font)
+    zlabel6.grid(row=3, column=1)
+    zentry4 = tk.Entry(zfrm4, width=5, font=mid_font)
+    zentry4.grid(row=3, column=2)
+    zentry4.insert('end', '100')
+    zentry4.bind('<KeyRelease>', change_zscale2)
+    zlabel7 = tk.Label(zfrm4, text=' %  ', font=mid_font)
+    zlabel7.grid(row=3, column=3)
+    end = tk.IntVar()
+    end.set(100)
+    zscale2 = tk.Scale(zebra_frm, from_=0, to=100, orient=tk.HORIZONTAL, length=400, tickinterval=10, resolution=1,
+                       showvalue=0, variable=end, command=change_zentry4)
+    zscale2.grid(row=5)
+
+    def process():
+        Tools.clean_all_widget(frm4)
+        # 先通过对方的公钥和自己的私钥计算出共享AES密钥
+        aes = Tools.get_aes_key_from_ecc_keys(uf_entry1, uf_entry2, uf_entry3)
+        if aes == 0:
+            return 0
+        # 再判断要加密的文件（夹）是否存在
+        ontology_path = Tools.get_path_from_entry(lf1_entry2)
+        if not os.path.exists(ontology_path):
+            tk.messagebox.showerror(title='路径错误', message='待加密的文件地址不正确，请重新输入')
+            return 0
+        # 为了防止在运行过程中，用户改变_size的值，这里需要先固定这个值
+        size = Tools.get_correct_size(_size, _entry1)
+        if size == 0:
+            return 0
+        _begin, width, number, _end = Tools.get_correct_zebra_parameter(size, show_method, zentry1, zentry2, zentry3, zentry4)
+        if _begin is False:
+            return 0
+        setting_of_delete_origin = delete_origin.get()  # 用来保存是否要删除原文件
+        if os.path.isfile(ontology_path):
+            label5 = tk.Label(frm4, font=mid_font, text='处理时间可能会较长，请耐心等待')
+            label5.pack()
+            window.update()
+            label5.destroy()
+            # 再处理要加密的文件
+            base, suffix = os.path.splitext(ontology_path)
+            ontology_sec_path = base + '_ECC_Encrypted' + suffix
+            Tools.aes_enc_file(aes, 'pkcs7 padding', ontology_path, ontology_sec_path, size, _begin, width, number, _end)
+            if setting_of_delete_origin == '1':
+                Tools.delete_file(ontology_path)
+                label9 = tk.Label(frm4, text='加密成功并已删除原文件，\n文件保存至原文件所在文件夹中的', font=mid_font)
+            else:
+                label9 = tk.Label(frm4, text='加密成功，文件保存至原文件所在文件夹中的', font=mid_font)
+            label9.pack()
+            entry4 = tk.Entry(frm4, width=43, font=mid_font)
+            entry4.insert('end', os.path.basename(ontology_sec_path))
+            entry4.pack()
+        elif os.path.isdir(ontology_path):
+            # 定义进度条
+            progress_bar = ttk.Progressbar(frm4)
+            progress_bar['length'] = 200
+            progress_bar['value'] = 0
+            files = os.listdir(ontology_path)
+            out_dir = os.path.join(ontology_path, 'ECC_Encrypted')
+            if not os.path.exists(out_dir):
+                os.mkdir(out_dir)
+            cleaned_files = []  # 只将files里的纯文件的绝对路径保存到这里，其他的，比如文件夹会删掉
+            for file in files:
+                file_path = os.path.join(ontology_path, file)
+                if os.path.isfile(file_path):
+                    cleaned_files.append(file_path)
+            progress_bar['maximum'] = len(cleaned_files)  # 这里定义进度条的总长度
+            progress_bar.pack(pady=10)  # 再放置进度条
+            window.update()  # 这里的窗口更新很重要，因为如果第一个文件处理完了再更新窗口，用户会觉得卡顿
+            for file_path in cleaned_files:
+                out_path = os.path.join(out_dir, os.path.basename(file_path))
+                Tools.aes_enc_file(aes, 'pkcs7 padding', file_path, out_path, size, _begin, width, number, _end)
+                # 每次加密完后都需要重新设定aes
+                aes = Tools.get_aes_key_from_ecc_keys(uf_entry1, uf_entry2, uf_entry3)
+                if setting_of_delete_origin == '1':
+                    Tools.delete_file(file_path)
+                progress_bar['value'] += 1
+                window.update()
+            if setting_of_delete_origin == '1':
+                label9 = tk.Label(frm4, text='加密成功并已删除原文件，文件保存至\n原文件夹中新建的 ECC_Encrypted 文件夹中', font=mid_font)
+            else:
+                label9 = tk.Label(frm4, text='加密成功，文件保存至原文件夹中\n新建的 ECC_Encrypted 文件夹中', font=mid_font)
+            label9.pack()
+        else:
+            tk.messagebox.showerror(title='路径错误', message='待加密的文件（夹）地址不正确，请重新输入')
+            return 0
+
+    def _reset():
+        Tools.reset(lf1_entry2)
+        Tools.clean_all_widget(frm4)
+
+    frm2 = tk.Frame(labelframe1)
+    frm2.pack()
+    lf1_button1 = tk.Button(frm2, font=mid_font, text='重置', command=_reset)
+    lf1_button1.grid(row=1, column=1, padx=20)
+    lf1_button2 = tk.Button(frm2, font=mid_font, text='加密', command=process)
+    lf1_button2.grid(row=1, column=2, padx=20)
+    lf1_button3 = tk.Button(frm2, text='设置', font=mid_font, command=Tools.setting, fg='blue', bd=0)
+    frm4 = tk.Frame(labelframe1)
+    frm4.pack()
+
+    # 解密（右边的labelframe）
+    labelframe2 = tk.LabelFrame(frm_of_labelframe, text='ECC解密文件（夹）', height=606, width=606, font=mid_font)
+    labelframe2.pack(side='right', padx=5)
+    labelframe2.pack_propagate(0)  # 使组件大小不变
+
+    def lf2_drag1(files):
+        Tools.dragged_files(files, lf2_entry2)
+        Tools.clean_all_widget(lf2_frm4)
+
+    def decrypt():
+        Tools.clean_all_widget(lf2_frm4)
+        # 先处理密钥
+        aes = Tools.get_aes_key_from_ecc_keys(uf_entry1, uf_entry2, uf_entry3)
+        if aes == 0:
+            return 0
+        # 再处理要解密的文件
+        ontology_sec_path = Tools.get_path_from_entry(lf2_entry2)
+        if not os.path.exists(ontology_sec_path):
+            tk.messagebox.showerror(title='路径错误', message='待解密的文件地址不正确，请重新输入')
+            return 0
+        # 为了防止在运行过程中，用户改变var1, entry1, ...的值，所以这里就需要先固定住这两个值
+        setting_of_delete_sec = delete_sec.get()  # 保存是否删除原文件
+        _var3 = tk.StringVar()  # 保存是否是临时解密
+        _var3.set(lf2_var1.get())
+        if os.path.isfile(ontology_sec_path):
+            lf2_label3 = tk.Label(lf2_frm4, text='处理时间可能会较长，请耐心等待', font=mid_font)
+            lf2_label3.pack()
+            window.update()
+            lf2_label3.destroy()
+            # 再处理解密的文件
+            base, suffix = os.path.splitext(ontology_sec_path)
+            if _var3.get() == '1':
+                ontology_path = base + '_ECC_Decrypted' + suffix
+            elif _var3.get() == '2':
+                ontology_path = base + '_temp' + suffix
+            process_succeed = Tools.aes_dec_file(aes, 'pkcs7 padding', ontology_sec_path, ontology_path)
+            if process_succeed:
+                if setting_of_delete_sec == '1':
+                    Tools.delete_file(ontology_sec_path)
+                    lf2_label4 = tk.Label(lf2_frm4, text='解密成功并已删除密文文件，\n文件保存至原文件所在文件夹中的', font=mid_font)
+                else:
+                    lf2_label4 = tk.Label(lf2_frm4, text='解密成功，文件保存至原文件所在文件夹中的', font=mid_font)
+                lf2_label4.pack()
+                lf2_entry3 = tk.Entry(lf2_frm4, width=43, font=mid_font)
+                lf2_entry3.insert('end', os.path.basename(ontology_path))
+                lf2_entry3.pack()
+                if _var3.get() == '2':
+
+                    def save():
+                        answer = messagebox.askyesno(title='提示', message='请确认修改内容已保存，并且临时文件名称没有修改')
+                        if answer:
+                            if os.path.exists(ontology_path):
+                                lf2_label9 = tk.Label(lf2_frm4, text='处理时间可能会较长，请耐心等待', font=mid_font)
+                                lf2_label9.pack()
+                                window.update()
+                                lf2_label9.destroy()
+                                # 这里需要重新新建一个aes
+                                aes = Tools.get_aes_key_from_ecc_keys(uf_entry1, uf_entry2, uf_entry3)
+                                Tools.aes_enc_file(aes, 'pkcs7 padding', ontology_path, ontology_sec_path)
+                                lf2_label10 = tk.Label(lf2_frm4, text='加密成功，文件保存至原文件所在文件夹中的', font=mid_font)
+                                lf2_label10.pack()
+                                lf2_entry4 = tk.Entry(lf2_frm4, width=43, font=mid_font)
+                                lf2_entry4.pack()
+                                lf2_entry4.insert('end', os.path.basename(ontology_sec_path))
+                                os.remove(ontology_path)
+                            else:
+                                messagebox.showerror(title='路径错误', message='找不到临时文件了')
+
+                    lf2_button4 = tk.Button(lf2_frm4, text='重新加密', font=mid_font, command=save)
+                    lf2_button4.pack()
+                elif _var3.get() == '1':
+
+                    def _remove():
+                        Tools.remove_file_or_dir(ontology_path, lf2_frm8)
+
+                    lf2_frm7 = tk.Frame(lf2_frm4)
+                    lf2_frm7.pack()
+                    destroy_button = tk.Button(lf2_frm7, text='阅后即焚', font=mid_font, command=_remove)
+                    destroy_button.grid(row=1, column=1, padx=10)
+                    intro_destroy_button = tk.Button(lf2_frm7, text='说明', font=mid_font, fg='blue', bd=0,
+                                                     command=Tools.intro_destroy)
+                    intro_destroy_button.grid(row=1, column=2, padx=10)
+                    lf2_frm8 = tk.Frame(lf2_frm4)
+                    lf2_frm8.pack()
+            else:
+                os.remove(ontology_path)  # 这里不需要弹窗报错了，因为_aes_dec_file函数中已经报错了
+        elif os.path.isdir(ontology_sec_path):
+            # 定义进度条
+            progress_bar = ttk.Progressbar(lf2_frm4)
+            progress_bar['length'] = 200
+            progress_bar['value'] = 0
+            files = os.listdir(ontology_sec_path)
+            if _var3.get() == '1':
+                out_dir = os.path.join(ontology_sec_path, 'ECC_Decrypted')
+            elif _var3.get() == '2':
+                out_dir = os.path.join(ontology_sec_path, 'temp')
+            if not os.path.exists(out_dir):
+                os.mkdir(out_dir)
+            cleaned_files = []  # 只将files里的纯文件的绝对路径保存到这里，其他的比如文件夹会删掉
+            for file in files:
+                file_path = os.path.join(ontology_sec_path, file)
+                if os.path.isfile(file_path):
+                    cleaned_files.append(file_path)
+            progress_bar['maximum'] = len(cleaned_files)  # 这里定义进度条的总长度
+            progress_bar.pack(pady=10)  # 再放置进度条
+            window.update()
+            failed_files = []
+            for file_path in cleaned_files:
+                out_path = os.path.join(out_dir, os.path.basename(file_path))
+                process_success = Tools.aes_dec_file(aes, 'pkcs7 padding', file_path, out_path, show_error=False)
+                # 每次解密完后都需要重新设定aes
+                aes = Tools.get_aes_key_from_ecc_keys(uf_entry1, uf_entry2, uf_entry3)
+                if not process_success:
+                    os.remove(out_path)
+                    failed_files.append(os.path.basename(file_path))
+                else:
+                    if setting_of_delete_sec == '1':
+                        Tools.delete_file(file_path)
+                progress_bar['value'] += 1
+                window.update()
+            if _var3.get() == '1':
+                lf2_label5 = tk.Label(lf2_frm4, text='解密完成，文件保存至\n原文件夹中新建的 ECC_Decrypted 文件夹中', font=mid_font)
+            elif _var3.get() == '2':
+                lf2_label5 = tk.Label(lf2_frm4, text='解密完成，文件保存至\n原文件夹中新建的 temp 文件夹中', font=mid_font)
+            lf2_label5.pack()
+            if failed_files:
+                lf2_text = tk.Text(lf2_frm4, width=43, font=mid_font, height=6)
+                lf2_text.insert('end', f'其中，{len(failed_files)}个文件解密失败，分别为：\n' + '\n'.join(failed_files))
+                lf2_text.pack()
+            if _var3.get() == '2':
+
+                def save():
+                    answer = messagebox.askyesno(title='提示', message='请确认修改内容已保存，并且临时文件名称没有修改')
+                    if answer:
+                        if os.path.exists(out_dir):
+                            # 定义进度条
+                            progress_bar2 = ttk.Progressbar(lf2_frm4)
+                            progress_bar2['length'] = 200
+                            progress_bar2['value'] = 0
+                            files2 = os.listdir(out_dir)
+                            cleaned_files2 = []
+                            for file2 in files2:
+                                file_path2 = os.path.join(out_dir, file2)
+                                if os.path.isfile(file_path2):
+                                    cleaned_files2.append(file_path2)
+                            if len(cleaned_files2) == 0:
+                                progress_bar2['maximum'] = 1
+                                progress_bar2['value'] = 1
+                            else:
+                                progress_bar2['maximum'] = len(cleaned_files2)  # 这里定义进度条的总长度
+                            progress_bar2.pack(pady=10)  # 再放置进度条
+                            window.update()
+                            for file_path2 in cleaned_files2:
+                                origin_path = os.path.join(ontology_sec_path, os.path.basename(file_path2))
+                                # 每次加密前都需要重新设定aes
+                                aes = Tools.get_aes_key_from_ecc_keys(uf_entry1, uf_entry2, uf_entry3)
+                                Tools.aes_enc_file(aes, 'pkcs7 padding', file_path2, origin_path)
+                                progress_bar2['value'] += 1
+                                window.update()
+                            lf2_label6 = tk.Label(lf2_frm4, text='已重新加密回原文件夹', font=mid_font)
+                            lf2_label6.pack()
+                            shutil.rmtree(out_dir)
+                        else:
+                            messagebox.showerror(title='路径错误', message='找不到临时文件夹了')
+
+                lf2_button4 = tk.Button(lf2_frm4, text='重新加密', font=mid_font, command=save)
+                lf2_button4.pack()
+
+            elif _var3.get() == '1':
+
+                def _remove():
+                    Tools.remove_file_or_dir(out_dir, lf2_frm6)
+
+                lf2_frm5 = tk.Frame(lf2_frm4)
+                lf2_frm5.pack()
+                destroy_button = tk.Button(lf2_frm5, text='阅后即焚', font=mid_font, command=_remove)
+                destroy_button.grid(row=1, column=1, padx=10)
+                intro_destroy_button = tk.Button(lf2_frm5, text='说明', font=mid_font, fg='blue', bd=0,
+                                                 command=Tools.intro_destroy)
+                intro_destroy_button.grid(row=1, column=2, padx=10)
+                lf2_frm6 = tk.Frame(lf2_frm4)
+                lf2_frm6.pack()
+        else:
+            tk.messagebox.showerror(title='路径错误', message='待解密的文件（夹）地址不正确，请重新输入')
+            return 0
+
+    def lf2_reset():
+        Tools.reset(lf2_entry2)
+        Tools.clean_all_widget(lf2_frm4)
+
+    def tell_difference():
+        tell_window = tk.Toplevel(window)
+        tell_window.geometry('636x758')
+        tell_window.title('说明')
+        tell_window.iconbitmap(icon_path)
+        tw_text = tk.Text(tell_window, width=46, height=28, font=mid_font)
+        tw_text.pack()
+        word = '''    1. 如果你仅需要浏览解密后的内容，使用普通解密功能即可，在解密完成后，可以使用阅后即焚功能，来删除解密的文件，这样删除的文件不会在回收站内被找到。
+
+        2. 如果你需要编辑解密后的内容，并在编辑完成后，快速实现重新加密，建议使用临时解密功能，修改后的文件会取代被修改前的文件。
+    注意：临时文件的文件名需要保持原样。以及重新加密的方法是全文加密。'''
+        tw_text.insert('end', word)
+
+    lf2_label2 = tk.Label(labelframe2, text='请拖入需要解密的文件（夹）或输入地址：', font=mid_font)
+    lf2_label2.pack()
+    lf2_entry2 = tk.Entry(labelframe2, width=43, font=mid_font)
+    lf2_entry2.pack()
+    hook_dropfiles(lf2_entry2, func=lf2_drag1)
+    delete_sec = tk.StringVar()
+    delete_sec.set('0')
+    delete_sec_cb = tk.Checkbutton(labelframe2, text='解密完后删除密文文件', font=mid_font, variable=delete_sec, onvalue='1',
+                                   offvalue='0')
+    delete_sec_cb.pack()
+    lf2_frm1 = tk.Frame(labelframe2)
+    lf2_frm1.pack()
+    lf2_var1 = tk.StringVar()
+    lf2_var1.set('1')
+    lf2_rb1 = tk.Radiobutton(lf2_frm1, text='普通解密', font=mid_font, variable=lf2_var1, value='1')
+    lf2_rb1.grid(row=1, column=1, padx=15)
+    lf2_rb2 = tk.Radiobutton(lf2_frm1, text='临时解密', font=mid_font, variable=lf2_var1, value='2')
+    lf2_rb2.grid(row=1, column=2, padx=15)
+    lf2_button1 = tk.Button(lf2_frm1, text='说明', font=mid_font, fg='blue', bd=0, command=tell_difference)
+    lf2_button1.grid(row=1, column=3, padx=15)
+    lf2_frm2 = tk.Frame(labelframe2)
+    lf2_frm2.pack()
+    lf2_button2 = tk.Button(lf2_frm2, font=mid_font, text='重置', command=lf2_reset)
+    lf2_button2.grid(row=1, column=1, padx=20)
+    lf2_button3 = tk.Button(lf2_frm2, font=mid_font, text='解密', command=decrypt)
+    lf2_button3.grid(row=1, column=2, padx=20)
+    lf2_frm4 = tk.Frame(labelframe2)
+    lf2_frm4.pack()
+
+
 def ecc_sign_and_verify():
     # 数字签名（左边的labelframe）
     labelframe1 = tk.LabelFrame(frm, text='ECC数字签名', height=741, width=606, font=mid_font)
@@ -2524,11 +3217,12 @@ def ecc_sign_and_verify():
         if privkey_signer == 0:
             return 0
         ind = (ind + 1) % 6
+        hasher = hashes.Hash(hashes.SHA384(), backend=default_backend())
         if target.get() == 'word':
-            hasher = SHA384.new()
             hasher.update(text1.get(1.0, 'end').rstrip("\n").encode('utf-8'))
+            word_hash = hasher.finalize()
             try:
-                signature = base64.b64encode(privkey_signer.sign(hasher))
+                signature = base64.b64encode(privkey_signer.sign(word_hash, ec.ECDSA(hashes.SHA384())))
             except Exception:
                 Tools.reset(text2)
                 text2.insert('end', '签名出错，密钥可能有问题')
@@ -2536,12 +3230,17 @@ def ecc_sign_and_verify():
         elif target.get() == 'file':
             ontology_path = Tools.get_path_from_entry(entry2)
             if os.path.exists(ontology_path) and os.path.isfile(ontology_path):
+                with open(ontology_path, 'rb') as f:
+                    block_size = 33554432
+                    fb = f.read(block_size)
+                    while fb:
+                        hasher.update(fb)
+                        fb = f.read(block_size)
+                    file_hash = hasher.finalize()
                 ontology_sec_path = ontology_path + '.sign'
                 process_succeed = True
-                # 先获取infile的hasher
-                hasher = Tools.get_hasher_of_file(ontology_path)
                 try:
-                    signature = base64.b64encode(privkey_signer.sign(hasher))
+                    signature = base64.b64encode(privkey_signer.sign(file_hash, ec.ECDSA(hashes.SHA384())))
                 except Exception:
                     text2.insert('end', '签名出错，请检查密钥与文件')
                     process_succeed = False
@@ -2679,9 +3378,10 @@ def ecc_sign_and_verify():
         if pubkey_verifier == 0:
             return 0
         ind = (ind + 1) % 6
+        hasher = hashes.Hash(hashes.SHA384(), backend=default_backend())
         if target2.get() == 'word':
-            hasher = SHA384.new()
             hasher.update(lf2_text1.get(1.0, 'end').rstrip("\n").encode('utf-8'))
+            word_hash = hasher.finalize()
             try:
                 signature = base64.b64decode(lf2_text2.get(1.0, 'end').rstrip("\n"))
             except Exception:
@@ -2689,13 +3389,13 @@ def ecc_sign_and_verify():
                 lf2_label4.pack()
             else:
                 try:
-                    pubkey_verifier.verify(hasher, signature)
-                    lf2_label4 = tk.Label(lf2_frm4, font=mid_font, text='验证通过', fg=colors[ind])
+                    pubkey_verifier.verify(signature, word_hash, ec.ECDSA(hashes.SHA384()))
+                    lf2_label4 = tk.Label(lf2_frm4, font=mid_font, text='数字签名验证通过', fg=colors[ind])
                     lf2_label4.pack()
                     lf2_label5 = tk.Label(lf2_frm4, font=mid_font, text='原信息的SHA-384数字摘要与数字签名内容一致', fg=colors[ind])
                     lf2_label5.pack()
                 except Exception:
-                    lf2_label4 = tk.Label(lf2_frm4, font=mid_font, text='验证未能通过', fg=colors[ind])
+                    lf2_label4 = tk.Label(lf2_frm4, font=mid_font, text='数字签名验证未能通过', fg=colors[ind])
                     lf2_label4.pack()
                     lf2_label5 = tk.Label(lf2_frm4, font=mid_font, text='原信息的SHA-384数字摘要与数字签名内容不一致', fg=colors[ind])
                     lf2_label5.pack()
@@ -2723,10 +3423,16 @@ def ecc_sign_and_verify():
                 lf2_label4.pack()
                 return 0
             # 最后检查原始文件的摘要和数字签名是否一致
-            hasher = Tools.get_hasher_of_file(message_path)
+            with open(message_path, 'rb') as f:
+                block_size = 33554432
+                fb = f.read(block_size)
+                while fb:
+                    hasher.update(fb)
+                    fb = f.read(block_size)
+                file_hash = hasher.finalize()
             try:
-                pubkey_verifier.verify(hasher, signature)
-                lf2_label4 = tk.Label(lf2_frm4, font=mid_font, text='验证通过', fg=colors[ind])
+                pubkey_verifier.verify(signature, file_hash, ec.ECDSA(hashes.SHA384()))
+                lf2_label4 = tk.Label(lf2_frm4, font=mid_font, text='数字签名验证通过', fg=colors[ind])
                 lf2_label4.pack()
                 lf2_entry4 = tk.Entry(lf2_frm4, font=mid_font, width=43, fg=colors[ind])
                 lf2_entry4.insert('end', os.path.basename(message_path))
@@ -2734,7 +3440,7 @@ def ecc_sign_and_verify():
                 lf2_label5 = tk.Label(lf2_frm4, font=mid_font, text='的SHA-384数字摘要与数字签名内容一致', fg=colors[ind])
                 lf2_label5.pack()
             except Exception:
-                lf2_label4 = tk.Label(lf2_frm4, font=mid_font, text='验证未能通过', fg=colors[ind])
+                lf2_label4 = tk.Label(lf2_frm4, font=mid_font, text='数字签名验证未能通过', fg=colors[ind])
                 lf2_label4.pack()
                 lf2_entry4 = tk.Entry(lf2_frm4, font=mid_font, width=43, fg=colors[ind])
                 lf2_entry4.insert('end', os.path.basename(message_path))
@@ -2988,7 +3694,7 @@ def aes_word():
     frm_of_labelframe.pack()
 
     # 加密（左边的labelframe）
-    labelframe1 = tk.LabelFrame(frm_of_labelframe, text='加密文字', height=560, width=606, font=mid_font)
+    labelframe1 = tk.LabelFrame(frm_of_labelframe, text='AES加密文字', height=560, width=606, font=mid_font)
     labelframe1.pack(side='left', padx=5)
     labelframe1.pack_propagate(0)  # 使组件大小不变
     text1 = tk.Text(labelframe1, font=mid_font, width=43, height=9)
@@ -3052,7 +3758,7 @@ def aes_word():
     text1.bind("<KeyRelease>", process)
 
     # 解密（右边的labelframe）
-    labelframe2 = tk.LabelFrame(frm_of_labelframe, text='解密文字', height=560, width=606, font=mid_font)
+    labelframe2 = tk.LabelFrame(frm_of_labelframe, text='AES解密文字', height=560, width=606, font=mid_font)
     labelframe2.pack(side='right', padx=5)
     labelframe2.pack_propagate(0)  # 使组件大小不变
 
@@ -3193,7 +3899,7 @@ def aes_file():
     frm_of_labelframe.pack()
 
     # 加密（左边的labelframe）
-    labelframe1 = tk.LabelFrame(frm_of_labelframe, text='加密文件（夹）', height=606, width=606, font=mid_font)
+    labelframe1 = tk.LabelFrame(frm_of_labelframe, text='AES加密文件（夹）', height=606, width=606, font=mid_font)
     labelframe1.pack(side='left', padx=5)
     labelframe1.pack_propagate(0)  # 使组件大小不变
 
@@ -3405,7 +4111,7 @@ def aes_file():
     frm4.pack()
 
     # 解密（右边的labelframe）
-    labelframe2 = tk.LabelFrame(frm_of_labelframe, text='解密文件（夹）', height=606, width=606, font=mid_font)
+    labelframe2 = tk.LabelFrame(frm_of_labelframe, text='AES解密文件（夹）', height=606, width=606, font=mid_font)
     labelframe2.pack(side='right', padx=5)
     labelframe2.pack_propagate(0)  # 使组件大小不变
 

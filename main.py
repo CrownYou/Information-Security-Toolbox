@@ -31,9 +31,10 @@ import jieba  # pip install jieba
 import unvcode
 import string
 from reedsolo import RSCodec  # pip install reedsolo
-from cryptography.hazmat.primitives import hashes  # pip install cryptography
-from cryptography.hazmat.primitives.asymmetric import dh
+from cryptography.hazmat.primitives import hashes, serialization  # pip install cryptography
+from cryptography.hazmat.primitives.asymmetric import dh, ec
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+from cryptography.hazmat.backends import default_backend
 from blind_watermark import WaterMark  # pip install blind-watermark==0.4.4
 # 上面的是其他文件需要调用的库，打包文件的时候需要用上
 import blind_watermark
@@ -58,9 +59,9 @@ from tkinter import ttk
 import numpy as np  # pip install numpy
 from windnd import hook_dropfiles  # pip install windnd
 import matplotlib.pyplot as plt  # pip install matplotlib
-import sympy as sp
+import sympy as sp  # pip install sympy
 from moviepy.editor import VideoFileClip, AudioFileClip  # pip install moviepy
-import pyperclip
+import pyperclip  # pip install pyperclip
 import binascii
 import hashlib
 import shutil  # pip install pytest-shutil
@@ -76,9 +77,14 @@ import pyautogui as auto  # pip install pyautogui==0.9.50
 from tkinter import messagebox
 import zero_width_lib as zwlib  # pip install zero_width_lib
 import jieba  # pip install jieba
+import unvcode
 import string
-from reedsolo import RSCodec
-from blind_watermark import WaterMark
+from reedsolo import RSCodec  # pip install reedsolo
+from cryptography.hazmat.primitives import hashes, serialization  # pip install cryptography
+from cryptography.hazmat.primitives.asymmetric import dh, ec
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+from cryptography.hazmat.backends import default_backend
+from blind_watermark import WaterMark  # pip install blind-watermark==0.4.4
 '''
 
 window = tk.Tk()
@@ -333,6 +339,16 @@ class Functions:
         myenc.set_pwd_of_ecc_privkey()
 
     @staticmethod
+    def ecc_word():
+        MyTools.initiation()
+        myenc.ecc_word()
+
+    @staticmethod
+    def ecc_file():
+        MyTools.initiation()
+        myenc.ecc_file()
+
+    @staticmethod
     def ecc_sign_and_verify():
         MyTools.initiation()
         myenc.ecc_sign_and_verify()
@@ -411,7 +427,7 @@ class Functions:
         MyTools.initiation()
         text = tk.Text(frm, width=96, height=28, font=mid_font)
         text.pack()
-        word = '''    非对称加解密介绍
+        word = '''    RSA非对称加解密介绍
         
 一、基本介绍
     RSA非对称加密中，每个人有两把密钥，一把是可以公开的公钥，另一把是只能有自己知道的私钥。使用公钥加密的信息，只有私钥才能解密。
@@ -424,7 +440,7 @@ class Functions:
     接收方接收到文件后，使用自己的私钥解密，解密后的文件会保存在原文件所在的文件夹中。
 
 三、非对称加密的特点
-    非对称加解密的速度十分缓慢，仅适合作为身份验证使用。为了提高加解密速度和安全性，强烈建议在RSA非对称加密的基础上结合使用DH密钥交换算法，为每一次会话创建一个临时的对称加密密钥，既提高安全性，又提高加解密的速度。'''
+    RSA非对称加解密的速度十分缓慢，仅适合作为身份验证使用。为了提高加解密速度和安全性，强烈建议在RSA非对称加密的基础上结合使用DH密钥交换算法，为每一次会话创建一个临时的对称加密密钥，既提高安全性，又提高加解密的速度。'''
         text.insert('end', word)
 
     @staticmethod
@@ -448,12 +464,36 @@ class Functions:
         text.insert('end', word)
 
     @staticmethod
+    def intro_ecc():
+        MyTools.initiation()
+        text = tk.Text(frm, width=96, height=28, font=mid_font)
+        text.pack()
+        word = '''    ECC非对称加密介绍
+        
+一、基本介绍
+    ECC算法是一种基于椭圆曲线数学的公钥密码算法。它使用椭圆曲线上点的加法和减法运算来实现密钥协商和数字签名等操作。
+    
+二、技术原理
+    ECC算法往往与ECDH密钥交换算法和AES对称加密算法结合使用，以实现更安全、更高效的通信。
+    具体结合方式如下：
+    1. Alice 和 Bob 各自生成自己的ECC公钥和私钥。
+    2. Alice 用自己的私钥和 Bob 的公钥通过ECDH密钥交换算法生成一个AES对称加密密钥。
+    Bob 也用自己的私钥和 Alice 的公钥通过ECDH密钥交换算法生成一个AES对称加密密钥。
+    Alice 和 Bob 通过这种算法生成的AES对称加密密钥是一致的。
+    3. 双方通过生成的AES对称加密密钥进行通讯
+    
+三、特点
+    与RSA算法相比，ECC算法具有更高的安全性，并且密钥长度更短。ECC算法的计算速度更快，功耗更低，更适合移动设备等资源受限的设备。'''
+        text.insert('end', word)
+
+    @staticmethod
     def intro_ecc_sign():
         MyTools.initiation()
         text = tk.Text(frm, width=96, height=28, font=mid_font)
         text.pack()
         word = '''    ECC数字签名介绍
-    ECC数字签名的原理与RSA数字签名原理一致，只是使用的算法不一样，ECC速度更快，安全性更强。'''
+        
+    ECC数字签名的原理与RSA数字签名原理一致，均为私钥签名，公钥验签，都可以用来验证信息发送者的身份，只是使用的算法不一样，ECC速度更快，安全性更强。'''
         text.insert('end', word)
 
     @staticmethod
@@ -783,21 +823,27 @@ tools_menu.add_command(label='base64转码器', command=Functions.base64converte
 tools_menu.add_command(label='反查重+反和谐神器', command=Functions.against_duplicate_check, font=mid_font)
 tools_menu.add_command(label='ReedSolomon纠错码', command=Functions.rs_code, font=mid_font)
 
-'''RSA部分'''
+'''非对称加密与签名部分'''
 asymmetric_menu = tk.Menu(menubar, tearoff=0)
-menubar.add_cascade(label='RSA非对称加密与签名', menu=asymmetric_menu)
-asymmetric_menu.add_command(label='创建RSA密钥对', command=Functions.create_rsa_key, font=mid_font)
-asymmetric_menu.add_command(label='设置私钥使用密码', command=Functions.set_pwd_of_rsa_privkey, font=mid_font)
-asymmetric_menu.add_command(label='文字加解密', command=Functions.rsa_word, font=mid_font)
-asymmetric_menu.add_command(label='文件（夹）加解密', command=Functions.rsa_file, font=mid_font)
-asymmetric_menu.add_command(label='数字签名与验签', command=Functions.rsa_sign_and_verify, font=mid_font)
+menubar.add_cascade(label='非对称加密与签名', menu=asymmetric_menu)
+
+'''RSA部分'''
+rsa_menu = tk.Menu(asymmetric_menu, tearoff=0)
+asymmetric_menu.add_cascade(label='RSA算法', menu=rsa_menu, underline=0, font=mid_font)
+rsa_menu.add_command(label='创建RSA密钥对', command=Functions.create_rsa_key, font=mid_font)
+rsa_menu.add_command(label='设置私钥使用密码', command=Functions.set_pwd_of_rsa_privkey, font=mid_font)
+rsa_menu.add_command(label='文字加解密', command=Functions.rsa_word, font=mid_font)
+rsa_menu.add_command(label='文件（夹）加解密', command=Functions.rsa_file, font=mid_font)
+rsa_menu.add_command(label='数字签名与验签', command=Functions.rsa_sign_and_verify, font=mid_font)
 
 '''ECC部分'''
-asymmetric_menu2 = tk.Menu(menubar, tearoff=0)
-menubar.add_cascade(label='ECC数字签名', menu=asymmetric_menu2)
-asymmetric_menu2.add_command(label='创建ECC密钥对', command=Functions.create_ecc_key, font=mid_font)
-asymmetric_menu2.add_command(label='设置私钥使用密码', command=Functions.set_pwd_of_ecc_privkey, font=mid_font)
-asymmetric_menu2.add_command(label='数字签名与验签', command=Functions.ecc_sign_and_verify, font=mid_font)
+ecc_menu = tk.Menu(asymmetric_menu, tearoff=0)
+asymmetric_menu.add_cascade(label='ECC算法（推荐）', menu=ecc_menu, underline=0, font=mid_font)
+ecc_menu.add_command(label='创建ECC密钥对', command=Functions.create_ecc_key, font=mid_font)
+ecc_menu.add_command(label='设置私钥使用密码', command=Functions.set_pwd_of_ecc_privkey, font=mid_font)
+ecc_menu.add_command(label='文字加解密', command=Functions.ecc_word, font=mid_font)
+ecc_menu.add_command(label='文件（夹）加解密', command=Functions.ecc_file, font=mid_font)
+ecc_menu.add_command(label='数字签名与验签', command=Functions.ecc_sign_and_verify, font=mid_font)
 
 '''AES部分'''
 aes_menu = tk.Menu(menubar, tearoff=0)
@@ -846,6 +892,7 @@ intro_enc_submenu = tk.Menu(intro_menu, tearoff=0)
 intro_menu.add_cascade(label='加密功能介绍', menu=intro_enc_submenu, underline=0, font=mid_font)
 intro_enc_submenu.add_command(label='RSA非对称加解密介绍', command=Functions.intro_rsa, font=mid_font)
 intro_enc_submenu.add_command(label='RSA数字签名介绍', command=Functions.intro_sign, font=mid_font)
+intro_enc_submenu.add_command(label='ECC非对称加解密介绍', command=Functions.intro_ecc, font=mid_font)
 intro_enc_submenu.add_command(label='ECC数字签名介绍', command=Functions.intro_ecc_sign, font=mid_font)
 intro_enc_submenu.add_command(label='DH密钥交换算法介绍', command=Functions.intro_dh, font=mid_font)
 intro_enc_submenu.add_command(label='AES对称加解密介绍', command=Functions.intro_aes, font=mid_font)

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import math
 import tkinter as tk
 from tkinter import messagebox
 import random

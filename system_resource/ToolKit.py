@@ -14,13 +14,13 @@ import shutil
 import pyautogui as auto
 import pyperclip
 from Crypto.PublicKey import RSA
-from Crypto.PublicKey import ECC
-from Crypto.Signature import DSS
 from Crypto.Cipher import AES
 from Crypto.Cipher import PKCS1_v1_5 as PKCS1_cipher
-from Crypto.Cipher import PKCS1_OAEP
 from Crypto.Signature import PKCS1_v1_5 as PKCS1_signature
 from Crypto.Hash import SHA384
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import ec
 import hashlib
 import string
 
@@ -823,7 +823,7 @@ class Tools:
         if not is_ecc:
             return b'\n'.join([b'-----BEGIN RSA PRIVATE KEY-----\nEncrypted:', base64.b64encode(ontology_sec), b'-----END RSA PRIVATE KEY-----'])
         else:
-            return b'\n'.join([b'-----BEGIN PRIVATE KEY-----\nEncrypted:', base64.b64encode(ontology_sec), b'-----END PRIVATE KEY-----'])
+            return b'\n'.join([b'-----BEGIN EC PRIVATE KEY-----\nEncrypted:', base64.b64encode(ontology_sec), b'-----END EC PRIVATE KEY-----'])
 
     @staticmethod
     def decrypt_privkey(privkey_bytes, key, is_ecc=False):
@@ -860,7 +860,7 @@ class Tools:
             if not is_ecc:
                 return b'\n'.join([b'-----BEGIN RSA PRIVATE KEY-----', ontology[38:], b'-----END RSA PRIVATE KEY-----'])
             else:
-                return b'\n'.join([b'-----BEGIN PRIVATE KEY-----', ontology[38:], b'-----END PRIVATE KEY-----'])
+                return b'\n'.join([b'-----BEGIN EC PRIVATE KEY-----', ontology[38:], b'-----END EC PRIVATE KEY-----'])
         else:
             return b''
 
@@ -870,6 +870,7 @@ class Tools:
         用于获取用户输入的密钥。既可以是公钥，也可以是私钥
         :param entry: 用户输入的密钥地址在entry1中，所以要从这里获取数据
         :param method: 如果是加密，method就是cipher（默认）。如果是签名，method就是signer
+        :param pwd_entry: 私钥密码（如果是公钥，就不输入）
         :param is_ecc: 默认为False，代表为RSA密钥，如果为True，代表为ECC密钥
         :return: 如果能够获取到密钥就返回密钥，获取不到就返回 0
         '''
@@ -878,7 +879,7 @@ class Tools:
             with open(key_path, 'rb') as keyfile:
                 p = keyfile.read()  # bytes类型
             try:
-                if method == 'cipher' or method == 'verifier':
+                if method == 'cipher' or method == 'verifier':  # 公钥
                     if not is_ecc and b'-----BEGIN PUBLIC KEY-----' in p:
                         key = RSA.importKey(p)
                         if method == 'cipher':
@@ -886,15 +887,11 @@ class Tools:
                         else:
                             result = PKCS1_signature.new(key)
                     elif is_ecc and b"-----BEGIN PUBLIC KEY-----" in p:
-                        key = ECC.import_key(p)
-                        if method == 'cipher':
-                            result = ...
-                        else:
-                            result = DSS.new(key, 'fips-186-3')
+                        result = serialization.load_pem_public_key(p, default_backend())
                     else:
                         messagebox.showerror(title='密钥错误', message="输入的密钥不正确")
                         return 0
-                elif method == 'decipher' or method == 'signer':
+                elif method == 'decipher' or method == 'signer':  # 私钥
                     if not is_ecc and b'-----BEGIN RSA PRIVATE KEY-----' in p:
                         if b'Encrypted:' in p:
                             p = Tools.decrypt_privkey(p, pwd_entry.get())
@@ -906,24 +903,21 @@ class Tools:
                             result = PKCS1_cipher.new(key)
                         else:
                             result = PKCS1_signature.new(key)
-                    elif is_ecc and b'-----BEGIN PRIVATE KEY-----' in p:
+                    elif is_ecc and b'-----BEGIN EC PRIVATE KEY-----' in p:
                         if b'Encrypted:' in p:
                             p = Tools.decrypt_privkey(p, pwd_entry.get(), is_ecc=is_ecc)
                             if p == b'':
                                 messagebox.showerror(title='私钥的使用密码错误', message="私钥的使用密码错误")
                                 return 0
-                        key = ECC.import_key(p)
-                        if method == 'decipher':
-                            result = ...
-                        else:
-                            result = DSS.new(key, 'fips-186-3')
+                        result = serialization.load_pem_private_key(p, b'1234')
                     else:
                         messagebox.showerror(title='密钥错误', message="输入的密钥不正确")
                         return 0
                 else:
                     return 0
-            except Exception:
+            except Exception as e:
                 messagebox.showerror(title='密钥错误', message='读取到的.pem文件不是密钥')
+                print(e)
                 return 0
             else:
                 return result
@@ -1252,6 +1246,26 @@ class Tools:
             return 0
 
     @staticmethod
+    def get_aes_key_from_ecc_keys(pubkey_entry, privkey_entry, pwd_entry):
+        '''
+        通过对方的ECC公钥和自己的ECC私钥生成共享AES密钥
+        如果获取不到不用报错，Tools.get_key()函数里会进行弹窗报错
+        :param pubkey_entry:
+        :param privkey_entry:
+        :param pwd_entry:
+        :return:
+        '''
+        if pubkey_entry.get().strip() == "" or privkey_entry.get().strip() == "":
+            return 0
+        privkey = Tools.get_key(privkey_entry, method='decipher', pwd_entry=pwd_entry, is_ecc=True)
+        if privkey == 0:
+            return 0
+        pubkey = Tools.get_key(pubkey_entry, method='cipher', is_ecc=True)
+        if pubkey == 0:
+            return 0
+        return AES.new(privkey.exchange(ec.ECDH(), pubkey), AES.MODE_CBC, b'0123456789abcdef')
+
+    @staticmethod
     def intro_iv():
         intro_window = tk.Toplevel()
         intro_window.title('说明')
@@ -1506,7 +1520,7 @@ class Tools:
         
     这种编码方式在base64基础之上演变而来。它的原理是将每一个base64字符与一个emoji表情一一对应起来，其本质还是base64编码的信息，只是用来表示的符号变成emoji表情。
     
-    需要特别注意的是在传输这种通过emoji编码的信息时需要使用邮件的形式发送，不能使用微信或者QQ发送，不然接收方无法复制您发送的emoji信息至软件内进行解密。
+    需要特别注意的是在传输这种通过emoji编码的信息时需要使用邮件或者txt文本文档的形式发送，无法直接使用微信或者QQ发送，不然接收方无法复制您发送的emoji信息至软件内进行解密。
         '''
         iw_text.insert('end', word)
 
