@@ -2,6 +2,7 @@ import base64
 import copy
 import re
 import math
+import tenseal as ts
 from math import ceil
 from math import floor
 import random
@@ -36,6 +37,7 @@ from cryptography.hazmat.primitives.asymmetric import dh, ec
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.backends import default_backend
 from blind_watermark import WaterMark  # pip install blind-watermark==0.4.4
+import tenseal as ts
 # 上面的是其他文件需要调用的库，打包文件的时候需要用上
 import blind_watermark
 import os
@@ -51,6 +53,7 @@ import base64
 import copy
 import re
 import math
+import tenseal as ts
 from math import ceil
 from math import floor
 import random
@@ -85,6 +88,7 @@ from cryptography.hazmat.primitives.asymmetric import dh, ec
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.backends import default_backend
 from blind_watermark import WaterMark  # pip install blind-watermark==0.4.4
+import tenseal as ts
 '''
 
 window = tk.Tk()
@@ -113,14 +117,14 @@ class MyTools:
         run()
 
     @staticmethod
-    def initiation():
+    def initiation(size='1272x758'):
         myste.alive = False
         mybox.alive = False
         try:
             cv2.destroyAllWindows()
         except Exception:
             pass
-        window.geometry('1272x758')
+        window.geometry(size)
         Tools.clean_all_widget(frm)
         MyTools.delete_temp_file()
 
@@ -379,6 +383,21 @@ class Functions:
         myenc.aes_file()
 
     @staticmethod
+    def create_ckks_key():
+        MyTools.initiation()
+        myenc.create_ckks_key()
+
+    @staticmethod
+    def set_pwd_of_ckks_privkey():
+        MyTools.initiation()
+        myenc.set_pwd_of_ckks_privkey()
+
+    @staticmethod
+    def ckks_word():
+        MyTools.initiation('1604x808')
+        myenc.ckks_word()
+
+    @staticmethod
     def hash_word():
         MyTools.initiation()
         myenc.hash_word()
@@ -515,6 +534,33 @@ class Functions:
     （2）偏移量：您可以将偏移量理解为第二密钥。
     （3）填充方式：由于AES算法要求文件的大小必须为16字节的整数倍，所以需要对大小不符合要求的文件进行填充以达到16字节的整数倍。并且在解密时会自动剔除填充的字节。\
 本软件提供了三种填充方式，建议使用pkcs7 padding模式，可以有效防止误删明文尾部的信息。'''
+        text.insert('end', word)
+
+    @staticmethod
+    def intro_ckks():
+        MyTools.initiation()
+        text = tk.Text(frm, width=96, height=28, font=mid_font)
+        text.pack()
+        word = '''    CKKS同态加密介绍
+
+一、基本介绍
+    CKKS（Cloud Key Encryption and Signing）是一种高效的同态加密方案，由 Gentry 等人于2017年提出。它支持浮点向量在密文空间的加减乘运算并保持同态，但只支持有限次乘法的运算。
+
+    CKKS的主要特点:
+ * 支持浮点计算：CKKS可以对密文中的浮点数进行加减乘运算，而无需解密。
+ * 高效性：CKKS具有较高的计算效率，可以满足实际应用的需求。
+ * 安全性：CKKS的安全性基于近似学习误差（RLWE）问题，该问题被认为是计算上困难的。
+
+    CKKS的应用:
+ * 安全多方计算：CKKS可以用於实现安全多方计算，使多个参与者可以在不共享数据的情况下共同进行计算。
+ * 机器学习：CKKS可以用於实现隐私保护的机器学习，使模型训练和预测过程更加安全。
+ * 云计算：CKKS可以用於保护云端数据的安全，使数据存储和处理更加安全可靠。
+
+    CKKS的局限性:
+ * 有限的乘法次数：CKKS只支持有限次乘法运算，如果乘法次数过多，则会导致精度下降。
+ * 较大的密文长度：CKKS的密文长度较大，这可能会影响存储和传输效率。
+    
+    总体而言，CKKS是一种具有较强应用前景的同态加密方案。'''
         text.insert('end', word)
 
     @staticmethod
@@ -859,6 +905,13 @@ aes_key_submenu.add_command(label='通过DH密钥交换算法创建', command=Fu
 aes_menu.add_command(label='文字加解密', command=Functions.aes_word, font=mid_font)
 aes_menu.add_command(label='文件（夹）加解密', command=Functions.aes_file, font=mid_font)
 
+'''CKKS同态加密部分'''
+ckks_menu = tk.Menu(menubar, tearoff=0)
+menubar.add_cascade(label='CKKS同态加密', menu=ckks_menu)
+ckks_menu.add_command(label='创建CKKS密钥', command=Functions.create_ckks_key, font=mid_font)
+ckks_menu.add_command(label='设置私钥使用密码', command=Functions.set_pwd_of_ckks_privkey, font=mid_font)
+ckks_menu.add_command(label='文字同态加密', command=Functions.ckks_word, font=mid_font)
+
 '''哈希部分'''
 hash_menu = tk.Menu(menubar, tearoff=0)
 menubar.add_cascade(label='哈希计算', menu=hash_menu)
@@ -896,6 +949,7 @@ intro_enc_submenu.add_command(label='ECC非对称加解密介绍', command=Funct
 intro_enc_submenu.add_command(label='ECC数字签名介绍', command=Functions.intro_ecc_sign, font=mid_font)
 intro_enc_submenu.add_command(label='DH密钥交换算法介绍', command=Functions.intro_dh, font=mid_font)
 intro_enc_submenu.add_command(label='AES对称加解密介绍', command=Functions.intro_aes, font=mid_font)
+intro_enc_submenu.add_command(label='CKKS同态加密介绍', command=Functions.intro_ckks, font=mid_font)
 
 intro_menu.add_command(label='哈希算法介绍', command=Functions.intro_hash, font=mid_font)
 intro_menu.add_command(label='返回主界面', command=Functions.to_main, font=mid_font)

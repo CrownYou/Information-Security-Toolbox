@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import base64
+import numpy as np
 import binascii
 import hashlib
 import random
@@ -9,6 +10,7 @@ import shutil
 import time
 import tkinter as tk
 import zlib
+import tenseal as ts
 from random import randint
 from tkinter import messagebox
 from tkinter import ttk
@@ -144,7 +146,7 @@ def create_rsa_key():
             label5 = tk.Label(frm3, text=f'第 {number_of_frm1} 对密钥将保存在 {number_of_entry1} 号文件夹内', font=mid_font)
             label5.pack()
             Tools.clean_all_widget(frm5)
-            label7 = tk.Label(frm5, text=f'正在生成第 {number_of_frm1 - 1} 对{current_key_length}位密钥，请稍后...', font=mid_font)
+            label7 = tk.Label(frm5, text=f'正在生成第 {number_of_frm1 - 1} 对{current_key_length}位密钥，请稍候...', font=mid_font)
             label7.pack()
             if new_created_key >= 1:
                 label8 = tk.Label(frm5, text=f'第 {number_of_frm1 - 2} 对{previous_key_length}位密钥生成完成', font=mid_font)
@@ -471,10 +473,10 @@ def create_rsa_key():
         lf2_label4 = tk.Label(lf2_frm2, font=mid_font, text='私钥（private key）：\n' + private_key.decode('utf-8')[31: 35].replace('\n', ' ') + ' ... ' + private_key.decode('utf-8')[-55: -29].replace('\n', ' '))
         lf2_label4.pack()
         # 保存公私钥
-        current_dir = os.getcwd()
+        current_dir = os.getcwd()  # 获取程序所在目录
         key_path = current_dir + '\\keys'
         if not os.path.exists(key_path):
-            os.mkdir(key_path)
+            os.mkdir(key_path)  # 创建文件夹
         with open(key_path + f'\\RSA_public_key_{length}.pem', 'wb+') as pubfile:
             pubfile.write(public_key)
         with open(key_path + f'\\RSA_private_key_{length}.pem', 'wb+') as prifile:
@@ -592,7 +594,7 @@ def set_pwd_of_rsa_privkey():
         lf1_text1.config(state='normal')
         privkey = lf1_text1.get(1.0, 'end').strip('\n')
         lf1_text1.config(state='disabled')
-        if privkey == '这不是正确的私钥':
+        if privkey == '这不是正确的私钥' or privkey == '私钥地址错误' or not privkey:
             lf1_label4.config(text='无法加密')
         elif not lf1_entry2.get().strip(' '):
             lf1_label4.config(text='密码不能为空')
@@ -616,7 +618,7 @@ def set_pwd_of_rsa_privkey():
         lf1_text1.config(state='normal')
         privkey = lf1_text1.get(1.0, 'end').strip('\n')
         lf1_text1.config(state='disabled')
-        if privkey == '这不是正确的私钥':
+        if privkey == '这不是正确的私钥' or privkey == '私钥地址错误' or not privkey:
             lf1_label4.config(text='无法解密')
             return 0
         elif not lf1_entry2.get().strip(' '):
@@ -701,7 +703,7 @@ def set_pwd_of_rsa_privkey():
         lf2_text1.config(state='normal')
         enc_key = lf2_text1.get(1.0, 'end').strip('\n')
         lf2_text1.config(state='disabled')
-        if enc_key == '这不是已加密的私钥':
+        if enc_key == '这不是已加密的私钥' or enc_key == '私钥地址错误' or not enc_key:
             lf2_label5.config(text='无法修改密码')
             return 0
         elif not lf2_entry2.get().strip('') or not lf2_entry3.get().strip(''):
@@ -1815,7 +1817,7 @@ def create_ecc_key():
             label5 = tk.Label(frm3, text=f'第 {number_of_frm1} 对密钥将保存在 {number_of_entry1} 号文件夹内', font=mid_font)
             label5.pack()
             Tools.clean_all_widget(frm5)
-            label7 = tk.Label(frm5, text=f'正在生成第 {number_of_frm1 - 1} 对{current_key_length}位密钥，请稍后...', font=mid_font)
+            label7 = tk.Label(frm5, text=f'正在生成第 {number_of_frm1 - 1} 对{current_key_length}位密钥，请稍候...', font=mid_font)
             label7.pack()
             if new_created_key >= 1:
                 label8 = tk.Label(frm5, text=f'第 {number_of_frm1 - 2} 对{previous_key_length}位密钥生成完成', font=mid_font)
@@ -2246,7 +2248,7 @@ def set_pwd_of_ecc_privkey():
         lf1_text1.config(state='normal')
         privkey = lf1_text1.get(1.0, 'end').strip('\n')
         lf1_text1.config(state='disabled')
-        if privkey == '这不是正确的私钥':
+        if privkey == '这不是正确的私钥' or privkey == '私钥地址错误' or not privkey:
             lf1_label4.config(text='无法加密')
         elif not lf1_entry2.get().strip(' '):
             lf1_label4.config(text='密码不能为空')
@@ -2270,7 +2272,7 @@ def set_pwd_of_ecc_privkey():
         lf1_text1.config(state='normal')
         privkey = lf1_text1.get(1.0, 'end').strip('\n')
         lf1_text1.config(state='disabled')
-        if privkey == '这不是正确的私钥':
+        if privkey == '这不是正确的私钥' or privkey == '私钥地址错误' or not privkey:
             lf1_label4.config(text='无法解密')
             return 0
         elif not lf1_entry2.get().strip(' '):
@@ -2355,7 +2357,7 @@ def set_pwd_of_ecc_privkey():
         lf2_text1.config(state='normal')
         enc_key = lf2_text1.get(1.0, 'end').strip('\n')
         lf2_text1.config(state='disabled')
-        if enc_key == '这不是已加密的私钥':
+        if enc_key == '这不是已加密的私钥' or enc_key == '私钥地址错误' or not enc_key:
             lf2_label5.config(text='无法修改密码')
             return 0
         elif not lf2_entry2.get().strip('') or not lf2_entry3.get().strip(''):
@@ -4349,6 +4351,910 @@ def aes_file():
     lf2_button3.grid(row=1, column=2, padx=20)
     lf2_frm4 = tk.Frame(labelframe2)
     lf2_frm4.pack()
+
+
+def create_ckks_key():
+    frm_of_labelframe = tk.Frame(frm)
+    frm_of_labelframe.pack()
+    # 随机生成CKKS同态加密对称加密密钥
+    labelframe1 = tk.LabelFrame(frm_of_labelframe, text='随机生成CKKS同态加密对称加密密钥', height=457, width=606, font=mid_font)
+    labelframe1.pack(side='left', padx=5, pady=5)
+    labelframe1.pack_propagate(0)  # 使组件大小不变
+
+    label1 = tk.Label(labelframe1, text='请选择全局缩放因子的大小\n值越大精度越高，但计算消耗更大：', font=mid_font)
+    label1.pack()
+
+    def start(*args):
+        Tools.clean_all_widget(frm3)
+        global_scale = var1.get()
+        label2 = tk.Label(frm3, text='程序正在进行中，请稍候...', font=mid_font)
+        label2.pack()
+        window.update()
+        label2.destroy()
+        # 生成对称密钥（把公钥和私钥合在一起）
+        context = ts.context(
+            ts.SCHEME_TYPE.CKKS,
+            poly_modulus_degree=8192,
+            coeff_mod_bit_sizes=[60, 40, 40, 60]
+        )
+        context.generate_galois_keys()
+        context.global_scale = 2 ** global_scale
+        # 由于ckks的密钥太长，所以用base85编码，这样比base64编码更节约空间
+        serialized_context = base64.b85encode(context.serialize(save_public_key=True, save_secret_key=True,
+                                                                save_galois_keys=True, save_relin_keys=True))
+        label3 = tk.Label(frm3, text='密钥生成成功', font=mid_font)
+        label3.pack()
+        label4 = tk.Label(frm3, text='密钥：' + serialized_context[:5].decode() + '...' + serialized_context[-20:].decode(), font=mid_font)
+        label4.pack()
+        # 对称加密的密钥文件头和文件尾为：-----BEGIN CKKS KEY-----; -----END CKKS KEY-----
+        key = b'-----BEGIN CKKS KEY-----\n' + serialized_context + b'\n-----END CKKS KEY-----'
+        current_path = os.getcwd()
+        key_path = current_path + '\\keys'
+        if not os.path.exists(key_path):
+            os.mkdir(key_path)
+        with open(key_path + f'\\CKKS_key_{global_scale}.he', 'wb') as f:
+            f.write(key)
+        label5 = tk.Label(frm3, text='密钥已经保存至', font=mid_font)
+        label5.pack()
+        entry1 = tk.Entry(frm3, width=43, font=mid_font)
+        entry1.pack()
+        entry1.insert(0, key_path)
+        label6 = tk.Label(frm3, text=f'文件夹中的CKKS_key_{global_scale}.he文件内', font=mid_font)
+        label6.pack()
+        label7 = tk.Label(frm3, text='注意：新生成的密钥会替换文件夹内同名的旧密钥', font=mid_font, fg='red')
+        label7.pack()
+
+    var1 = tk.IntVar()
+    var1.set(30)
+    rb2 = tk.Radiobutton(labelframe1, variable=var1, text='2^30（兼顾精度与速度）', font=mid_font, value=30)
+    rb2.pack()
+    button1 = tk.Button(labelframe1, text='开始生成', font=mid_font, command=start)
+    button1.pack()
+    frm3 = tk.Frame(labelframe1)
+    frm3.pack()
+
+    # 随机生成CKKS同态加密非对称加密密钥
+    labelframe2 = tk.LabelFrame(frm_of_labelframe, text='随机生成CKKS同态加密非对称加密密钥', height=457, width=606, font=mid_font)
+    labelframe2.pack(side='right', padx=5, pady=5)
+    labelframe2.pack_propagate(0)  # 使组件大小不变
+
+    lf2_label2 = tk.Label(labelframe2, text='请选择全局缩放因子的大小\n值越大精度越高，但计算消耗更大：', font=mid_font)
+    lf2_label2.pack()
+
+    def lf2_start(*args):
+        Tools.clean_all_widget(lf2_frm3)
+        global_scale = lf2_var1.get()
+        label2 = tk.Label(lf2_frm3, text='程序正在进行中，请稍候...', font=mid_font)
+        label2.pack()
+        window.update()
+        label2.destroy()
+        # 生成非对称密钥
+        context = ts.context(
+            ts.SCHEME_TYPE.CKKS,
+            poly_modulus_degree=8192,
+            coeff_mod_bit_sizes=[60, 40, 40, 60]
+        )
+        context.generate_galois_keys()
+        context.global_scale = 2 ** global_scale
+        # 由于ckks的密钥太长，所以用base85编码，这样比base64编码更节约空间
+        serialized_pk = base64.b85encode(context.serialize(save_public_key=True, save_secret_key=False,
+                                                                save_galois_keys=True, save_relin_keys=True))
+        serialized_sk = base64.b85encode(context.serialize(save_public_key=False, save_secret_key=True,
+                                                           save_galois_keys=True, save_relin_keys=True))
+        label3 = tk.Label(lf2_frm3, text='密钥生成成功', font=mid_font)
+        label3.pack()
+        label_pk = tk.Label(lf2_frm3, text='公钥：' + serialized_pk[:5].decode() + '...' + serialized_pk[-20:].decode(), font=mid_font)
+        label_pk.pack()
+        label_sk = tk.Label(lf2_frm3, text='私钥：' + serialized_sk[:5].decode() + '...' + serialized_sk[-20:].decode(), font=mid_font)
+        label_sk.pack()
+        # 公钥文件头和文件尾为：-----BEGIN CKKS KEY-----; -----END CKKS KEY-----
+        pk = b'-----BEGIN CKKS PUBLIC KEY-----\n' + serialized_pk + b'\n-----END CKKS PUBLIC KEY-----'
+        sk = b'-----BEGIN CKKS PRIVATE KEY-----\n' + serialized_sk + b'\n-----END CKKS PRIVATE KEY-----'
+        current_path = os.getcwd()
+        key_path = current_path + '\\keys'
+        if not os.path.exists(key_path):
+            os.mkdir(key_path)
+        with open(key_path + f'\\CKKS_public_key_{global_scale}.hepk', 'wb') as pkf, open(key_path + f'\\CKKS_private_key_{global_scale}.hesk', 'wb') as skf:
+            pkf.write(pk)
+            skf.write(sk)
+        label5 = tk.Label(lf2_frm3, text='密钥已经保存至', font=mid_font)
+        label5.pack()
+        entry1 = tk.Entry(lf2_frm3, width=43, font=mid_font)
+        entry1.pack()
+        entry1.insert(0, key_path)
+        label6 = tk.Label(lf2_frm3, text=f'文件夹中的.hepk和.hesk文件内', font=mid_font)
+        label6.pack()
+        label7 = tk.Label(lf2_frm3, text='注意：新生成的密钥会替换文件夹内同名的旧密钥', font=mid_font, fg='red')
+        label7.pack()
+
+    lf2_var1 = tk.IntVar()
+    lf2_var1.set(30)
+    lf2_rb2 = tk.Radiobutton(labelframe2, variable=lf2_var1, text='2^30（兼顾精度与速度）', font=mid_font, value=30)
+    lf2_rb2.pack()
+    lf2_button1 = tk.Button(labelframe2, text='开始生成', font=mid_font, command=lf2_start)
+    lf2_button1.pack()
+    lf2_frm3 = tk.Frame(labelframe2)
+    lf2_frm3.pack()
+
+    def open_dir():
+        keys_dir_path = os.path.join(os.getcwd(), 'keys')
+        if not os.path.exists(keys_dir_path):
+            os.mkdir(keys_dir_path)
+        os.system(f"explorer {os.path.join(os.getcwd(), 'keys')}")
+
+    open_dir_button = tk.Button(frm, text='打开密钥保存的文件夹', font=mid_font, command=open_dir)
+    open_dir_button.pack()
+
+
+def set_pwd_of_ckks_privkey():
+    # 添加密码或去除密码（左边的labelframe）
+    labelframe1 = tk.LabelFrame(frm, text='为CKKS私钥添加或去除使用密码', height=741, width=606, font=mid_font)
+    labelframe1.pack(side='left', padx=5, pady=5)
+    labelframe1.pack_propagate(0)  # 使组件大小不变
+    lf1_frm1 = tk.Frame(labelframe1)
+    lf1_frm1.pack()
+
+    def change_lf1_entry1_show():
+        Tools.change_entry_show(lf1_var1, lf1_entry1)
+
+    def change_lf1_entry2_show():
+        Tools.change_entry_show(lf1_var2, lf1_entry2)
+
+    def lf1_confirm():
+        lf1_label4.config(text='   ')
+        lf1_text1.config(state='normal')
+        Tools.reset(lf1_text1)
+        key_path = Tools.get_path_from_entry(lf1_entry1)
+        if os.path.exists(key_path):
+            with open(Tools.get_path_from_entry(lf1_entry1), 'r', encoding='utf-8') as f:
+                key = f.read()
+                if "-----BEGIN CKKS PRIVATE KEY-----" in key:
+                    lf1_text1.insert('end', '\n'.join([key[:500], '由于私钥过长，部分已省略', "-----END CKKS PRIVATE KEY-----"]))
+                else:
+                    lf1_text1.insert('end', '这不是正确的私钥')
+        else:
+            lf1_text1.insert('end', '私钥地址错误')
+        lf1_text1.config(state='disabled')
+
+    def lf1_drag(files):
+        Tools.dragged_files(files, lf1_entry1)
+        lf1_confirm()
+
+    def lf1_reset():
+        Tools.reset(lf1_entry1)
+        Tools.reset(lf1_entry2)
+        lf1_text1.config(state='normal')
+        Tools.reset(lf1_text1)
+        lf1_text1.config(state='disabled')
+        lf1_label4.config(text='   ')
+
+    lf1_label1 = tk.Label(lf1_frm1, text='请拖入您的私钥或输入地址：', font=mid_font)
+    lf1_label1.grid(row=1, column=1, padx=5)
+    lf1_var1 = tk.StringVar()
+    lf1_var1.set('0')
+    lf1_cb1 = tk.Checkbutton(lf1_frm1, text='隐藏', font=mid_font, variable=lf1_var1, onvalue='1', offvalue='0',
+                             command=change_lf1_entry1_show)
+    lf1_cb1.grid(row=1, column=2, padx=5)
+    lf1_entry1 = tk.Entry(labelframe1, width=43, font=mid_font)
+    lf1_entry1.pack()
+    hook_dropfiles(lf1_entry1, func=lf1_drag)
+    lf1_frm3 = tk.Frame(labelframe1)
+    lf1_frm3.pack()
+    lf1_button3 = tk.Button(lf1_frm3, text='重置', font=mid_font, command=lf1_reset)
+    lf1_button3.grid(row=1, column=1, padx=20)
+    lf1_button4 = tk.Button(lf1_frm3, text='确定', font=mid_font, command=lf1_confirm)
+    lf1_button4.grid(row=1, column=2, padx=20)
+    lf1_label2 = tk.Label(labelframe1, text='该私钥的内容为：', font=mid_font)
+    lf1_label2.pack()
+    lf1_text1 = tk.Text(labelframe1, width=43, height=16, font=mid_font, state='disabled')
+    lf1_text1.pack()
+    lf1_frm4 = tk.Frame(labelframe1)
+    lf1_frm4.pack()
+    lf1_label3 = tk.Label(lf1_frm4, text='请输入私钥的使用密码：', font=mid_font)
+    lf1_label3.grid(row=1, column=1, padx=5)
+    lf1_var2 = tk.StringVar()
+    lf1_var2.set('1')
+    lf1_cb2 = tk.Checkbutton(lf1_frm4, text='隐藏', font=mid_font, variable=lf1_var2, onvalue='1', offvalue='0',
+                             command=change_lf1_entry2_show)
+    lf1_cb2.grid(row=1, column=2, padx=5)
+    lf1_entry2 = tk.Entry(labelframe1, width=43, font=mid_font, show='*')
+    lf1_entry2.pack()
+    lf1_frm2 = tk.Frame(labelframe1)
+    lf1_frm2.pack()
+
+    def encrypt():
+        global ind
+        lf1_confirm()
+        ind = (ind + 1) % 6
+        lf1_label4.config(fg=colors[ind])
+        lf1_text1.config(state='normal')
+        if lf1_text1.get(1.0, 'end').strip('\n') == '这不是正确的私钥' or lf1_text1.get(1.0, 'end').strip('\n') == '私钥地址错误':
+            lf1_text1.config(state='disabled')
+            lf1_label4.config(text='无法加密')
+            return 0
+        elif not lf1_entry2.get().strip(' '):
+            lf1_label4.config(text='密码不能为空')
+            return 0
+        else:
+            with open(Tools.get_path_from_entry(lf1_entry1), 'r', encoding='utf-8') as f:
+                privkey = f.read()
+            enc_key = Tools.encrypt_privkey(privkey.encode('utf-8'), lf1_entry2.get(), is_ckks=True)
+            if enc_key == b'':
+                lf1_label4.config(text='已经加密过，无法再次加密')
+                return 0
+            with open(Tools.get_path_from_entry(lf1_entry1), 'wb') as f:
+                f.write(enc_key)
+            lf1_label4.config(text='加密成功')
+            lf1_text1.config(state='normal')
+            Tools.reset(lf1_text1)
+            lf1_text1.insert('end', '\n'.join([enc_key.decode()[:500], '由于私钥过长，部分已省略', "-----END CKKS PRIVATE KEY-----"]))
+            lf1_text1.config(state='disabled')
+
+    def decrypt():
+        global ind
+        lf1_confirm()
+        ind = (ind + 1) % 6
+        lf1_label4.config(fg=colors[ind])
+        lf1_text1.config(state='normal')
+        if lf1_text1.get(1.0, 'end').strip('\n') == '这不是正确的私钥' or lf1_text1.get(1.0, 'end').strip('\n') == '私钥地址错误':
+            lf1_text1.config(state='disabled')
+            lf1_label4.config(text='无法解密')
+            return 0
+        elif not lf1_entry2.get().strip(' '):
+            lf1_label4.config(text='密码不能为空')
+            return 0
+        else:
+            with open(Tools.get_path_from_entry(lf1_entry1), 'r', encoding='utf-8') as f:
+                privkey = f.read()
+            dec_key = Tools.decrypt_privkey(privkey.encode('utf-8'), lf1_entry2.get(), is_ckks=True)
+            if dec_key == b'':
+                lf1_label4.config(text='私钥的使用密码错误')
+                return 0
+            elif dec_key == b'1':
+                lf1_label4.config(text='已经去除过密码，无法再次去除')
+                return 0
+            with open(Tools.get_path_from_entry(lf1_entry1), 'wb') as f:
+                f.write(dec_key)
+            lf1_label4.config(text='已去除密码')
+            lf1_text1.config(state='normal')
+            Tools.reset(lf1_text1)
+            lf1_text1.insert('end', '\n'.join([dec_key.decode()[:500], '由于私钥过长，部分已省略', "-----END CKKS PRIVATE KEY-----"]))
+            lf1_text1.config(state='disabled')
+
+    lf1_button1 = tk.Button(lf1_frm2, text='去除密码', font=mid_font, command=decrypt)
+    lf1_button1.grid(row=1, column=1, padx=20)
+    lf1_button2 = tk.Button(lf1_frm2, text='添加密码', font=mid_font, command=encrypt)
+    lf1_button2.grid(row=1, column=2, padx=20)
+    lf1_label4 = tk.Label(labelframe1, text='   ', font=mid_font, fg=colors[ind])
+    lf1_label4.pack()
+
+    # 修改密码（右边的labelframe）
+    labelframe2 = tk.LabelFrame(frm, text='为CKKS私钥修改使用密码', height=741, width=606, font=mid_font)
+    labelframe2.pack(side='right', padx=5, pady=5)
+    labelframe2.pack_propagate(0)  # 使组件大小不变
+    lf2_frm1 = tk.Frame(labelframe2)
+    lf2_frm1.pack()
+
+    def change_lf2_entry1_show():
+        Tools.change_entry_show(lf2_var1, lf2_entry1)
+
+    def change_lf2_entry2_show():
+        Tools.change_entry_show(lf2_var2, lf2_entry2)
+
+    def change_lf2_entry3_show():
+        Tools.change_entry_show(lf2_var3, lf2_entry3)
+
+    def lf2_drag(files):
+        Tools.dragged_files(files, lf2_entry1)
+        lf2_confirm1()
+
+    def lf2_reset1():
+        Tools.reset(lf2_entry1)
+        lf2_label5.config(text='   ')
+        lf2_text1.config(state='normal')
+        Tools.reset(lf2_text1)
+        lf2_text1.config(state='disabled')
+        lf2_reset2()
+
+    def lf2_confirm1():
+        lf2_label5.config(text='   ')
+        lf2_text1.config(state='normal')
+        Tools.reset(lf2_text1)
+        key_path = Tools.get_path_from_entry(lf2_entry1)
+        if os.path.exists(key_path):
+            with open(key_path, 'rb') as f:
+                key = f.read()
+                if bytes("-----BEGIN CKKS PRIVATE KEY-----\nEncrypted:".encode('utf-8')) in key:
+                    lf2_text1.insert('end', '\n'.join([key.decode()[:500], '由于私钥过长，部分已省略', "-----END CKKS PRIVATE KEY-----"]))
+                else:
+                    lf2_text1.insert('end', '这不是已加密的私钥')
+        else:
+            lf2_text1.insert('end', '私钥地址错误')
+        lf2_text1.config(state='disabled')
+
+    def lf2_reset2():
+        Tools.reset(lf2_entry2)
+        Tools.reset(lf2_entry3)
+        lf2_label5.config(text='   ')
+
+    def lf2_confirm2():
+        global ind
+        lf2_confirm1()
+        ind = (ind + 1) % 6
+        lf2_label5.config(fg=colors[ind])
+        lf2_text1.config(state='normal')
+        if lf2_text1.get(1.0, 'end').strip('\n') == '这不是已加密的私钥' or lf2_text1.get(1.0, 'end').strip('\n') == '私钥地址错误':
+            lf2_text1.config(state='disabled')
+            lf2_label5.config(text='无法修改密码')
+            return 0
+        elif not lf2_entry2.get().strip('') or not lf2_entry3.get().strip(''):
+            lf2_label5.config(text='密码不能为空')
+            return 0
+        else:
+            with open(Tools.get_path_from_entry(lf2_entry1), 'r', encoding='utf-8') as f:
+                enc_key = f.read()
+            dec_key = Tools.decrypt_privkey(enc_key.encode('utf-8'), lf2_entry2.get(), is_ckks=True)
+            if dec_key == b'':
+                lf2_label5.config(text='旧密码错误')
+                return 0
+            enc_key = Tools.encrypt_privkey(dec_key, lf2_entry3.get(), is_ckks=True)
+            with open(Tools.get_path_from_entry(lf2_entry1), 'wb') as f:
+                f.write(enc_key)
+            lf2_label5.config(text='修改成功')
+            lf2_text1.config(state='normal')
+            Tools.reset(lf2_text1)
+            lf2_text1.insert('end', '\n'.join([enc_key.decode()[:500], '由于私钥过长，部分已省略', "-----END CKKS PRIVATE KEY-----"]))
+            lf2_text1.config(state='disabled')
+
+    lf2_label1 = tk.Label(lf2_frm1, text='请拖入被加密的私钥或输入地址：', font=mid_font)
+    lf2_label1.grid(row=1, column=1, padx=5)
+    lf2_var1 = tk.StringVar()
+    lf2_var1.set('0')
+    lf2_cb1 = tk.Checkbutton(lf2_frm1, text='隐藏', font=mid_font, variable=lf2_var1, onvalue='1', offvalue='0',
+                             command=change_lf2_entry1_show)
+    lf2_cb1.grid(row=1, column=2, padx=5)
+    lf2_entry1 = tk.Entry(labelframe2, width=43, font=mid_font)
+    lf2_entry1.pack()
+    hook_dropfiles(lf2_entry1, func=lf2_drag)
+    lf2_frm3 = tk.Frame(labelframe2)
+    lf2_frm3.pack()
+    lf2_button3 = tk.Button(lf2_frm3, text='重置', font=mid_font, command=lf2_reset1)
+    lf2_button3.grid(row=1, column=1, padx=20)
+    lf2_button4 = tk.Button(lf2_frm3, text='确定', font=mid_font, command=lf2_confirm1)
+    lf2_button4.grid(row=1, column=2, padx=20)
+    lf2_label2 = tk.Label(labelframe2, text='该私钥的内容为：', font=mid_font)
+    lf2_label2.pack()
+    lf2_text1 = tk.Text(labelframe2, width=43, height=13, font=mid_font, state='disabled')
+    lf2_text1.pack()
+    lf2_frm2 = tk.Frame(labelframe2)
+    lf2_frm2.pack()
+    lf2_label3 = tk.Label(lf2_frm2, text='请输入旧密码：', font=mid_font)
+    lf2_label3.grid(row=1, column=1, padx=5)
+    lf2_var2 = tk.StringVar()
+    lf2_var2.set('1')
+    lf2_cb2 = tk.Checkbutton(lf2_frm2, text='隐藏', font=mid_font, variable=lf2_var2, onvalue='1', offvalue='0',
+                             command=change_lf2_entry2_show)
+    lf2_cb2.grid(row=1, column=2, padx=5)
+    lf2_entry2 = tk.Entry(labelframe2, width=43, font=mid_font, show='*')
+    lf2_entry2.pack()
+    lf2_frm4 = tk.Frame(labelframe2)
+    lf2_frm4.pack()
+    lf2_label4 = tk.Label(lf2_frm4, text='请输入新密码：', font=mid_font)
+    lf2_label4.grid(row=1, column=1, padx=5)
+    lf2_var3 = tk.StringVar()
+    lf2_var3.set('1')
+    lf2_cb3 = tk.Checkbutton(lf2_frm4, text='隐藏', font=mid_font, variable=lf2_var3, onvalue='1', offvalue='0',
+                             command=change_lf2_entry3_show)
+    lf2_cb3.grid(row=1, column=2, padx=5)
+    lf2_entry3 = tk.Entry(labelframe2, width=43, font=mid_font, show='*')
+    lf2_entry3.pack()
+    lf2_frm5 = tk.Frame(labelframe2)
+    lf2_frm5.pack()
+    lf2_button5 = tk.Button(lf2_frm5, text='重置', font=mid_font, command=lf2_reset2)
+    lf2_button5.grid(row=1, column=1, padx=20)
+    lf2_button6 = tk.Button(lf2_frm5, text='确定', font=mid_font, command=lf2_confirm2)
+    lf2_button6.grid(row=1, column=2, padx=20)
+    lf2_label5 = tk.Label(labelframe2, text='   ', font=mid_font, fg=colors[ind])
+    lf2_label5.pack()
+
+
+def ckks_word():
+    frm2 = tk.Frame(frm)
+    frm2.pack()
+    frm1 = tk.Frame(frm2)
+    frm1.pack()
+
+    def change_pack():
+        if var1.get() == 1:
+            up_frm.pack_forget()
+            up_frm2.pack()
+        elif var1.get() == 2:
+            up_frm2.pack_forget()
+            up_frm.pack()
+
+    var1 = tk.IntVar()
+    var1.set(2)
+    rb1 = tk.Radiobutton(frm1, variable=var1, text='对称加密', font=mid_font, value=1, command=change_pack)
+    rb1.grid(row=1, column=1, padx=20)
+    rb2 = tk.Radiobutton(frm1, variable=var1, text='非对称加密', font=mid_font, value=2, command=change_pack)
+    rb2.grid(row=1, column=2, padx=20)
+    # up_frm里放非对称加密的密钥布局
+    up_frm = tk.Frame(frm2)
+    up_frm.pack()
+    uf_frm1 = tk.Frame(up_frm)
+    uf_frm1.pack()
+
+    def change_uf_entry1_show():
+        Tools.change_entry_show(uf_var1, uf_entry1)
+
+    def uf_drag1(files):
+        Tools.dragged_files(files, uf_entry1)
+
+    def change_uf_entry2_show():
+        Tools.change_entry_show(uf_var2, uf_entry2)
+
+    def uf_drag2(files):
+        Tools.dragged_files(files, uf_entry2)
+
+    def change_uf_entry3_show():
+        Tools.change_entry_show(uf_var3, uf_entry3)
+
+    uf_label1 = tk.Label(uf_frm1, text='请拖入用于加密数据的CKKS公钥或输入地址：', font=mid_font)
+    uf_label1.grid(row=1, column=1, padx=5)
+    uf_var1 = tk.StringVar()
+    uf_var1.set('0')
+    uf_cb1 = tk.Checkbutton(uf_frm1, text='隐藏', variable=uf_var1, onvalue='1', offvalue='0',
+                            command=change_uf_entry1_show, font=mid_font)
+    uf_cb1.grid(row=1, column=2, padx=5)
+    uf_entry1 = tk.Entry(up_frm, font=mid_font, width=59)
+    uf_entry1.pack()
+    hook_dropfiles(uf_entry1, func=uf_drag1)
+    uf_frm2 = tk.Frame(up_frm)
+    uf_frm2.pack()
+    uf_frm3 = tk.Frame(uf_frm2)
+    uf_frm3.grid(row=1, column=1, padx=15)
+    uf_label2 = tk.Label(uf_frm3, text='请拖入用于解密数据的私钥或输入地址：', font=mid_font)
+    uf_label2.grid(row=1, column=1, padx=5)
+    uf_var2 = tk.StringVar()
+    uf_var2.set('0')
+    uf_cb2 = tk.Checkbutton(uf_frm3, text='隐藏', variable=uf_var2, onvalue='1', offvalue='0',
+                            command=change_uf_entry2_show, font=mid_font)
+    uf_cb2.grid(row=1, column=2, padx=5)
+    uf_entry2 = tk.Entry(uf_frm2, font=mid_font, width=36)
+    uf_entry2.grid(row=2, column=1, padx=15)
+    hook_dropfiles(uf_entry2, func=uf_drag2)
+    uf_frm4 = tk.Frame(uf_frm2)
+    uf_frm4.grid(row=1, column=2, padx=15)
+    uf_label3 = tk.Label(uf_frm4, text='请输入私钥的使用密码：', font=mid_font)
+    uf_label3.grid(row=1, column=1, padx=5)
+    uf_var3 = tk.StringVar()
+    uf_var3.set('1')
+    uf_cb3 = tk.Checkbutton(uf_frm4, text='隐藏', variable=uf_var3, onvalue='1', offvalue='0',
+                            command=change_uf_entry3_show, font=mid_font)
+    uf_cb3.grid(row=1, column=2, padx=5)
+    uf_entry3 = tk.Entry(uf_frm2, font=mid_font, width=30, show='*')
+    uf_entry3.grid(row=2, column=2, padx=15)
+    # up_frm2里放对称加密的密钥布局
+    up_frm2 = tk.Frame(frm2)
+    uf2_frm1 = tk.Frame(up_frm2)
+    uf2_frm1.pack()
+
+    def change_uf2_entry1_show():
+        Tools.change_entry_show(uf2_var1, uf2_entry1)
+
+    def uf2_drag1(files):
+        Tools.dragged_files(files, uf2_entry1)
+
+    uf2_label1 = tk.Label(uf2_frm1, text='请拖入CKKS对称加密密钥或输入地址：', font=mid_font)
+    uf2_label1.grid(row=1, column=1, padx=5)
+    uf2_var1 = tk.StringVar()
+    uf2_var1.set('0')
+    uf2_cb1 = tk.Checkbutton(uf_frm1, text='隐藏', variable=uf2_var1, onvalue='1', offvalue='0',
+                            command=change_uf2_entry1_show, font=mid_font)
+    uf2_cb1.grid(row=1, column=2, padx=5)
+    uf2_entry1 = tk.Entry(up_frm2, font=mid_font, width=59)
+    uf2_entry1.pack()
+    hook_dropfiles(uf2_entry1, func=uf2_drag1)
+    uf2_label2 = tk.Label(up_frm2, text='   ', font=mid_font)
+    uf2_label2.pack(pady=6)
+    uf2_label3 = tk.Label(up_frm2, text='   ', font=mid_font)
+    uf2_label3.pack()
+
+    # down_frm用来布置加密和解密区域
+    down_frm = tk.Frame(frm)
+    down_frm.pack()
+
+    def open_dir():
+        dir_path = os.path.join(os.getcwd(), 'CKKS_Vectors')
+        if not os.path.exists(dir_path):
+            os.mkdir(dir_path)
+        os.system(f"explorer {os.path.join(os.getcwd(), 'CKKS_Vectors')}")
+
+    df_frm1 = tk.Frame(down_frm)
+    df_frm1.grid(row=1, column=1)
+
+    def df1_drag(files):
+        Tools.dragged_files(files, df1_text2)
+
+    def df1_copy1():
+        Tools.copy(df1_text1, df1_button1)
+
+    def df1_reset1():
+        Tools.reset(df1_text1)
+        df1_label3.config(text=f'V1的长度为：0（须等于V2）')
+
+    def df1_reset2():
+        Tools.reset(df1_text2)
+
+    def df1_cal():
+        print('计算HE(V1)')
+        Tools.reset(df1_text2)
+        df1_text2.insert('end', '处理时间可能较长，请稍候')
+        window.update()
+        Tools.reset(df1_text2)
+        # 先处理公钥或对称加密密钥
+        if var1.get() == 1:
+            if uf2_entry1.get().strip() == "":
+                messagebox.showerror(title='缺少对称加密密钥', message='缺少对称加密密钥')
+                return 0
+            context = Tools.get_ckks_context(uf2_entry1)
+            if context == 0:
+                return 0
+        elif var1.get() == 2:
+            if uf_entry1.get().strip() == "":
+                messagebox.showerror(title='缺少非对称加密公钥', message='缺少非对称加密公钥')
+                return 0
+            context = Tools.get_ckks_context(uf_entry1, method='pk')
+            if context == 0:
+                return 0
+        # 再对明文V1进行处理
+        v1 = Tools.text2vector(df1_text1.get(1.0, 'end').rstrip('\n').strip())
+        print(f'向量化的V1为：{v1}，长度为：{len(v1)}')
+        try:
+            enc_v1 = ts.ckks_vector(context, v1)
+        except Exception:
+            messagebox.showerror(title='密钥错误', message='密钥错误，无法加密')
+            return 0
+        # 保存enc_v1
+        dir_path = os.path.join(os.getcwd(), 'CKKS_Vectors')
+        if not os.path.exists(dir_path):
+            os.mkdir(dir_path)
+        out_path = dir_path + '\\HE(V1).txt'
+        with open(out_path, 'wb') as f:
+            f.write(base64.b85encode(enc_v1.serialize()))
+        df1_text2.insert(1.0, out_path)
+
+    def cal_len_v1(*args):
+        len_v1 = len(Tools.text2vector(df1_text1.get(1.0, 'end').rstrip('\n').strip()))
+        df1_label3.config(text=f'V1的长度为：{len_v1}（须等于V2）')
+
+    df1_frm1 = tk.Frame(df_frm1)
+    df1_frm1.pack()
+    df1_label1 = tk.Label(df1_frm1, text='输入或计算明文V1：', font=mid_font)
+    df1_label1.grid(row=1, column=1, padx=5)
+    df1_button1 = tk.Button(df1_frm1, text='复制', font=mid_font, fg=colors[ind], command=df1_copy1)
+    df1_button1.grid(row=1, column=2, padx=5)
+    df1_button2 = tk.Button(df1_frm1, text='重置', font=mid_font, command=df1_reset1)
+    df1_button2.grid(row=1, column=3, padx=5)
+    df1_label3 = tk.Label(df_frm1, text='V1的长度为：0（须等于V2）', font=mid_font)
+    df1_label3.pack()
+    df1_text1 = tk.Text(df_frm1, width=30, font=mid_font, height=12)
+    df1_text1.pack()
+    df1_text1.bind('<KeyRelease>', cal_len_v1)
+    df1_button3 = tk.Button(df_frm1, text='计算HE(V1)↓', font=mid_font, command=df1_cal)
+    df1_button3.pack()
+    df1_frm2 = tk.Frame(df_frm1)
+    df1_frm2.pack()
+    df1_label2 = tk.Label(df1_frm2, text='V1的加密结果为：', font=mid_font)
+    df1_label2.grid(row=1, column=1, padx=5)
+    df1_button4 = tk.Button(df1_frm2, text='打开', font=mid_font, command=open_dir)
+    df1_button4.grid(row=1, column=2, padx=5)
+    df1_button5 = tk.Button(df1_frm2, text='重置', font=mid_font, command=df1_reset2)
+    df1_button5.grid(row=1, column=3, padx=5)
+    df1_text2 = tk.Text(df_frm1, width=30, font=mid_font, height=4)
+    df1_text2.pack()
+    df1_text2.insert(1.0, '处理结果以文件形式保存，您也可以拖入相应文件到此处进行后续处理')
+    hook_dropfiles(df1_text2, func=df1_drag)
+
+    df_frm2 = tk.Frame(down_frm)
+    df_frm2.grid(row=1, column=2)
+
+    def df2_cal1():
+        print('计算(V1+V2)-V2')
+        df1_reset1()
+        try:
+            v1_plus_v2 = Tools.ascii_str_to_int_list(df5_text1.get(1.0, 'end').rstrip('\n').strip())
+        except Exception:
+            messagebox.showerror('(V1+V2)输入有误', '(V1+V2)输入有误，无法处理')
+            return 0
+        print(f'V1+V2的向量化结果为: {v1_plus_v2}，长度为：{len(v1_plus_v2)}')
+        v2 = Tools.text2vector(df3_text1.get(1.0, 'end').rstrip('\n').strip())
+        print(f'v2的向量化结果为: {v2}，长度为：{len(v2)}')
+        v1_vector = Tools.subtract_lists(v1_plus_v2, v2)
+        print(f'V2-V1的向量化结果为：{v1_vector}，长度为：{len(v1_vector)}')
+        try:
+            v1 = Tools.vector2text(v1_vector)
+        except Exception as e:
+            print(e)
+            messagebox.showerror('计算失败', '计算失败，可能是(V1+V2)或v1输入有误')
+            return 0
+        df1_text1.insert(1.0, v1)
+        cal_len_v1()
+
+    df2_button1 = tk.Button(df_frm2, text='计算\n(V1+V2)-V2\n←', font=mid_font, command=df2_cal1)
+    df2_button1.grid(row=1, column=1, pady=100)
+    df2_label1 = tk.Label(df_frm2, text='\n\n\n', font=mid_font)
+    df2_label1.grid(row=2, column=1, pady=100)
+
+    df_frm3 = tk.Frame(down_frm)
+    df_frm3.grid(row=1, column=3)
+
+    def df3_drag(files):
+        Tools.dragged_files(files, df3_text2)
+
+    def df3_copy1():
+        Tools.copy(df3_text1, df3_button1)
+
+    def df3_reset1():
+        Tools.reset(df3_text1)
+        df3_label3.config(text=f'V2的长度为：0（须等于V1）')
+
+    def df3_reset2():
+        Tools.reset(df3_text2)
+
+    def df3_cal():
+        print('计算HE(V2)')
+        Tools.reset(df3_text2)
+        df3_text2.insert('end', '处理时间可能较长，请稍候')
+        window.update()
+        Tools.reset(df3_text2)
+        # 先处理公钥或对称加密密钥
+        if var1.get() == 1:
+            if uf2_entry1.get().strip() == "":
+                messagebox.showerror(title='缺少对称加密密钥', message='缺少对称加密密钥')
+                return 0
+            context = Tools.get_ckks_context(uf2_entry1)
+            if context == 0:
+                return 0
+        elif var1.get() == 2:
+            if uf_entry1.get().strip() == "":
+                messagebox.showerror(title='缺少非对称加密公钥', message='缺少非对称加密公钥')
+                return 0
+            context = Tools.get_ckks_context(uf_entry1, method='pk')
+            if context == 0:
+                return 0
+        # 再对明文V2进行处理
+        v2 = Tools.text2vector(df3_text1.get(1.0, 'end').rstrip('\n').strip())
+        print(f'向量化的V2为：{v2}，长度为：{len(v2)}')
+        try:
+            enc_v2 = ts.ckks_vector(context, v2)
+        except Exception:
+            messagebox.showerror(title='密钥错误', message='密钥错误，无法加密')
+            return 0
+        # 保存enc_v2
+        dir_path = os.path.join(os.getcwd(), 'CKKS_Vectors')
+        if not os.path.exists(dir_path):
+            os.mkdir(dir_path)
+        out_path = dir_path + '\\HE(V2).txt'
+        with open(out_path, 'wb') as f:
+            f.write(base64.b85encode(enc_v2.serialize()))
+        df3_text2.insert(1.0, out_path)
+
+    def cal_len_v2(*args):
+        len_v2 = len(Tools.text2vector(df3_text1.get(1.0, 'end').rstrip('\n').strip()))
+        df3_label3.config(text=f'V2的长度为：{len_v2}（须等于V1）')
+
+    df3_frm1 = tk.Frame(df_frm3)
+    df3_frm1.pack()
+    df3_label1 = tk.Label(df3_frm1, text='输入或计算明文V2：', font=mid_font)
+    df3_label1.grid(row=1, column=1, padx=5)
+    df3_button1 = tk.Button(df3_frm1, text='复制', font=mid_font, fg=colors[ind], command=df3_copy1)
+    df3_button1.grid(row=1, column=2, padx=5)
+    df3_button2 = tk.Button(df3_frm1, text='重置', font=mid_font, command=df3_reset1)
+    df3_button2.grid(row=1, column=3, padx=5)
+    df3_label3 = tk.Label(df_frm3, text='V2的长度为：0（须等于V1）', font=mid_font)
+    df3_label3.pack()
+    df3_text1 = tk.Text(df_frm3, width=30, font=mid_font, height=12)
+    df3_text1.pack()
+    df3_text1.bind('<KeyRelease>', cal_len_v2)
+    df3_button3 = tk.Button(df_frm3, text='计算HE(V2)↓', font=mid_font, command=df3_cal)
+    df3_button3.pack()
+    df3_frm2 = tk.Frame(df_frm3)
+    df3_frm2.pack()
+    df3_label2 = tk.Label(df3_frm2, text='V2的加密结果为：', font=mid_font)
+    df3_label2.grid(row=1, column=1, padx=5)
+    df3_button4 = tk.Button(df3_frm2, text='打开', font=mid_font, command=open_dir)
+    df3_button4.grid(row=1, column=2, padx=5)
+    df3_button5 = tk.Button(df3_frm2, text='重置', font=mid_font, command=df3_reset2)
+    df3_button5.grid(row=1, column=3, padx=5)
+    df3_text2 = tk.Text(df_frm3, width=30, font=mid_font, height=4)
+    df3_text2.pack()
+    df3_text2.insert(1.0, '处理结果以文件形式保存，您也可以拖入相应文件到此处进行后续处理')
+    hook_dropfiles(df3_text2, func=df3_drag)
+
+    df_frm4 = tk.Frame(down_frm)
+    df_frm4.grid(row=1, column=4)
+
+    def df4_cal1():
+        print('计算(V1+V2)-V1')
+        df3_reset1()
+        try:
+            v1_plus_v2 = Tools.ascii_str_to_int_list(df5_text1.get(1.0, 'end').rstrip('\n').strip())
+        except Exception:
+            messagebox.showerror('(V1+V2)输入有误', '(V1+V2)输入有误，无法处理')
+            return 0
+        print(f'V1+V2的向量化结果为: {v1_plus_v2}，长度为：{len(v1_plus_v2)}')
+        v1 = Tools.text2vector(df1_text1.get(1.0, 'end').rstrip('\n').strip())
+        print(f'v1的向量化结果为: {v1}，长度为：{len(v1)}')
+        v2_vector = Tools.subtract_lists(v1_plus_v2, v1)
+        print(f'V2-V1的向量化结果为：{v2_vector}，长度为：{len(v2_vector)}')
+        try:
+            v2 = Tools.vector2text(v2_vector)
+        except Exception as e:
+            print(e)
+            messagebox.showerror('计算失败', '计算失败，可能是(V1+V2)或v1输入有误')
+            return 0
+        df3_text1.insert(1.0, v2)
+        cal_len_v2()
+
+    def df4_cal2():
+        print('计算V1+V2')
+        df5_reset1()
+        v1 = Tools.text2vector(df1_text1.get(1.0, 'end').rstrip('\n').strip())
+        print(f'v1的向量化结果为: {v1}，长度为：{len(v1)}')
+        v2 = Tools.text2vector(df3_text1.get(1.0, 'end').rstrip('\n').strip())
+        print(f'v2的向量化结果为: {v2}，长度为：{len(v2)}')
+        v1_plus_v2_vector = Tools.add_lists(v1, v2)
+        print(f'V1+V2的向量化结果为：{v1_plus_v2_vector}，长度为：{len(v1_plus_v2_vector)}')
+        v1_plus_v2 = Tools.float_list_to_ascii_str(v1_plus_v2_vector)
+        df5_text1.insert(1.0, v1_plus_v2)
+        cal_len_v1_plus_v2()
+
+    def df4_cal3():
+        print('计算HE(V1)+HE(V2)')
+        Tools.reset(df5_text2)
+        df5_text2.insert(1.0, '处理时间可能较长，请稍候')
+        window.update()
+        Tools.reset(df5_text2)
+        # 先处理提取向量的对称密钥或公钥
+        if var1.get() == 1:  # 对称加解密
+            if uf2_entry1.get().strip() == "":
+                return 0
+            context = Tools.get_ckks_context(uf2_entry1)
+            if context == 0:
+                return 0
+        elif var1.get() == 2:  # 非对称加解密
+            if uf_entry1.get().strip() == "":
+                messagebox.showerror(title='请拖入公钥', message='请拖入公钥\n密文相加时也需要输入公钥')
+                return 0
+            context = Tools.get_ckks_context(uf_entry1, method='pk')
+            if context == 0:
+                return 0
+        # 再对密文HE(V1)和HE(V2)进行处理
+        he_v1 = Tools.get_encrypted_vectors_form_path(df1_text2, context)
+        if he_v1 == 0:
+            return 0
+        he_v2 = Tools.get_encrypted_vectors_form_path(df3_text2, context)
+        if he_v2 == 0:
+            return 0
+        result = he_v1 + he_v2
+        # 处理完之后对解密的信息进行保存和展示
+        dir_path = os.path.join(os.getcwd(), 'CKKS_Vectors')
+        if not os.path.exists(dir_path):
+            os.mkdir(dir_path)
+        out_path = dir_path + '\\HE(V1)_plus_HE(V2).txt'
+        with open(out_path, 'wb') as f:
+            f.write(base64.b85encode(result.serialize()))
+        df5_text2.insert(1.0, out_path)
+        print('计算HE(V1)+HE(V2)完成')
+
+    df4_button1 = tk.Button(df_frm4, text='计算\n(V1+V2)-V1\n←', font=mid_font, command=df4_cal1)
+    df4_button1.grid(row=1, column=1, pady=5)
+    df4_button2 = tk.Button(df_frm4, text='计算\n  V1+V2   \n→', font=mid_font, command=df4_cal2)
+    df4_button2.grid(row=2, column=1, pady=5)
+    df4_label1 = tk.Label(df_frm4, text='\n\n\n\n\n', font=mid_font)
+    df4_label1.grid(row=3, column=1, pady=5)
+    df4_button3 = tk.Button(df_frm4, text='计算\nHE(V1)+HE(V2)\n→', font=mid_font, command=df4_cal3)
+    df4_button3.grid(row=4, column=1, pady=5)
+
+    df_frm5 = tk.Frame(down_frm)
+    df_frm5.grid(row=1, column=5)
+
+    def df5_drag(files):
+        Tools.dragged_files(files, df5_text2)
+
+    def df5_copy1():
+        Tools.copy(df5_text1, df5_button1)
+
+    def df5_reset1():
+        Tools.reset(df5_text1)
+        df5_label3.config(text='V1+V2的长度为：0')
+
+    def df5_reset2():
+        Tools.reset(df5_text2)
+
+    def df5_cal():
+        print('解密[HE(V1)+HE(V2)]')
+        df5_reset1()
+        df5_text1.insert('end', '处理时间可能较长，请稍候')
+        window.update()
+        Tools.reset(df5_text1)
+        # 先处理私钥或对称加密密钥用于解密以及公钥用于提取[HE(V1)+HE(V2)]
+        if var1.get() == 1:  # 对称加解密
+            if uf2_entry1.get().strip() == "":
+                messagebox.showerror(title='缺少对称加密密钥', message='缺少对称加密密钥')
+                return 0
+            context = Tools.get_ckks_context(uf2_entry1)
+            if context == 0:
+                return 0
+            # 再对密文HE(V1)+HE(V2)进行处理
+            he_v1_plus_he_v2 = Tools.get_encrypted_vectors_form_path(df5_text2, context)
+            try:
+                result = he_v1_plus_he_v2.decrypt()
+            except Exception:
+                messagebox.showerror(title='密钥错误', message='密钥错误，无法解密')
+                return 0
+        elif var1.get() == 2:  # 非对称加解密
+            if uf_entry1.get().strip() == "":
+                messagebox.showerror(title='请拖入公钥', message='请拖入公钥\n解密时也需要输入公钥')
+                return 0
+            pk = Tools.get_ckks_context(uf_entry1, method='pk')
+            if pk == 0:
+                return 0
+            if uf_entry2.get().strip() == "":
+                messagebox.showerror(title='缺少非对称加密私钥', message='缺少非对称加密私钥')
+                return 0
+            sk = Tools.get_ckks_context(uf_entry2, method='sk', pwd_entry=uf_entry3)
+            if sk == 0:
+                return 0
+            # 再对密文HE(V1)+HE(V2)进行处理
+            he_v1_plus_he_v2 = Tools.get_encrypted_vectors_form_path(df5_text2, pk)
+            try:
+                result = he_v1_plus_he_v2.decrypt(sk)
+            except Exception:
+                messagebox.showerror(title='私钥错误', message='私钥错误，无法解密')
+                return 0
+        # 处理完之后对解密的信息进行展示
+        print(f'解密[HE(V1)+HE(V2)]的向量化结果为：{np.round(result)}，长度为：{len(result)}')
+        try:
+            ans = Tools.float_list_to_ascii_str(result)
+        except Exception:
+            messagebox.showerror(title='解密失败', message='解密失败，可能是解密的私钥与加密的公钥不匹配')
+            return 0
+        df5_text1.insert(1.0, ans)
+        cal_len_v1_plus_v2()
+
+    def cal_len_v1_plus_v2(*args):
+        len_v1_plus_v2 = len(df5_text1.get(1.0, 'end').rstrip('\n').strip())
+        df5_label3.config(text=f'V1+V2的长度为：{len_v1_plus_v2}')
+
+    df5_frm1 = tk.Frame(df_frm5)
+    df5_frm1.pack()
+    df5_label1 = tk.Label(df5_frm1, text='输入或计算V1+V2：', font=mid_font)
+    df5_label1.grid(row=1, column=1, padx=5)
+    df5_button1 = tk.Button(df5_frm1, text='复制', font=mid_font, fg=colors[ind], command=df5_copy1)
+    df5_button1.grid(row=1, column=2, padx=5)
+    df5_button2 = tk.Button(df5_frm1, text='重置', font=mid_font, command=df5_reset1)
+    df5_button2.grid(row=1, column=3, padx=5)
+    df5_label3 = tk.Label(df_frm5, text='V1+V2的长度为：0', font=mid_font)
+    df5_label3.pack()
+    df5_text1 = tk.Text(df_frm5, width=30, font=mid_font, height=11)
+    df5_text1.pack()
+    df5_text1.bind('<KeyRelease>', cal_len_v1_plus_v2)
+    df5_button3 = tk.Button(df_frm5, text='解密[HE(V1)+HE(V2)]↑', font=mid_font, command=df5_cal)
+    df5_button3.pack()
+    df5_frm2 = tk.Frame(df_frm5)
+    df5_frm2.pack(pady=4)
+    df5_label2 = tk.Label(df5_frm2, text='输入或计算\n[HE(V1)+HE(V2)]：', font=mid_font)
+    df5_label2.grid(row=1, column=1, padx=5)
+    df5_button4 = tk.Button(df5_frm2, text='打开', font=mid_font, command=open_dir)
+    df5_button4.grid(row=1, column=2, padx=5)
+    df5_button5 = tk.Button(df5_frm2, text='重置', font=mid_font, command=df5_reset2)
+    df5_button5.grid(row=1, column=3, padx=5)
+    df5_text2 = tk.Text(df_frm5, width=30, font=mid_font, height=4)
+    df5_text2.pack()
+    df5_text2.insert(1.0, '处理结果以文件形式保存，您也可以拖入相应文件到此处进行后续处理')
+    hook_dropfiles(df5_text2, func=df5_drag)
 
 
 def hash_word():

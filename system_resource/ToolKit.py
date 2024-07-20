@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import base64
+from reedsolo import RSCodec
 import tkinter as tk
 from tkinter import messagebox
 from random import randint, choice
@@ -13,7 +14,7 @@ import os
 import shutil
 import pyautogui as auto
 import pyperclip
-from Crypto.PublicKey import RSA
+from Crypto.PublicKey import RSA  # pip install pycryptodome
 from Crypto.Cipher import AES
 from Crypto.Cipher import PKCS1_v1_5 as PKCS1_cipher
 from Crypto.Signature import PKCS1_v1_5 as PKCS1_signature
@@ -23,6 +24,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 import hashlib
 import string
+import tenseal as ts
 
 frm = mid_font = icon_path = colors = ind = ...
 
@@ -384,16 +386,20 @@ class Tools:
             widget.destroy()
 
     @staticmethod
-    def dragged_files(files, entry):
+    def dragged_files(files, text_or_entry):
         file = files[0].decode("GBK")  # 用户拖入多个文件时，只取第一个
-        entry.delete(0, 'end')
-        entry.insert('end', file)
+        if isinstance(text_or_entry, tk.Entry):
+            text_or_entry.delete(0, 'end')
+            text_or_entry.insert('end', file)
+        elif isinstance(text_or_entry, tk.Text):
+            text_or_entry.delete(1.0, 'end')
+            text_or_entry.insert('end', file)
 
     @staticmethod
     def reset(text_or_entry):
         if isinstance(text_or_entry, tk.Text):
             text_or_entry.delete(1.0, 'end')
-        if isinstance(text_or_entry, tk.Entry):
+        elif isinstance(text_or_entry, tk.Entry):
             text_or_entry.delete(0, 'end')
 
     @staticmethod
@@ -792,7 +798,7 @@ class Tools:
             entry.config(show='')
 
     @staticmethod
-    def encrypt_privkey(privkey_bytes, key, is_ecc=False):
+    def encrypt_privkey(privkey_bytes, key, is_ecc=False, is_ckks=False):
         '''
         对私钥进行加密
         :param privkey_bytes: 字节类型
@@ -820,28 +826,33 @@ class Tools:
                 ontology_sec += en_text
                 content = f.read(16)
         os.remove('_temp.txt')
-        if not is_ecc:
-            return b'\n'.join([b'-----BEGIN RSA PRIVATE KEY-----\nEncrypted:', base64.b64encode(ontology_sec), b'-----END RSA PRIVATE KEY-----'])
-        else:
+        if is_ecc:
             return b'\n'.join([b'-----BEGIN EC PRIVATE KEY-----\nEncrypted:', base64.b64encode(ontology_sec), b'-----END EC PRIVATE KEY-----'])
+        elif is_ckks:
+            return b'\n'.join([b'-----BEGIN CKKS PRIVATE KEY-----\nEncrypted:', base64.b85encode(ontology_sec), b'-----END CKKS PRIVATE KEY-----'])
+        else:
+            return b'\n'.join([b'-----BEGIN RSA PRIVATE KEY-----\nEncrypted:', base64.b64encode(ontology_sec), b'-----END RSA PRIVATE KEY-----'])
 
     @staticmethod
-    def decrypt_privkey(privkey_bytes, key, is_ecc=False):
+    def decrypt_privkey(privkey_bytes, key, is_ecc=False, is_ckks=False):
         '''
         对被加密的私钥字节进行解密
         函数遇到错误就返回b''或b'1'，让外部函数来捕获
-        :param privkey_bytes: 字节类型
-        :param key: 字符串类型
-        :return: 字节类型
+        :param privkey_bytes: 加密的私钥的内容，字节类型
+        :param key: 私钥的使用密码，字符串类型
+        :return: 解密的私钥内容，字节类型
         '''
         if b'Encrypted:' not in privkey_bytes:
             return b'1'  # 返回这个代表已经被解密过了
-        privkey_bytes = privkey_bytes.split(b'\n')[2]
+        privkey_bytes = b'\n'.join(privkey_bytes.split(b'\n')[2:-1])
         key = Tools.get_hash_digest_of_word(key)
         aes = AES.new(key, AES.MODE_CBC, b'1234567890abcdef')
         ontology = b''
         with open('_temp.txt', 'wb') as f:
-            f.write(base64.b64decode(privkey_bytes))
+            if not is_ckks:
+                f.write(base64.b64decode(privkey_bytes))
+            else:
+                f.write(base64.b85decode(privkey_bytes))
         with open('_temp.txt', 'rb') as f:
             content = f.read(16)
             while content:
@@ -857,10 +868,12 @@ class Tools:
                     content = next
         os.remove('_temp.txt')
         if key == ontology[6:38]:
-            if not is_ecc:
-                return b'\n'.join([b'-----BEGIN RSA PRIVATE KEY-----', ontology[38:], b'-----END RSA PRIVATE KEY-----'])
-            else:
+            if is_ecc:
                 return b'\n'.join([b'-----BEGIN EC PRIVATE KEY-----', ontology[38:], b'-----END EC PRIVATE KEY-----'])
+            elif is_ckks:
+                return b'\n'.join([b'-----BEGIN CKKS PRIVATE KEY-----', ontology[38:], b'-----END CKKS PRIVATE KEY-----'])
+            else:
+                return b'\n'.join([b'-----BEGIN RSA PRIVATE KEY-----', ontology[38:], b'-----END RSA PRIVATE KEY-----'])
         else:
             return b''
 
@@ -926,6 +939,93 @@ class Tools:
             return 0
 
     @staticmethod
+    def get_ckks_context(entry, *, method='', pwd_entry=None):
+        '''
+        获取ckks密钥
+        :param entry:填入密钥保存的文件路径的文本框
+        :param method: 如果不输入则默认为对称加密密钥，也可以输入sk或pk
+        :param pwd_entry: 私钥密码（如果是公钥或者对称加密密钥，就不输入）
+        :return: 返回可用于加解密的context
+        '''
+        key_path = Tools.get_path_from_entry(entry)
+        if os.path.exists(key_path):
+            with open(key_path, 'rb') as keyfile:
+                key = keyfile.read()
+                if b'Encrypted:' not in key[30:45]:
+                    serialized_context = base64.b85decode(b'\n'.join(key.split(b'\n')[1:-1]))  # bytes类型
+            if not method and '.he' in key_path:
+                try:
+                    context = ts.Context.load(serialized_context)
+                except Exception:
+                    messagebox.showerror(title='密钥错误', message='读取到的.he文件不是CKKS密钥')
+                    return 0
+                else:
+                    return context
+            elif method == 'pk' and '.hepk' in key_path:
+                try:
+                    pk = ts.Context.load(serialized_context)
+                except Exception:
+                    messagebox.showerror(title='密钥错误', message='读取到的.hepk文件不是CKKS公钥')
+                    return 0
+                else:
+                    return pk
+            elif method == 'sk' and '.hesk' in key_path:
+                if b'Encrypted:' in key[30:45]:
+                    dec_key = Tools.decrypt_privkey(key, pwd_entry.get().strip(), is_ckks=True)
+                    if dec_key == b'':
+                        messagebox.showerror(title='私钥的使用密码错误', message="私钥的使用密码错误")
+                        return 0
+                    else:
+                        serialized_context = base64.b85decode(b'\n'.join(dec_key.split(b'\n')[1:-1]))
+                        try:
+                            sk = ts.Context.load(serialized_context).secret_key()
+                        except Exception:
+                            messagebox.showerror(title='密钥错误', message='读取到的.hesk文件不是CKKS私钥')
+                            return 0
+                        else:
+                            return sk
+                else:
+                    try:
+                        sk = ts.Context.load(serialized_context).secret_key()
+                    except Exception:
+                        messagebox.showerror(title='密钥错误', message='读取到的.hesk文件不是CKKS私钥')
+                        return 0
+                    else:
+                        return sk
+            else:
+                messagebox.showerror(title='密钥错误', message='无法正确读取密钥')
+                return 0
+        else:
+            messagebox.showerror(title='密钥错误', message='密钥文件路径错误')
+            return 0
+
+    @staticmethod
+    def get_encrypted_vectors_form_path(path_text: tk.Text, context: ts.Context):
+        '''
+        从HE(V1)或HE(V2)文件路径中获取其值，结果以base85解码后的bytes形式返回
+        :param path_text:存放文件路径的tk.Text()对象
+        :param context:对称加密密钥或者公钥
+        :return:
+        '''
+        path = path_text.get(1.0, 'end').strip().strip('\"').lstrip('“').rstrip('”')
+        if os.path.exists(path):
+            with open(path, 'rb') as f:
+                try:
+                    content = base64.b85decode(f.read())
+                except Exception:
+                    messagebox.showerror(title='密文文件内容有误', message='密文文件内容有误')
+                    return 0
+                try:
+                    enc_v = ts.CKKSVector.load(context, content)
+                except Exception:
+                    messagebox.showerror(title='文件内容或密钥有误', message='文件内容或密钥有误')
+                    return 0
+                return enc_v
+        else:
+            messagebox.showerror(title='密文文件路径错误', message='密文文件路径错误')
+            return 0
+
+    @staticmethod
     def encrypt_bigfile(infile_path, outfile_path, pubkey_cipher, size="完整文件", begin=None, width=None, number=None,
                          end=None):
         '''
@@ -973,7 +1073,7 @@ class Tools:
                     else:
                         if count == 1:  # 需要在文件头部写上times和每一段block的长度
                             length = str(len(block_enc))
-                            prefix = ''.join([str(times), '|', length, '|'])
+                            prefix = ''.join([str(times), '|', length, '|'])  # 500||block_enc, block_enc, ...
                             outfile.write(bytes(prefix.encode("utf-8")))
                         outfile.write(block_enc)
                         block_content = infile.read(block_size)
@@ -1543,3 +1643,83 @@ class Tools:
             else:
                 res += '?'
         return res
+
+    @staticmethod
+    def text2vector(text: str) -> list:
+        '''把文字用b32编码后再转成向量。向量内每个元素的值域：[-16, 16]内的33个整数'''
+        b32_text = base64.b32encode(text.encode()).decode()
+        print(f'b32_text: {b32_text}')
+        lst = []
+        for i in b32_text:
+            if 65 <= ord(i) <= 90:
+                lst.append(ord(i)-81)  # 把'A-Z'变为-16~9
+            elif 50 <= ord(i) <= 55:
+                lst.append(ord(i)-40)  # 把'2-7'变为10~15
+            elif ord(i) == 61:
+                lst.append(ord(i)-45)  # 把'='变为16
+        return lst
+
+    @staticmethod
+    def vector2text(vector: list) -> str:
+        # 把向量解码成b32编码再解码成文字。向量内每个元素的定义域：[-16, 16]内的33个整数
+        b32_text = ''
+        for i in vector:
+            if -16 <= i <= 9:
+                b32_text += chr(i+81)  # 把-16~9变为'A-Z'
+            elif 10 <= i <= 15:
+                b32_text += chr(i+40)  # 把10~15变为'2-7'
+            elif i == 16:
+                b32_text += chr(i+45)  # 把16变为'='
+            else:
+                raise IOError('向量中元素的值不在定义域中')
+        print(f'b32_text: {b32_text}')
+        text = base64.b32decode(b32_text.encode()).decode()
+        return text
+
+    @staticmethod
+    def float_list_to_ascii_str(vector: list) -> str:
+        '''vector里每一个元素的理论取值范围为：[-32, 32]内的整数，但实际运算中上下区间有一定误差，且不为整数
+        这里需要把vector内的每一个元素对应到序号为[41, 105]的ASCII字符'''
+        return ''.join([chr(round(i)+73) for i in vector])
+
+    @staticmethod
+    def ascii_str_to_int_list(ascii_str: str) -> list:
+        # 这里需要把序号为[41, 105]的ASCII字符转为[-32, 32]内的整数
+        return [ord(i)-73 for i in ascii_str]
+
+    @staticmethod
+    def subtract_lists(list1, list2):
+        """Subtract the corresponding elements of two lists.
+
+        Args:
+          list1: The first list.
+          list2: The second list.
+
+        Returns:
+          A new list containing the differences of the corresponding elements.
+        """
+        # Add 0s to the result for elements that don't have a corresponding element.
+        if len(list1) > len(list2):
+            list2.extend([0] * (len(list1) - len(list2)))
+        elif len(list1) < len(list2):
+            list1.extend([0] * (len(list2) - len(list1)))
+
+        result = []
+        for i, (num1, num2) in enumerate(zip(list1, list2)):
+            result.append(num1 - num2)
+
+        return result
+
+    @staticmethod
+    def add_lists(list1, list2):
+        # Add 0s to the result for elements that don't have a corresponding element.
+        if len(list1) > len(list2):
+            list2.extend([0] * (len(list1) - len(list2)))
+        elif len(list1) < len(list2):
+            list1.extend([0] * (len(list2) - len(list1)))
+
+        result = []
+        for i, (num1, num2) in enumerate(zip(list1, list2)):
+            result.append(num1 + num2)
+
+        return result
