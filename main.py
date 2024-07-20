@@ -37,7 +37,7 @@ from cryptography.hazmat.primitives.asymmetric import dh, ec
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.backends import default_backend
 from blind_watermark import WaterMark  # pip install blind-watermark==0.4.4
-import tenseal as ts
+import tenseal as ts  # pip install tenseal
 # 上面的是其他文件需要调用的库，打包文件的时候需要用上
 import blind_watermark
 import os
@@ -88,7 +88,7 @@ from cryptography.hazmat.primitives.asymmetric import dh, ec
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.backends import default_backend
 from blind_watermark import WaterMark  # pip install blind-watermark==0.4.4
-import tenseal as ts
+import tenseal as ts  # pip install tenseal
 '''
 
 window = tk.Tk()
@@ -543,7 +543,6 @@ class Functions:
         text.pack()
         word = '''    CKKS同态加密介绍
 
-一、基本介绍
     CKKS（Cloud Key Encryption and Signing）是一种高效的同态加密方案，由 Gentry 等人于2017年提出。它支持浮点向量在密文空间的加减乘运算并保持同态，但只支持有限次乘法的运算。
 
     CKKS的主要特点:
