@@ -1393,7 +1393,7 @@ def against_duplicate_check():
     lf2_text1.bind("<KeyRelease>", cal_len2)
 
 
-def rs_code():
+def rs_code_word():
     # 添加RS纠错码（左边的labelframe）
     labelframe1 = tk.LabelFrame(frm, text='添加RS纠错码', height=745, width=606, font=mid_font)
     labelframe1.pack(side='left', padx=5, pady=5)
@@ -1425,7 +1425,7 @@ def rs_code():
                 return 0
         elif code_get == 'base64':
             info = base64.b64decode(text1.get(1.0, 'end'))
-        rs_length = round(len(info) * percent.get() * 0.02)
+        rs_length = Tools.round_to_even(len(info) * percent.get() * 0.02)
         print('rs_length:', rs_length)
         try:
             rs = RSCodec(rs_length)
@@ -1548,6 +1548,213 @@ def rs_code():
     lf2_text2 = tk.Text(labelframe2, font=mid_font, width=43, height=11)
     lf2_text2.pack()
     lf2_entry1.bind('<Return>', repair)
+
+
+def rs_code_file():
+    # 添加RS纠错码（左边的labelframe）
+    labelframe1 = tk.LabelFrame(frm, text='添加RS纠错码', height=745, width=606, font=mid_font)
+    labelframe1.pack(side='left', padx=5, pady=5)
+    labelframe1.pack_propagate(0)  # 使组件大小不变
+
+    def change_entry1(value):
+        Tools.change_zentry(value, entry1)
+
+    def change_scale1(*args):
+        _var = tk.StringVar()
+        _var.set('1')
+        Tools.change_zscale(_var, entry1, percent)
+
+    def reset1():
+        Tools.reset(entry2)
+        Tools.reset(entry3)
+        label3.config(text='纠错码长度：0x0')
+
+    def drag1(files):
+        Tools.dragged_files(files, entry2)
+
+    def add_rs(*args):
+        '''
+        将原文件以64字节为单位分块添加纠错码，并把纠错码全部放在文件的最后，如下所示：
+        block1, block2, ..., rs_code1, rs_code2, ...
+        将纠错码放在文件最后的好处是：在一些文件没有损坏时，不用先去除纠错码就能直接打开。
+        纠错码长度的格式为axb，a代表有多少个rs_code块，b代表每一个rs_code块有多少字节
+        '''
+        Tools.reset(entry3)
+        label3.config(text='纠错码长度：0x0')
+        file_path = Tools.get_path_from_entry(entry2)
+        if os.path.exists(file_path) and os.path.isfile(file_path):
+            pass  # 这里pass的意思是继续执行下面的程序
+        else:
+            messagebox.showerror(title='文件路径错误', message='文件路径错误')
+            return 0
+        label3.config(text=f'正在处理，请稍候...')
+        window.update()
+        rs_length = Tools.round_to_even(64 * percent.get() * 0.02)  # RS纠错码的长度需要是被保护信息长度的两倍，所以乘了0.02
+        print('rs_length:', rs_length)
+        block_num = 0
+        # 生成纠错码，并把所有纠错码放在临时文件中
+        with open(file_path, 'rb') as inf, open('temp.tmp', 'wb') as outf:
+            block = inf.read(64)
+            while block:
+                print('block:', block, '\nlen(block):', len(block))
+                block_num += 1
+                rs = RSCodec(rs_length)
+                block_with_rs = bytes(rs.encode(block))
+                print('block_with_rs:', block_with_rs, '\nlen(block_with_rs):', len(block_with_rs))
+                rs_code = block_with_rs[len(block):]
+                print('rs_code:', rs_code, '\nlen(rs_code):', len(rs_code))
+                outf.write(rs_code)
+                block = inf.read(64)
+        axb = f'{block_num}x{rs_length}'
+        outfile_path = f'{os.path.splitext(file_path)[0]}_rs_{axb}{os.path.splitext(file_path)[1]}'
+        # 把原文件和纠错码整合起来放进结果文件中
+        with open(file_path, 'rb') as inf1, open('temp.tmp', 'rb') as inf2, open(outfile_path, 'wb') as outf:
+            content = inf1.read(10240)
+            while content:
+                outf.write(content)
+                content = inf1.read(10240)
+            content = inf2.read(10240)
+            while content:
+                outf.write(content)
+                content = inf2.read(10240)
+        entry3.insert('end', os.path.basename(outfile_path))
+        label3.config(text=f'纠错码长度：{axb}')
+        Tools.delete_file('temp.tmp')
+
+    frm4 = tk.Frame(labelframe1)
+    frm4.pack()
+    label1 = tk.Label(frm4, text='请设置能够纠错的比例：', font=mid_font)
+    label1.grid(row=1, column=1)
+    entry1 = tk.Entry(frm4, font=mid_font, width=5)
+    entry1.grid(row=1, column=2)
+    entry1.insert('end', '10')
+    entry1.bind('<KeyRelease>', change_scale1)
+    label4 = tk.Label(frm4, text='%', font=mid_font)
+    label4.grid(row=1, column=3)
+    percent = tk.IntVar()
+    percent.set(10)
+    scale1 = tk.Scale(labelframe1, from_=0, to=100, orient=tk.HORIZONTAL, length=400, tickinterval=10, resolution=1,
+                      showvalue=0, variable=percent, command=change_entry1)
+    scale1.pack()
+    label2 = tk.Label(labelframe1, text='请拖入需要添加纠错码的文件或输入地址：', font=mid_font)
+    label2.pack()
+    entry2 = tk.Entry(labelframe1, width=43, font=mid_font)
+    entry2.pack()
+    hook_dropfiles(entry2, func=drag1)
+    frm1 = tk.Frame(labelframe1)
+    frm1.pack()
+    button1 = tk.Button(frm1, text='重置', font=mid_font, command=reset1)
+    button1.grid(row=1, column=1, padx=20)
+    button2 = tk.Button(frm1, text='确定', font=mid_font, command=add_rs)
+    button2.grid(row=1, column=2, padx=20)
+    label3 = tk.Label(labelframe1, text='纠错码长度：0x0', font=mid_font)
+    label3.pack()
+    label4 = tk.Label(labelframe1, text='结果保存在原文件所在文件夹中的：', font=mid_font)
+    label4.pack()
+    entry3 = tk.Entry(labelframe1, width=43, font=mid_font)
+    entry3.pack()
+
+    # 纠正并去除RS纠错码（右边的labelframe）
+    labelframe2 = tk.LabelFrame(frm, text='纠正错误并去除RS纠错码', height=745, width=606, font=mid_font)
+    labelframe2.pack(side='right', padx=5, pady=5)
+    labelframe2.pack_propagate(0)  # 使组件大小不变
+
+    def drag2(files):
+        Tools.dragged_files(files, lf2_entry3)
+
+    lf2_frm3 = tk.Frame(labelframe2)
+    lf2_frm3.pack()
+    lf2_label1 = tk.Label(lf2_frm3, text='请输入纠错码的长度：', font=mid_font)
+    lf2_label1.grid(row=1, column=1)
+    lf2_entry1 = tk.Entry(lf2_frm3, width=8, font=mid_font)
+    lf2_entry1.grid(row=1, column=2)
+    lf2_label4 = tk.Label(lf2_frm3, text='x', font=mid_font)
+    lf2_label4.grid(row=1, column=3)
+    lf2_entry2 = tk.Entry(lf2_frm3, width=3, font=mid_font)
+    lf2_entry2.grid(row=1, column=4)
+    lf2_label2 = tk.Label(labelframe2, text='请拖入需要进行纠错的文件或输入地址：', font=mid_font)
+    lf2_label2.pack()
+    lf2_entry3 = tk.Entry(labelframe2, width=43, font=mid_font)
+    lf2_entry3.pack()
+    hook_dropfiles(lf2_entry3, func=drag2)
+    lf2_frm4 = tk.Frame(labelframe2)
+    lf2_frm4.pack()
+
+    def reset2():
+        Tools.reset(lf2_entry1)
+        Tools.reset(lf2_entry2)
+        Tools.reset(lf2_entry3)
+        Tools.reset(lf2_entry4)
+        lf2_label5.pack_forget()
+
+    def repair(*args):
+        # print('============================================================')
+        repair_success = True
+        Tools.reset(lf2_entry4)
+        lf2_label5.pack_forget()
+        file_path = Tools.get_path_from_entry(lf2_entry3)
+        if os.path.exists(file_path) and os.path.isfile(file_path):
+            pass
+        else:
+            messagebox.showerror(title='文件路径错误', message='待纠错的文件路径错误')
+            return 0
+        block_num = lf2_entry1.get().strip()
+        rs_length = lf2_entry2.get().strip()
+        try:
+            rs_length = eval(rs_length)
+            assert isinstance(rs_length, int) and rs_length > 0
+            block_num = eval(block_num)
+            assert isinstance(block_num, int) and block_num > 0
+        except Exception:
+            messagebox.showerror('纠错码长度错误', '纠错码的长度应为正整数')
+            return 0
+        outfile_path = f'{os.path.splitext(file_path)[0]}_repaired{os.path.splitext(file_path)[1]}'
+        # 从文件的末尾读取纠错码，并把它从文件中截断，最后不管纠错是否成功都需要把截断的部分续上
+        with open(file_path, 'rb+') as inf, open('temp2.tmp', 'wb+') as outf, open(outfile_path, 'wb') as outf2:
+            # 把原文中的纠错码读取出来放在临时文件中
+            inf.seek(-1 * rs_length * block_num, 2)
+            rs_code = inf.read(10240)
+            while rs_code:
+                outf.write(rs_code)
+                rs_code = inf.read(10240)
+            # 读取并转移走纠错码之后，将原文中的纠错码截断
+            inf.seek(-1 * rs_length * block_num, 2)
+            inf.truncate()
+            # 接下来对原文进行纠错
+            inf.seek(0)
+            outf.seek(0)
+            block = inf.read(64)
+            while block:
+                # print('block:', block, '\nlen(block):', len(block))
+                rs = RSCodec(rs_length)
+                rs_block = outf.read(rs_length)
+                # print('rs_block:', rs_block, '\nlen(rs_block):', len(rs_block))
+                try:
+                    outf2.write(rs.decode(block + rs_block)[0])
+                except Exception:
+                    outf2.write(block)
+                    repair_success = False
+                block = inf.read(64)
+        if not repair_success:
+            lf2_label5.pack()
+        lf2_entry4.insert('end', outfile_path)
+        # 无论纠错是否成功，都需要把纠错码添回原文件中
+        with open(file_path, 'ab') as outf, open('temp2.tmp', 'rb') as inf:
+            content = inf.read(10240)
+            while content:
+                outf.write(content)
+                content = inf.read(10240)
+        Tools.delete_file('temp2.tmp')
+
+    lf2_button1 = tk.Button(lf2_frm4, text='重置', font=mid_font, command=reset2)
+    lf2_button1.grid(row=1, column=1, padx=20)
+    lf2_button2 = tk.Button(lf2_frm4, text='确定', font=mid_font, command=repair)
+    lf2_button2.grid(row=1, column=2, padx=20)
+    lf2_label3 = tk.Label(labelframe2, text='纠错后的结果保存在原文件所在文件夹中的：', font=mid_font)
+    lf2_label3.pack()
+    lf2_entry4 = tk.Entry(labelframe2, font=mid_font, width=43)
+    lf2_entry4.pack()
+    lf2_label5 = tk.Label(labelframe2, text='已尽最大努力纠错，但仍有无法纠正的错误', font=mid_font)
 
 
 def dh_exchange():

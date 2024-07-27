@@ -298,9 +298,14 @@ class Functions:
         mybox.dh_exchange()
 
     @staticmethod
-    def rs_code():
+    def rs_code_word():
         MyTools.initiation()
-        mybox.rs_code()
+        mybox.rs_code_word()
+
+    @staticmethod
+    def rs_code_file():
+        MyTools.initiation()
+        mybox.rs_code_file()
 
     @staticmethod
     def against_duplicate_check():
@@ -635,9 +640,11 @@ class Functions:
     RS纠错码可以用于发现并纠正数据中的错误，也可用来恢复缺失的数据，但是如果需要使用RS纠错码来恢复缺失的数据，需要指定缺失的位置，所以软件中只提供了纠正错误的功能，而没有恢复缺失数据的功能。RS纠错码的纠正能力取决于纠错码的长度，可纠正错误的数量等于纠错码数量的二分之一。
     
 二、RS纠错码的使用方式
-    添加纠错码：软件中提供了对文字添加纠错码的功能，它会将纠错码放置于原信息的后面。您可以设置纠错码的纠错能力，纠错能力越强，需要的纠错码就越多，请根据信道的噪声情况选择合适的纠错能力。需要注意的是，纠错码的长度不能超过255。
+    添加纠错码：软件中提供了对文字或文件添加纠错码的功能，它会将纠错码放置于原信息的最后。您可以设置纠错码的纠错能力，纠错能力越强，需要的纠错码就越多，请根据信道的噪声情况选择合适的纠错能力。需要注意的是，对文字进行纠错的纠错码的长度不能超过255。
     
-    纠正并去除纠错码：在去除纠错码时，需要指定纠错码的长度。并且在获取需要纠错的信息时，宁可误读信息，也不要缺失信息。'''
+    纠正并去除纠错码：在去除纠错码时，需要指定纠错码的长度。并且在获取需要纠错的信息时，宁可误读信息，也不要缺失信息。
+    
+    用户在测试文件纠错时可能会发现无法纠错的情况，这是因为文件在添加纠错码之后，会导致系统对该文件的编码方式理解错误，导致信息被重新解码和编码，使得纠错码错乱。如果想要进行测试，请使用python程序直接对文件中的字节进行修改。'''
         text.insert('end', word)
 
     @staticmethod
@@ -866,7 +873,11 @@ tools_menu.add_command(label='获取像素点的HSV值/范围', command=Function
 tools_menu.add_command(label='强密码生成器', command=Functions.generate_random_char, font=mid_font)
 tools_menu.add_command(label='base64转码器', command=Functions.base64converter, font=mid_font)
 tools_menu.add_command(label='反查重+反和谐神器', command=Functions.against_duplicate_check, font=mid_font)
-tools_menu.add_command(label='ReedSolomon纠错码', command=Functions.rs_code, font=mid_font)
+
+rs_menu = tk.Menu(tools_menu, tearoff=0)
+tools_menu.add_cascade(label='ReedSolomon纠错码', menu=rs_menu, underline=0, font=mid_font)
+rs_menu.add_command(label='纠错文字', command=Functions.rs_code_word, font=mid_font)
+rs_menu.add_command(label='纠错文件', command=Functions.rs_code_file, font=mid_font)
 
 '''非对称加密与签名部分'''
 asymmetric_menu = tk.Menu(menubar, tearoff=0)

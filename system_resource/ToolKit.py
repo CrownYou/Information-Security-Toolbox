@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import base64
-from reedsolo import RSCodec
 import tkinter as tk
 from tkinter import messagebox
 from random import randint, choice
@@ -1723,3 +1722,10 @@ class Tools:
             result.append(num1 + num2)
 
         return result
+
+    @staticmethod
+    def round_to_even(num: float):
+        if math.floor(num) % 2 == 0:
+            return math.floor(num)
+        elif math.ceil(num) % 2 == 0:
+            return math.ceil(num)

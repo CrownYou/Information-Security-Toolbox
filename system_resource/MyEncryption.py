@@ -5706,6 +5706,7 @@ def hash_file():
     button3.grid(row=1, column=2, padx=10)
     entry2 = tk.Entry(frm1, width=6, font=mid_font, fg=colors[ind])
     entry2.grid(row=1, column=3, padx=10)
+    entry2.insert('end', '一致')
     entry2.config(state='readonly')
     button4 = tk.Button(frm1, text='小窗模式', font=mid_font, command=small_window)
     button4.grid(row=1, column=4, padx=10)
