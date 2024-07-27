@@ -1590,19 +1590,19 @@ def rs_code_file():
         label3.config(text=f'正在处理，请稍候...')
         window.update()
         rs_length = Tools.round_to_even(64 * percent.get() * 0.02)  # RS纠错码的长度需要是被保护信息长度的两倍，所以乘了0.02
-        print('rs_length:', rs_length)
+        # print('rs_length:', rs_length)
         block_num = 0
         # 生成纠错码，并把所有纠错码放在临时文件中
         with open(file_path, 'rb') as inf, open('temp.tmp', 'wb') as outf:
             block = inf.read(64)
             while block:
-                print('block:', block, '\nlen(block):', len(block))
+                # print('block:', block, '\nlen(block):', len(block))
                 block_num += 1
                 rs = RSCodec(rs_length)
                 block_with_rs = bytes(rs.encode(block))
-                print('block_with_rs:', block_with_rs, '\nlen(block_with_rs):', len(block_with_rs))
+                # print('block_with_rs:', block_with_rs, '\nlen(block_with_rs):', len(block_with_rs))
                 rs_code = block_with_rs[len(block):]
-                print('rs_code:', rs_code, '\nlen(rs_code):', len(rs_code))
+                # print('rs_code:', rs_code, '\nlen(rs_code):', len(rs_code))
                 outf.write(rs_code)
                 block = inf.read(64)
         axb = f'{block_num}x{rs_length}'
