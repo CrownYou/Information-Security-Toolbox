@@ -1708,6 +1708,8 @@ def rs_code_file():
         except Exception:
             messagebox.showerror('纠错码长度错误', '纠错码的长度应为正整数')
             return 0
+        lf2_label3.config(text='正在处理中，请稍候...')
+        window.update()
         outfile_path = f'{os.path.splitext(file_path)[0]}_repaired{os.path.splitext(file_path)[1]}'
         # 从文件的末尾读取纠错码，并把它从文件中截断，最后不管纠错是否成功都需要把截断的部分续上
         with open(file_path, 'rb+') as inf, open('temp2.tmp', 'wb+') as outf, open(outfile_path, 'wb') as outf2:
@@ -1745,6 +1747,7 @@ def rs_code_file():
                 outf.write(content)
                 content = inf.read(10240)
         Tools.delete_file('temp2.tmp')
+        lf2_label3.config(text='纠错后的结果保存在原文件所在文件夹中的：')
 
     lf2_button1 = tk.Button(lf2_frm4, text='重置', font=mid_font, command=reset2)
     lf2_button1.grid(row=1, column=1, padx=20)
