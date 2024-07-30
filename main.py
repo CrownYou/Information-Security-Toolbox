@@ -37,7 +37,8 @@ from cryptography.hazmat.primitives.asymmetric import dh, ec
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.backends import default_backend
 from blind_watermark import WaterMark  # pip install blind-watermark==0.4.4
-import tenseal as ts  # pip install tenseal
+import tenseal as ts  # pip install tenseal==0.3.14
+import pickle
 # 上面的是其他文件需要调用的库，打包文件的时候需要用上
 import blind_watermark
 import os
@@ -89,6 +90,7 @@ from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.backends import default_backend
 from blind_watermark import WaterMark  # pip install blind-watermark==0.4.4
 import tenseal as ts  # pip install tenseal
+import pickle
 '''
 
 window = tk.Tk()
@@ -296,6 +298,11 @@ class Functions:
     def dh_exchange():
         MyTools.initiation()
         mybox.dh_exchange()
+
+    @staticmethod
+    def shamir_share():
+        MyTools.initiation()
+        mybox.shamir_share()
 
     @staticmethod
     def rs_code_word():
@@ -911,6 +918,7 @@ aes_key_submenu.add_command(label='随机生成128位', command=Functions.create
 aes_key_submenu.add_command(label='随机生成256位', command=Functions.create_aes_key_32, font=mid_font)
 aes_key_submenu.add_command(label='通过信息摘要创建', command=Functions.create_aes_key_by_hash_digest, font=mid_font)
 aes_key_submenu.add_command(label='通过DH密钥交换算法创建', command=Functions.dh_exchange, font=mid_font)
+aes_key_submenu.add_command(label='通过Shamir秘密分享算法创建', command=Functions.shamir_share, font=mid_font)
 
 aes_menu.add_command(label='文字加解密', command=Functions.aes_word, font=mid_font)
 aes_menu.add_command(label='文件（夹）加解密', command=Functions.aes_file, font=mid_font)
@@ -932,7 +940,7 @@ hash_menu.add_command(label='哈希校验文件', command=Functions.hash_file, f
 '''帮助部分'''
 intro_menu = tk.Menu(menubar, tearoff=0)
 menubar.add_cascade(label='帮助', menu=intro_menu)
-intro_menu.add_command(label='期待您的帮助', command=Functions.sponsor, font=mid_font)
+intro_menu.add_command(label='与我联系', command=Functions.sponsor, font=mid_font)
 intro_menu.add_command(label='软件基本介绍', command=Functions.intro, font=mid_font)
 
 intro_ste_submenu = tk.Menu(intro_menu, tearoff=0)

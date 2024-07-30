@@ -14,10 +14,12 @@ import matplotlib.pyplot as plt
 import sympy as sp
 import jieba
 import unvcode
+import pickle
 from reedsolo import RSCodec
 from cryptography.hazmat.primitives import hashes  # pip install cryptography
 from cryptography.hazmat.primitives.asymmetric import dh
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+from Crypto.Protocol.SecretSharing import Shamir
 from system_resource.ToolKit import Tools
 
 window = frm = mid_font = icon_path = colors = ind = ...
@@ -1972,7 +1974,7 @@ def dh_exchange():
     lf1_button3.grid(row=1, column=2, padx=20)
     lf1_button4 = tk.Button(lf1_frm4, text='复制结果', font=mid_font, command=lf1_copy2, fg=colors[ind])
     lf1_button4.grid(row=1, column=3, padx=20)
-    lf1_label5 = tk.Label(lf1_frm7, text='本次临时会话的AES密钥为：（无需告知参与人）', font=mid_font)
+    lf1_label5 = tk.Label(lf1_frm7, text='此次会话的临时密钥为：（无需告知参与人）', font=mid_font)
     lf1_label5.pack()
     lf1_text3 = tk.Text(lf1_frm7, width=43, height=1, font=mid_font)
     lf1_text3.pack()
@@ -2169,7 +2171,154 @@ def dh_exchange():
     lf2_button3.grid(row=1, column=2, padx=20)
     lf2_button4 = tk.Button(lf2_frm4, text='复制结果', font=mid_font, command=lf2_copy2, fg=colors[ind])
     lf2_button4.grid(row=1, column=3, padx=20)
-    lf2_label5 = tk.Label(lf2_frm7, text='本次临时会话的AES密钥为：（无需告知发起人）', font=mid_font)
+    lf2_label5 = tk.Label(lf2_frm7, text='此次会话的临时密钥为：（无需告知发起人）', font=mid_font)
     lf2_label5.pack()
     lf2_text3 = tk.Text(lf2_frm7, width=43, height=1, font=mid_font)
     lf2_text3.pack()
+
+
+def shamir_share():
+    # 会话发起人创建并分发密钥（左边的labelframe）
+    labelframe1 = tk.LabelFrame(frm, text='会话发起人创建并分发密钥', height=745, width=606, font=mid_font)
+    labelframe1.pack(side='left', padx=5, pady=5)
+    labelframe1.pack_propagate(0)  # 使组件大小不变
+
+    def refresh():
+        key = base64.b64encode(os.urandom(16)).decode()
+        lf1_entry1.config(state='normal')
+        Tools.reset(lf1_entry1)
+        lf1_entry1.insert('end', key)
+        lf1_entry1.config(state='readonly')
+        lf1_label4.config(text='   ')
+
+    def lf1_copy():
+        Tools.copy(lf1_entry1, lf1_button2)
+
+    def generate():
+        number = lf1_entry2.get().strip()
+        threshold = lf1_entry3.get().strip()
+        try:
+            number = eval(number)
+            assert isinstance(number, int) and number >= 2
+            threshold = eval(threshold)
+            assert isinstance(threshold, int) and 2 <= threshold <= number
+        except Exception:
+            messagebox.showerror(title='输入错误', message='输入应为大于等于2的正整数，\n且密钥碎片数量应该大于等于能拼凑出密钥的碎片数量')
+            return 0
+        lf1_label4.config(text='生成中，请稍候...')
+        window.update()
+        shares = Shamir.split(threshold, number, base64.b64decode(lf1_entry1.get().encode()))
+        shares_dir_path = os.path.join(os.getcwd(), 'Shamir_Shares')
+        if not os.path.exists(shares_dir_path):
+            os.mkdir(shares_dir_path)
+        for ind, share in enumerate(shares, start=1):
+            file_path = os.path.join(shares_dir_path, f'Shamir_share_{ind}.shamir')
+            with open(file_path, 'wb') as f:
+                pickle.dump(share, f)
+        lf1_label4.config(text='结果保存在程序所在文件夹中的\nShamir_shares文件夹中')
+
+    def open_dir():
+        shares_dir_path = os.path.join(os.getcwd(), 'Shamir_Shares')
+        if not os.path.exists(shares_dir_path):
+            os.mkdir(shares_dir_path)
+        os.system(f"explorer {os.path.join(os.getcwd(), 'Shamir_Shares')}")
+
+    lf1_frm1 = tk.Frame(labelframe1)
+    lf1_frm1.pack()
+    lf1_label1 = tk.Label(lf1_frm1, text='此次会话的临时密钥为：', font=mid_font)
+    lf1_label1.grid(row=1, column=1, padx=5)
+    lf1_button1 = tk.Button(lf1_frm1, text='刷新', font=mid_font, command=refresh)
+    lf1_button1.grid(row=1, column=2, padx=5)
+    lf1_button2 = tk.Button(lf1_frm1, text='复制', font=mid_font, command=lf1_copy, fg=colors[ind])
+    lf1_button2.grid(row=1, column=3, padx=5)
+    lf1_entry1 = tk.Entry(labelframe1, width=43, font=mid_font, state='readonly')
+    lf1_entry1.pack()
+    lf1_frm2 = tk.Frame(labelframe1)
+    lf1_frm2.pack()
+    lf1_label2 = tk.Label(lf1_frm2, text='设置将密钥分为多少碎片：    ', font=mid_font)
+    lf1_label2.grid(row=1, column=1, padx=5)
+    lf1_entry2 = tk.Entry(lf1_frm2, width=5, font=mid_font)
+    lf1_entry2.grid(row=1, column=2, padx=5)
+    lf1_frm3 = tk.Frame(labelframe1)
+    lf1_frm3.pack()
+    lf1_label3 = tk.Label(lf1_frm3, text='设置多少碎片可拼出完整密钥：', font=mid_font)
+    lf1_label3.grid(row=1, column=1, padx=5)
+    lf1_entry3 = tk.Entry(lf1_frm3, width=5, font=mid_font)
+    lf1_entry3.grid(row=1, column=2, padx=5)
+    lf1_frm4 = tk.Frame(labelframe1)
+    lf1_frm4.pack()
+    lf1_button3 = tk.Button(lf1_frm4, text='生成密钥碎片', font=mid_font, command=generate)
+    lf1_button3.grid(row=1, column=1, padx=20)
+    lf1_button4 = tk.Button(lf1_frm4, text='打开结果所在文件夹', font=mid_font, command=open_dir)
+    lf1_button4.grid(row=1, column=2, padx=20)
+    lf1_label4 = tk.Label(labelframe1, text='   ', font=mid_font)
+    lf1_label4.pack()
+    refresh()
+
+    # 会话参与人拼凑密钥（右边的labelframe）
+    labelframe2 = tk.LabelFrame(frm, text='会话参与人拼凑密钥', height=745, width=606, font=mid_font)
+    labelframe2.pack(side='right', padx=5, pady=5)
+    labelframe2.pack_propagate(0)  # 使组件大小不变
+
+    def lf2_drag(files):
+        if not lf2_text1.get(1.0, 'end').strip():
+            lf2_text1.insert('end', ',\n\n'.join([f.decode('GBK') for f in files]))
+        else:
+            lf2_text1.insert('end', ', \n\n')
+            lf2_text1.insert('end', ',\n\n'.join([f.decode('GBK') for f in files]))
+
+    def lf2_reset():
+        Tools.reset(lf2_text1)
+        lf2_entry1.config(state='normal')
+        Tools.reset(lf2_entry1)
+        lf2_entry1.config(state='readonly')
+
+    def lf2_copy():
+        Tools.copy(lf2_entry1, lf2_button3)
+
+    def combine():
+        lf2_entry1.config(state='normal')
+        Tools.reset(lf2_entry1)
+        lf2_entry1.config(state='readonly')
+        file_paths = [f.strip() for f in lf2_text1.get(1.0, 'end').strip().replace('，', ',').split(',')]
+        shares = []
+        for ind, file_path in enumerate(file_paths, start=1):
+            if os.path.exists(file_path):
+                with open(file_path, 'rb') as f:
+                    try:
+                        share = pickle.load(f)
+                        print('share:', share)
+                    except Exception:
+                        messagebox.showerror('密钥碎片内容错误', f'第{ind}个密钥碎片的内容读取失败')
+                        return 0
+                    shares.append(share)
+            else:
+                messagebox.showerror('密钥碎片路径错误', f'第{ind}个密钥碎片的路径不存在')
+                return 0
+        try:
+            key = Shamir.combine(shares)
+        except Exception:
+            messagebox.showerror('密钥碎片拼凑失败', f'密钥碎片拼凑失败，请检查输入')
+            return 0
+        lf2_entry1.config(state='normal')
+        lf2_entry1.insert('end', base64.b64encode(key).decode())
+        lf2_entry1.config(state='readonly')
+
+    lf2_label1 = tk.Label(labelframe2, text='请拖入密钥碎片或输入地址\n（用‘，’或‘,’分隔）：', font=mid_font)
+    lf2_label1.pack()
+    lf2_text1 = tk.Text(labelframe2, width=43, font=mid_font, height=20)
+    lf2_text1.pack()
+    hook_dropfiles(lf2_text1, func=lf2_drag)
+    lf2_frm1 = tk.Frame(labelframe2)
+    lf2_frm1.pack()
+    lf2_button1 = tk.Button(lf2_frm1, text='重置', font=mid_font, command=lf2_reset)
+    lf2_button1.grid(row=1, column=1, padx=20)
+    lf2_button2 = tk.Button(lf2_frm1, text='确定', font=mid_font, command=combine)
+    lf2_button2.grid(row=1, column=2, padx=20)
+    lf2_button3 = tk.Button(lf2_frm1, text='复制密钥', font=mid_font, command=lf2_copy, fg=colors[ind])
+    lf2_button3.grid(row=1, column=3, padx=20)
+    lf2_label2 = tk.Label(labelframe2, text='此次会话的临时密钥为：', font=mid_font)
+    lf2_label2.pack()
+    lf2_entry1 = tk.Entry(labelframe2, width=43, font=mid_font, state='readonly')
+    lf2_entry1.pack()
+
