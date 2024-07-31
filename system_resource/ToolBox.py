@@ -828,7 +828,7 @@ def confuse_qr_code():
                     cv2.imwrite('pic_by_perspective_transformation.png', outcome_img)
                     print('已将结果临时保存在程序目录下的pic_by_perspective_transformation.png')
                     break
-                time.sleep(0.2)
+                time.sleep(0.5)
             Tools.delete_file('myplot.png')
             cv2.destroyAllWindows()
 
@@ -1153,11 +1153,11 @@ def against_duplicate_check():
     kind.set('mix')
 
     def cal_len(*args):
-        label1.config(text=f"请输入需要插入/去除零宽度字符的文字：\n（长度：{len(text1.get(1.0, 'end'))-1}）")  # 要去掉文本框最后自带的\n所占的长度
+        label1.config(text=f"请输入需要插入/去除特殊字符的文字：\n（长度：{len(text1.get(1.0, 'end'))-1}）")  # 要去掉文本框最后自带的\n所占的长度
 
     def reset():
         Tools.reset(text1)
-        label1.config(text=f"请输入需要插入/去除零宽度字符的文字：\n（长度：0）")  # 要去掉文本框最后自带的\n所占的长度
+        label1.config(text=f"请输入需要插入/去除特殊字符的文字：\n（长度：0）")  # 要去掉文本框最后自带的\n所占的长度
         Tools.reset(text2)
         label2.config(text=f'结果为：（长度：0）')
 
@@ -1205,7 +1205,7 @@ def against_duplicate_check():
                 res += word
         text2.insert('end', res)
         lf2_text1.insert('end', res)
-        label2.config(text=f'插入零宽字符后的结果为：（长度：{len(res)}）')
+        label2.config(text=f'插入特殊字符后的结果为：（长度：{len(res)}）')
         cal_len2()
         window.update()
         _replace()
@@ -1215,14 +1215,14 @@ def against_duplicate_check():
         encoded = text1.get(1.0, 'end').rstrip('\n')
         origin = encoded.replace(' ', '').replace(' ', '').replace('‌', '').replace('‍', '').replace('​', '').replace('﻿', '').replace('‎', '').replace('‏', '')
         text2.insert('end', origin)
-        label2.config(text=f'去除零宽字符后的结果为：（长度：{len(origin)}）')
+        label2.config(text=f'去除特殊字符后的结果为：（长度：{len(origin)}）')
 
     def _copy():
         Tools.copy(text2, button4)
 
     def intro_mode():
         intro_window2 = tk.Toplevel()
-        intro_window2.title("零宽度字符操作介绍")
+        intro_window2.title("特殊字符操作介绍")
         intro_window2.geometry('636x758')
         intro_window2.iconbitmap(icon_path)
         iw_text = tk.Text(intro_window2, width=46, height=18, font=mid_font)
