@@ -4849,7 +4849,7 @@ def ckks_word():
     uf2_label1.grid(row=1, column=1, padx=5)
     uf2_var1 = tk.StringVar()
     uf2_var1.set('0')
-    uf2_cb1 = tk.Checkbutton(uf_frm1, text='隐藏', variable=uf2_var1, onvalue='1', offvalue='0',
+    uf2_cb1 = tk.Checkbutton(uf2_frm1, text='隐藏', variable=uf2_var1, onvalue='1', offvalue='0',
                             command=change_uf2_entry1_show, font=mid_font)
     uf2_cb1.grid(row=1, column=2, padx=5)
     uf2_entry1 = tk.Entry(up_frm2, font=mid_font, width=59)
