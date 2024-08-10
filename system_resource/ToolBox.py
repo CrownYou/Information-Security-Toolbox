@@ -7,6 +7,7 @@ from windnd import hook_dropfiles
 import base64
 import copy
 import time
+import math
 from random import randint
 import cv2
 import numpy as np
@@ -649,10 +650,14 @@ def confuse_qr_code():
         height_text_variable.set('  当前图像所属观察点的真实高度  ：xx cm')
         twh_label3 = tk.Label(sf_true_width_height_frm, textvariable=height_text_variable, font=mid_font)
         twh_label3.pack()
+        angle_text_variable = tk.StringVar()
+        angle_text_variable.set('  当前图像所属观察点的倾斜角度  ：xx 度')
+        twh_label4 = tk.Label(sf_true_width_height_frm, textvariable=angle_text_variable, font=mid_font)
+        twh_label4.pack()
         sf_frm4 = tk.Frame(second_frm)
         sf_frm4.pack()
         save_flag = False
-        true_width = true_height = 0
+        true_width = true_height = angle = 0
 
         @Tools.run_as_thread
         def save_outcome_img():
@@ -671,7 +676,7 @@ def confuse_qr_code():
             elif selected_location.get() == '右侧':
                 direction = 'right'
             out_path = os.path.join(qr_dir,
-                                    qr_name + f'_{direction}_d{true_width}_h{true_height}{qr_suffix}')
+                                    qr_name + f'_{direction}_angle_{angle}degree{qr_suffix}')
             hidden_frm.pack()
             time.sleep(0.1)
             while True:
@@ -700,7 +705,7 @@ def confuse_qr_code():
 
         @Tools.run_as_thread
         def show_outcome_img():
-            nonlocal true_width, true_height
+            nonlocal true_width, true_height, angle
             perspective_canvas.create_image(0, 0, anchor='nw', image=perspective_file)
             # 上面这行代码的位置不要移动，一旦放到这个函数之外，这个函数就会失效！！！
             A = [0, 0]
@@ -818,6 +823,8 @@ def confuse_qr_code():
                     width_text_variable.set(f'当前图像所属观察点的真实水平距离：{true_width} cm')
                     true_height = round(zoom_scale * h / 28)
                     height_text_variable.set(f'  当前图像所属观察点的真实高度  ：{true_height} cm')
+                    angle = round(math.degrees(math.atan(true_height / true_width))) if true_width > 0 else 90
+                    angle_text_variable.set(f'  当前图像所属观察点的倾斜角度  ：{angle} 度')
                     outcome_img = cv2.resize(dst, (0, 0), fx=zoom_scale, fy=zoom_scale, interpolation=cv2.INTER_AREA)
                 except Exception:
                     pass  # 有时眼睛的位置会使得ABEF不存在或者过大，所以这种情况就跳过
@@ -926,7 +933,7 @@ def hide_qr_code():
         # 获取背景图片
         back_path = Tools.get_path_from_entry(entry2)
         if os.path.exists(back_path):
-            temp_back_path = f'_temp_back{os.path.splitext(qr_path)[-1]}'
+            temp_back_path = f'_temp_back{os.path.splitext(back_path)[-1]}'
             Tools.read_all_and_write_all(back_path, temp_back_path)
             try:
                 back_img = cv2.imread(temp_back_path)
@@ -1125,6 +1132,386 @@ def hide_qr_code():
 
         else:
             messagebox.showerror('载体图片地址错误', '载体图片地址错误')
+
+    button1 = tk.Button(frm1, text='重置', command=reset, font=mid_font)
+    button1.grid(row=1, column=1, padx=20)
+    button2 = tk.Button(frm1, text='确定', command=confirm, font=mid_font)
+    button2.grid(row=1, column=2, padx=20)
+    frm3 = tk.Frame(first_frm)
+    label4 = tk.Label(frm3, text='结果保存至...中的：', font=mid_font)
+    label4.pack()
+    entry3 = tk.Entry(frm3, width=59, font=mid_font)
+    entry3.pack()
+
+
+def invisible_qr():
+    first_frm = tk.Frame(frm)
+    first_frm.pack()
+
+    def drag1(files):
+        Tools.dragged_files(files, entry1)
+
+    def drag2(files):
+        Tools.dragged_files(files, entry2)
+
+    label1 = tk.Label(first_frm, text='请拖入需要隐藏的二维码图片或输入地址：', font=mid_font)
+    label1.pack()
+    entry1 = tk.Entry(first_frm, width=59, font=mid_font)
+    entry1.pack()
+    hook_dropfiles(entry1, func=drag1)
+    label2 = tk.Label(first_frm, text='请拖入一张载体图片来隐藏上面的图片：', font=mid_font)
+    label2.pack()
+    entry2 = tk.Entry(first_frm, width=59, font=mid_font)
+    entry2.pack()
+    hook_dropfiles(entry2, func=drag2)
+    frm2 = tk.Frame(first_frm)
+    frm2.pack()
+    label3 = tk.Label(frm2, text='请选择结果的保存位置：', font=mid_font)
+    label3.grid(row=1, column=1)
+    var1 = tk.StringVar()
+    var1.set('二维码图片所在文件夹')
+    optionmenu1 = tk.OptionMenu(frm2, var1, *('二维码图片所在文件夹', '载体图片所在文件夹'))
+    optionmenu1.grid(row=1, column=2)
+    optionmenu1.config(font=mid_font)
+    frm1 = tk.Frame(first_frm)
+    frm1.pack()
+
+    def reset():
+        Tools.reset(entry1)
+        Tools.reset(entry2)
+        frm3.pack_forget()
+
+    def confirm():
+        global alive
+        frm3.pack_forget()
+
+        # 获取背景图片 -> bg_img（BGRA格式，四通道）
+        back_path = Tools.get_path_from_entry(entry2)
+        if os.path.exists(back_path):
+            temp_back_path = f'_temp_back{os.path.splitext(back_path)[-1]}'
+            Tools.read_all_and_write_all(back_path, temp_back_path)
+            try:
+                back_img = cv2.imread(temp_back_path, cv2.IMREAD_UNCHANGED)  # 读取时保留原格式包括alpha通道
+                bg_img_rows, bg_img_cols, _ = back_img.shape
+                if bg_img_rows > 900 or bg_img_cols > 900:
+                    zoom = min(900 / bg_img_rows, 900 / bg_img_cols)
+                else:
+                    zoom = 1.0
+                zoomed_bg_img = cv2.resize(back_img, None, fx=zoom, fy=zoom, interpolation=cv2.INTER_AREA)
+                zoomed_bg_img = cv2.cvtColor(zoomed_bg_img, cv2.COLOR_BGR2BGRA)
+                cv2.imshow('image', zoomed_bg_img)
+            except Exception:
+                Tools.delete_file(temp_back_path)
+                messagebox.showerror('载体图片格式错误', '载体图片的格式不正确')
+                return 0
+            os.remove(temp_back_path)
+            cv2.destroyAllWindows()
+            bg_rows, bg_cols, _ = zoomed_bg_img.shape
+            bg_img = copy.deepcopy(zoomed_bg_img)
+        else:
+            messagebox.showerror('载体图片地址错误', '载体图片地址错误')
+            return 0
+
+        # 获取二维码图片 -> qr_img
+        qr_path = Tools.get_path_from_entry(entry1)
+        if os.path.exists(qr_path):
+            temp_qr_path = f'_temp_logo{os.path.splitext(qr_path)[-1]}'
+            Tools.read_all_and_write_all(qr_path, temp_qr_path)
+            try:
+                qr_img = cv2.imread(temp_qr_path)
+                cv2.imshow('QR code', qr_img)
+            except Exception:
+                Tools.delete_file(temp_qr_path)
+                messagebox.showerror('二维码图片格式错误', '二维码图片的格式不正确')
+                return 0
+            os.remove(temp_qr_path)
+        else:
+            messagebox.showerror('二维码图片地址错误', '二维码图片地址错误')
+            return 0
+
+        # 检查完两张图片都没有问题后，接下来让用户对二维码进行框选
+        def back_to_first1():
+            global alive
+            alive = False
+            try:
+                cv2.destroyAllWindows()
+                third_frm.pack_forget()
+                first_frm.pack()
+            except Exception:
+                pass
+
+        def select_qr_code(event, x, y, flags, param):
+            nonlocal x_start, y_start, qr_img_copy, qr_code_img
+            if event == cv2.EVENT_LBUTTONDOWN:
+                x_start, y_start = x, y
+            elif event == cv2.EVENT_MOUSEMOVE and flags == cv2.EVENT_FLAG_LBUTTON:
+                qr_img_copy = copy.deepcopy(qr_img)
+                cv2.rectangle(qr_img_copy, (x_start, y_start), (x, y),
+                              (randint(0, 255), randint(0, 255), randint(0, 255)), 2)
+            elif event == cv2.EVENT_LBUTTONUP:
+                row_begin = min(y_start, y) + 1  # 这里进行微调是因为线有2像素宽，要把线从图片中去掉
+                row_end = max(y_start, y) - 1
+                col_begin = min(x_start, x) + 1
+                col_end = max(x_start, x) - 1
+                qr_code_img = qr_img_copy[row_begin: row_end, col_begin: col_end]
+
+        alive = True
+        first_frm.pack_forget()
+        third_frm = tk.Frame(frm)
+        third_frm.pack()
+        tf_label1 = tk.Label(third_frm, text='请在图片中框选出二维码的位置（按‘S’确认，按‘Q’放弃），不框选则意味着全选', font=mid_font, fg='red')
+        tf_label1.grid(row=1)
+        qr_img_copy = copy.deepcopy(qr_img)  # 这里的zoomed_qr_img_copy既包括二维码也包括二维码的背景
+        x_start = y_start = qr_code_img = -1  # qr_code_img是用户框选出来的结果（二维码本体）
+        cv2.setMouseCallback('QR code', select_qr_code)
+        window.update()
+        while alive:
+            # 要退出这个循环，请使用alive = False
+            cv2.imshow('QR code', qr_img_copy)
+            key = cv2.waitKey(10)  # 每隔10毫秒获取一下用户输入
+            if key == ord('s'):
+                if isinstance(qr_code_img, np.ndarray) and qr_code_img.shape != (0, 0, 3):
+                    # 如果用户框选了二维码，那么就使用用户框选的部分
+                    print('用户进行了框选二维码，这是框选出来的qr_code_img的大小：')
+                    print(qr_code_img.shape)
+                else:  # 如果用户按下‘S’键前没有框选二维码，那么就认为整张图片都是二维码
+                    print('用户按下了s，并且没有进行框选，则认为选取结果为zoomed_qr_img的大小为：')
+                    print(qr_img.shape)
+                    qr_code_img = qr_img
+                alive = False
+            elif key == ord('q') or cv2.getWindowProperty('QR code', cv2.WND_PROP_VISIBLE) != 1:
+                back_to_first1()
+                return 0
+        cv2.destroyAllWindows()
+
+        # 对二维码进行框选之后，再根据用户设置将二维码放置在背景图片上
+        def apply(*args):  # 根据用户设定的参数放置二维码
+            nonlocal bg_img
+            sf_label7.pack()
+            window.update()
+            sf_label7.pack_forget()
+            # 如果用户的背景颜色选择其他，那处理一下用户设定的RGB
+            if sf_var1.get() == '其他':
+                try:
+                    r = eval(sf_entry_r.get())
+                    assert (isinstance(r, int)) and 0 <= r <= 255
+                    g = eval(sf_entry_g.get())
+                    assert (isinstance(g, int)) and 0 <= g <= 255
+                    b = eval(sf_entry_b.get())
+                    assert (isinstance(b, int)) and 0 <= b <= 255
+                except Exception:
+                    messagebox.showerror('RGB数值错误', 'RGB数值错误，定义范围为[0, 255]，请检查后重新输入')
+                    return 0
+            # 获取一下用户设定的中心点
+            try:
+                center_x = eval(sf_entry2.get())
+                assert isinstance(center_x, int) and 0 <= center_x <= bg_cols
+            except Exception:
+                Tools.reset(sf_entry2)
+                center_x = round(bg_cols / 2)
+                sf_entry2.insert(0, center_x)
+            try:
+                center_y = eval(sf_entry3.get())
+                assert isinstance(center_y, int) and 0 <= center_y <= bg_rows
+            except Exception:
+                Tools.reset(sf_entry3)
+                center_y = round(bg_rows / 2)
+                sf_entry3.insert(0, center_y)
+            # 再处理一下用户设定的缩放程度
+            try:
+                set_resize = eval(sf_entry1.get())
+                assert (isinstance(set_resize, int) or isinstance(set_resize, float)) and 0 <= set_resize
+            except Exception:
+                Tools.reset(sf_entry1)
+                sf_entry1.insert(0, '0.5')
+                set_resize = 0.5
+            # 将背景图片进行拷贝后再处理
+            bg_img = copy.deepcopy(zoomed_bg_img)
+            # 根据用户设定的qr_code_img的位置和大小，确定一下roi的位置（即确定qr_code要放在背景图片的哪个位置）
+            if set_resize <= 1.0:
+                resized_qr_img = cv2.resize(qr_code_img, None, fx=set_resize, fy=set_resize,
+                                            interpolation=cv2.INTER_AREA)
+            else:
+                resized_qr_img = cv2.resize(qr_code_img, None, fx=set_resize, fy=set_resize,
+                                            interpolation=cv2.INTER_CUBIC)
+            qr_rows, qr_cols, _ = resized_qr_img.shape
+            qr_start_x, qr_end_x, roi_start_x, roi_end_x, qr_start_y, qr_end_y, roi_start_y, roi_end_y \
+                = Tools.process_roi(bg_cols, qr_cols, center_x, bg_rows, qr_rows, center_y)
+            roi = bg_img[roi_start_y: roi_end_y, roi_start_x: roi_end_x]
+            print('roi.shape:', roi.shape)
+            processed_qr_img = resized_qr_img[qr_start_y: qr_end_y, qr_start_x: qr_end_x]
+            print('processed_qr_img.shape:', processed_qr_img.shape)
+            # 根据二维码的颜色深浅来确定掩膜，用于后续处理roi
+            qr2gray = cv2.cvtColor(processed_qr_img, cv2.COLOR_BGR2GRAY)
+            _, dark_mask = cv2.threshold(qr2gray, 128, 255, cv2.THRESH_BINARY)  # dark_mask 是遮住了黑色部分的掩膜（剩余白色部分）
+            light_mask = cv2.bitwise_not(dark_mask)  # light_mask 是遮住了白色部分的掩膜（剩余黑色部分）
+            print('dark_mask.shape:', dark_mask.shape)
+            print('light_mask.shape:', light_mask.shape)
+            # 对roi中的每一个像素都进行bgr值的运算，并添加透明度，最后，把对应白色部分的roi掩盖起来
+            '''
+            P原 = P新 * Weight新 + P背 * (1 - Weight新)
+            P原：原图片的像素BGR值，定义域[[0, 0, 0], [255, 255, 255]]
+            P新：要生成的新图片的像素BGR值，定义域[[0, 0, 0], [255, 255, 255]]
+            P背：新图片背景图片的像素BGR值，定义域[[0, 0, 0], [255, 255, 255]]
+            Weight新：新图片的不透明度（权重），定义域：[0, 1]，值越小，越透明，值越大，越不透明
+            注：png图片的第四通道为不透明（权重）通道，也叫Alpha通道，值域：[0, 255]，值越小，越透明，值越大，越不透明
+            => P新 = (P原 - P背 * (1 - Weight新)) / Weight新
+            '''
+            dark_roi = np.zeros(roi.shape, dtype=np.uint8)
+            weight = 1 - transparent_var.get() / 100  # 权重，不透明度，取值范围[0, 1]
+            if sf_var1.get() == '白色':
+                dark_roi[:, :, :3] = (roi[:, :, :3] - np.array([255, 255, 255]) * (1 - weight)) / weight
+            elif sf_var1.get() == '黑色':
+                dark_roi[:, :, :3] = (roi[:, :, :3] - np.array([0, 0, 0]) * (1 - weight)) / weight
+            elif sf_var1.get() == '其他':
+                dark_roi[:, :, :3] = (roi[:, :, :3] - np.array([b, g, r]) * (1 - weight)) / weight
+            dark_roi[:, :, 3] = round(255 * weight)
+            dark_roi = cv2.bitwise_and(dark_roi, dark_roi, mask=light_mask)
+            # 将对应白色部分的roi保持原样，并于上面的dark_roi相加，就可以得想要的roi效果
+            light_roi = cv2.bitwise_and(roi, roi, mask=dark_mask)
+            dst_roi = cv2.add(dark_roi, light_roi)
+            bg_img[roi_start_y: roi_end_y, roi_start_x: roi_end_x] = dst_roi
+            cv2.imshow('outcome image', bg_img)
+
+        def put_qr_code(event, x, y, flags, param):
+            if event == cv2.EVENT_LBUTTONDOWN:
+                Tools.reset(sf_entry2)
+                Tools.reset(sf_entry3)
+                sf_entry2.insert(0, x)
+                sf_entry3.insert(0, y)
+                apply()
+
+        def back_to_first2():
+            global alive
+            alive = False
+            cv2.destroyAllWindows()
+            try:
+                second_frm.pack_forget()
+                first_frm.pack()
+            except Exception:
+                pass
+
+        def save():
+            apply()  # 先根据用户参数把二维码放上去，看看参数有没有问题
+            cv2.destroyAllWindows()
+            if sf_var1.get() == '白色':
+                background_color = 'white'
+            elif sf_var1.get() == '黑色':
+                background_color = 'black'
+            elif sf_var1.get() == '其他':
+                background_color = f'rgb_{sf_entry_r.get()}_{sf_entry_g.get()}_{sf_entry_b.get()}'
+            temp_outpath = f'invisible_qr_on_{background_color}_background.png'
+            outname = f'{os.path.splitext(os.path.basename(back_path))[0]}_invisible_qr_on_{background_color}_background.png'
+            cv2.imwrite(temp_outpath, bg_img)
+            if var1.get() == '二维码图片所在文件夹':
+                save_dir = os.path.dirname(qr_path)
+            elif var1.get() == '载体图片所在文件夹':
+                save_dir = os.path.dirname(back_path)
+            if os.getcwd() != save_dir:  # 如果软件所在文件夹不是用户选择的文件夹，那么就进行移动
+                outpath = os.path.join(save_dir, outname)
+                Tools.read_all_and_write_all(temp_outpath, outpath)
+                Tools.delete_file(temp_outpath)
+            else:
+                os.rename(temp_outpath, outname)
+            label4.config(text=f'结果保存至{var1.get()}中的：')
+            Tools.reset(entry3)
+            entry3.insert('end', outname)
+            frm3.pack()
+            first_frm.pack()
+            second_frm.pack_forget()
+
+        @Tools.run_as_thread
+        def listening_closing_window():
+            while alive:
+                if cv2.getWindowProperty('outcome image', cv2.WND_PROP_VISIBLE) != 1:
+                    back_to_first2()
+                time.sleep(0.1)
+
+        def change_alpha(*args):
+            if sf_var1.get() == '白色':
+                transparent_var.set(60)
+                sf_frm_rgb.grid_forget()
+            elif sf_var1.get() == '黑色':
+                transparent_var.set(40)
+                sf_frm_rgb.grid_forget()
+            elif sf_var1.get() == '其他':
+                transparent_var.set(50)
+                sf_frm_rgb.grid(row=1, column=3)
+
+        alive = True
+        cv2.imshow('outcome image', bg_img)
+        cv2.setMouseCallback('outcome image', put_qr_code)
+        listening_closing_window()
+        third_frm.pack_forget()
+        second_frm = tk.Frame(frm)
+        second_frm.pack()
+        sf_label1 = tk.Label(second_frm, text='请在载体图片上单击二维码图片隐藏的位置：', fg='red', font=mid_font)
+        sf_label1.pack()
+        sf_label3 = tk.Label(second_frm, text='二维码中心点的位置（左上角为原点）：', font=mid_font)
+        sf_label3.pack()
+        sf_frm3 = tk.Frame(second_frm)
+        sf_frm3.pack()
+        sf_label4 = tk.Label(sf_frm3, text='x：', font=mid_font)
+        sf_label4.grid(row=1, column=1)
+        sf_entry2 = tk.Entry(sf_frm3, width=4, font=mid_font)
+        sf_entry2.grid(row=1, column=2)
+        sf_entry2.bind('<Return>', apply)
+        sf_label5 = tk.Label(sf_frm3, text='像素  y：', font=mid_font)
+        sf_label5.grid(row=1, column=3)
+        sf_entry3 = tk.Entry(sf_frm3, width=4, font=mid_font)
+        sf_entry3.grid(row=1, column=4)
+        sf_entry3.bind('<Return>', apply)
+        sf_label6 = tk.Label(sf_frm3, text='像素', font=mid_font)
+        sf_label6.grid(row=1, column=5)
+        sf_frm1 = tk.Frame(second_frm)
+        sf_frm1.pack()
+        sf_label2 = tk.Label(sf_frm1, text='请选择二维码图片的缩放程度：', font=mid_font)
+        sf_label2.grid(row=1, column=1)
+        sf_entry1 = tk.Entry(sf_frm1, width=4, font=mid_font)
+        sf_entry1.grid(row=1, column=2)
+        sf_entry1.insert('end', '0.5')
+        sf_entry1.bind('<Return>', apply)
+        sf_frm4 = tk.Frame(second_frm)
+        sf_frm4.pack()
+        sf_var1 = tk.StringVar()
+        sf_var1.set('白色')
+        sf_label9 = tk.Label(sf_frm4, text='请设置在何种背景下能够正确隐藏二维码：', font=mid_font)
+        sf_label9.grid(row=1, column=1, padx=5)
+        sf_op1 = tk.OptionMenu(sf_frm4, sf_var1, *('白色', '黑色', '其他'), command=change_alpha)
+        sf_op1.config(font=mid_font)
+        sf_op1.grid(row=1, column=2, padx=5)
+        sf_frm_rgb = tk.Frame(sf_frm4)
+        # sf_frm_rgb.grid(row=1, column=3)
+        sf_label_r = tk.Label(sf_frm_rgb, text='R:', font=mid_font)
+        sf_label_r.grid(row=1, column=1)
+        sf_entry_r = tk.Entry(sf_frm_rgb, width=3, font=mid_font)
+        sf_entry_r.grid(row=1, column=2)
+        sf_label_g = tk.Label(sf_frm_rgb, text='G:', font=mid_font)
+        sf_label_g.grid(row=1, column=3)
+        sf_entry_g = tk.Entry(sf_frm_rgb, width=3, font=mid_font)
+        sf_entry_g.grid(row=1, column=4)
+        sf_label_b = tk.Label(sf_frm_rgb, text='B:', font=mid_font)
+        sf_label_b.grid(row=1, column=5)
+        sf_entry_b = tk.Entry(sf_frm_rgb, width=3, font=mid_font)
+        sf_entry_b.grid(row=1, column=6)
+        sf_label10 = tk.Label(second_frm, text='背景越白，二维码就隐藏在图片中越白的位置，透明度就越靠近60\n背景越黑，二维码就隐藏在图片中越黑的位置，透明度就越靠近40', font=mid_font)
+        sf_label10.pack()
+        sf_label8 = tk.Label(second_frm, text='请设置隐藏的二维码图片的透明度：', font=mid_font)
+        sf_label8.pack()
+        transparent_var = tk.IntVar()
+        transparent_var.set(60)
+        sf_scale1 = tk.Scale(second_frm, from_=40, to=60, variable=transparent_var, orient=tk.HORIZONTAL, length=500,
+                             showvalue=1, tickinterval=5, resolution=1)
+        sf_scale1.pack()
+        sf_frm2 = tk.Frame(second_frm)
+        sf_frm2.pack()
+        sf_button1 = tk.Button(sf_frm2, text='放弃', font=mid_font, command=back_to_first2)
+        sf_button1.grid(row=1, column=1, padx=20)
+        sf_button2 = tk.Button(sf_frm2, text='应用', font=mid_font, command=apply)
+        sf_button2.grid(row=1, column=2, padx=20)
+        sf_button3 = tk.Button(sf_frm2, text='保存', font=mid_font, command=save)
+        sf_button3.grid(row=1, column=3, padx=20)
+        sf_label7 = tk.Label(second_frm, text='正在处理，请稍候，不要频繁操作', fg='red', font=mid_font)
 
     button1 = tk.Button(frm1, text='重置', command=reset, font=mid_font)
     button1.grid(row=1, column=1, padx=20)

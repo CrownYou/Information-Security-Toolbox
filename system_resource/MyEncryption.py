@@ -4908,8 +4908,18 @@ def ckks_word():
             if context == 0:
                 return 0
         # 再对明文V1进行处理
-        v1 = Tools.text2vector(df1_text1.get(1.0, 'end').rstrip('\n').strip())
-        print(f'向量化的V1为：{v1}，长度为：{len(v1)}')
+        if df1_type.get() == '文字':
+            v1 = Tools.text2vector(df1_text1.get(1.0, 'end').rstrip('\n').strip())
+            print(f'向量化的V1为：{v1}，长度为：{len(v1)}')
+        elif df1_type.get() == '向量':
+            try:
+                v1 = eval(df1_text1.get(1.0, 'end').rstrip('\n').strip().replace('，', ','))
+                assert isinstance(v1, list)
+                for i in v1:
+                    assert isinstance(i, int)
+            except Exception:
+                messagebox.showerror('V1向量格式错误', 'V1向量格式错误，格式应类似于：[1, 2, 3]')
+                return 0
         try:
             enc_v1 = ts.ckks_vector(context, v1)
         except Exception:
@@ -4925,8 +4935,19 @@ def ckks_word():
         df1_text2.insert(1.0, out_path)
 
     def cal_len_v1(*args):
-        len_v1 = len(Tools.text2vector(df1_text1.get(1.0, 'end').rstrip('\n').strip()))
-        df1_label3.config(text=f'V1的长度为：{len_v1}（须等于V2）')
+        if df1_type.get() == '文字':
+            len_v1 = len(Tools.text2vector(df1_text1.get(1.0, 'end').rstrip('\n').strip()))
+            df1_label3.config(text=f'V1的长度为：{len_v1}（须等于V2）')
+        elif df1_type.get() == '向量':
+            try:
+                v1 = eval(df1_text1.get(1.0, 'end').rstrip('\n').strip().replace('，', ','))
+                assert isinstance(v1, list)
+                for i in v1:
+                    assert isinstance(i, int)
+            except Exception:
+                df1_label3.config(text=f'V1的长度为：格式错误（须等于V2）')
+            else:
+                df1_label3.config(text=f'V1的长度为：{len(v1)}（须等于V2）')
 
     df1_frm1 = tk.Frame(df_frm1)
     df1_frm1.pack()
@@ -4936,6 +4957,15 @@ def ckks_word():
     df1_button1.grid(row=1, column=2, padx=5)
     df1_button2 = tk.Button(df1_frm1, text='重置', font=mid_font, command=df1_reset1)
     df1_button2.grid(row=1, column=3, padx=5)
+    df1_type_frm = tk.Frame(df_frm1)
+    df1_type_frm.pack()
+    df1_type = tk.StringVar()
+    df1_type.set('文字')
+    df1_type_label = tk.Label(df1_type_frm, text='明文V1的类型为：', font=mid_font)
+    df1_type_label.grid(row=1, column=1)
+    df1_type_op = tk.OptionMenu(df1_type_frm, df1_type, *('文字', '向量'), command=cal_len_v1)
+    df1_type_op.config(font=mid_font)
+    df1_type_op.grid(row=1, column=2)
     df1_label3 = tk.Label(df_frm1, text='V1的长度为：0（须等于V2）', font=mid_font)
     df1_label3.pack()
     df1_text1 = tk.Text(df_frm1, width=30, font=mid_font, height=12)
@@ -4962,23 +4992,43 @@ def ckks_word():
     def df2_cal1():
         print('计算(V1+V2)-V2')
         df1_reset1()
+        # 获取(V1+V2)
         try:
-            v1_plus_v2 = Tools.ascii_str_to_int_list(df5_text1.get(1.0, 'end').rstrip('\n').strip())
+            v1_plus_v2 = eval(df5_text1.get(1.0, 'end').rstrip('\n').strip().replace('，', ','))
+            assert isinstance(v1_plus_v2, list)
+            for i in v1_plus_v2:
+                assert isinstance(i, int)
         except Exception:
             messagebox.showerror('(V1+V2)输入有误', '(V1+V2)输入有误，无法处理')
             return 0
-        print(f'V1+V2的向量化结果为: {v1_plus_v2}，长度为：{len(v1_plus_v2)}')
-        v2 = Tools.text2vector(df3_text1.get(1.0, 'end').rstrip('\n').strip())
-        print(f'v2的向量化结果为: {v2}，长度为：{len(v2)}')
-        v1_vector = Tools.subtract_lists(v1_plus_v2, v2)
-        print(f'V2-V1的向量化结果为：{v1_vector}，长度为：{len(v1_vector)}')
-        try:
-            v1 = Tools.vector2text(v1_vector)
-        except Exception as e:
-            print(e)
-            messagebox.showerror('计算失败', '计算失败，可能是(V1+V2)或v1输入有误')
+        print(f'V1+V2为: {v1_plus_v2}，长度为：{len(v1_plus_v2)}')
+        # 获取V2
+        if df3_type.get() == '文字':
+            v2 = Tools.text2vector(df3_text1.get(1.0, 'end').rstrip('\n').strip())
+            print(f'v2的向量化结果为: {v2}，长度为：{len(v2)}')
+        elif df3_type.get() == '向量':
+            try:
+                v2 = eval(df3_text1.get(1.0, 'end').rstrip('\n').strip().replace('，', ','))
+                assert isinstance(v2, list)
+                for i in v2:
+                    assert isinstance(i, int)
+            except Exception:
+                messagebox.showerror('V2输入有误', 'V2输入有误，无法处理')
+                return 0
+        print(f'V2为: {v2}，长度为：{len(v2)}')
+        if len(v1_plus_v2) != len(v2):
+            messagebox.showerror('(V1+V2)的长度不等于V2', '(V1+V2)的长度不等于V2，无法计算')
             return 0
-        df1_text1.insert(1.0, v1)
+        v1 = Tools.subtract_lists(v1_plus_v2, v2)
+        print(f'(V1+V2)-V2的向量化结果为：{v1}，长度为：{len(v1)}')
+        if df1_type.get() == '文字':
+            try:
+                v1 = Tools.vector2text(v1)
+            except Exception as e:
+                print(e)
+                messagebox.showerror('计算失败', '计算失败，可能是(V1+V2)或v1输入有误')
+                return 0
+        df1_text1.insert(1.0, str(v1))
         cal_len_v1()
 
     df2_button1 = tk.Button(df_frm2, text='计算\n(V1+V2)-V2\n←', font=mid_font, command=df2_cal1)
@@ -5024,8 +5074,18 @@ def ckks_word():
             if context == 0:
                 return 0
         # 再对明文V2进行处理
-        v2 = Tools.text2vector(df3_text1.get(1.0, 'end').rstrip('\n').strip())
-        print(f'向量化的V2为：{v2}，长度为：{len(v2)}')
+        if df3_type.get() == '文字':
+            v2 = Tools.text2vector(df3_text1.get(1.0, 'end').rstrip('\n').strip())
+            print(f'向量化的V2为：{v2}，长度为：{len(v2)}')
+        elif df3_type.get() == '向量':
+            try:
+                v2 = eval(df3_text1.get(1.0, 'end').rstrip('\n').strip().replace('，', ','))
+                assert isinstance(v2, list)
+                for i in v2:
+                    assert isinstance(i, int)
+            except Exception:
+                messagebox.showerror('V2向量格式错误', 'V2向量格式错误，格式应类似于：[1, 2, 3]')
+                return 0
         try:
             enc_v2 = ts.ckks_vector(context, v2)
         except Exception:
@@ -5041,8 +5101,19 @@ def ckks_word():
         df3_text2.insert(1.0, out_path)
 
     def cal_len_v2(*args):
-        len_v2 = len(Tools.text2vector(df3_text1.get(1.0, 'end').rstrip('\n').strip()))
-        df3_label3.config(text=f'V2的长度为：{len_v2}（须等于V1）')
+        if df3_type.get() == '文字':
+            len_v2 = len(Tools.text2vector(df3_text1.get(1.0, 'end').rstrip('\n').strip()))
+            df3_label3.config(text=f'V2的长度为：{len_v2}（须等于V1）')
+        elif df3_type.get() == '向量':
+            try:
+                v2 = eval(df3_text1.get(1.0, 'end').rstrip('\n').strip().replace('，', ','))
+                assert isinstance(v2, list)
+                for i in v2:
+                    assert isinstance(i, int)
+            except Exception:
+                df3_label3.config(text='V2的长度为：格式错误（须等于V1）')
+            else:
+                df3_label3.config(text=f'V2的长度为：{len(v2)}（须等于V1）')
 
     df3_frm1 = tk.Frame(df_frm3)
     df3_frm1.pack()
@@ -5052,6 +5123,15 @@ def ckks_word():
     df3_button1.grid(row=1, column=2, padx=5)
     df3_button2 = tk.Button(df3_frm1, text='重置', font=mid_font, command=df3_reset1)
     df3_button2.grid(row=1, column=3, padx=5)
+    df3_type_frm = tk.Frame(df_frm3)
+    df3_type_frm.pack()
+    df3_type = tk.StringVar()
+    df3_type.set('文字')
+    df3_type_label = tk.Label(df3_type_frm, text='明文V2的类型为：', font=mid_font)
+    df3_type_label.grid(row=1, column=1)
+    df3_type_op = tk.OptionMenu(df3_type_frm, df3_type, *('文字', '向量'), command=cal_len_v2)
+    df3_type_op.config(font=mid_font)
+    df3_type_op.grid(row=1, column=2)
     df3_label3 = tk.Label(df_frm3, text='V2的长度为：0（须等于V1）', font=mid_font)
     df3_label3.pack()
     df3_text1 = tk.Text(df_frm3, width=30, font=mid_font, height=12)
@@ -5078,36 +5158,81 @@ def ckks_word():
     def df4_cal1():
         print('计算(V1+V2)-V1')
         df3_reset1()
+        # 获取(V1+V2)
         try:
-            v1_plus_v2 = Tools.ascii_str_to_int_list(df5_text1.get(1.0, 'end').rstrip('\n').strip())
+            v1_plus_v2 = eval(df5_text1.get(1.0, 'end').rstrip('\n').strip().replace('，', ','))
+            assert isinstance(v1_plus_v2, list)
+            for i in v1_plus_v2:
+                assert isinstance(i, int)
         except Exception:
             messagebox.showerror('(V1+V2)输入有误', '(V1+V2)输入有误，无法处理')
             return 0
-        print(f'V1+V2的向量化结果为: {v1_plus_v2}，长度为：{len(v1_plus_v2)}')
-        v1 = Tools.text2vector(df1_text1.get(1.0, 'end').rstrip('\n').strip())
-        print(f'v1的向量化结果为: {v1}，长度为：{len(v1)}')
-        v2_vector = Tools.subtract_lists(v1_plus_v2, v1)
-        print(f'V2-V1的向量化结果为：{v2_vector}，长度为：{len(v2_vector)}')
-        try:
-            v2 = Tools.vector2text(v2_vector)
-        except Exception as e:
-            print(e)
-            messagebox.showerror('计算失败', '计算失败，可能是(V1+V2)或v1输入有误')
+        print(f'V1+V2为: {v1_plus_v2}，长度为：{len(v1_plus_v2)}')
+        # 获取V1
+        if df1_type.get() == '文字':
+            v1 = Tools.text2vector(df1_text1.get(1.0, 'end').rstrip('\n').strip())
+            print(f'v1的向量化结果为: {v1}，长度为：{len(v1)}')
+        elif df1_type.get() == '向量':
+            try:
+                v1 = eval(df1_text1.get(1.0, 'end').rstrip('\n').strip().replace('，', ','))
+                assert isinstance(v1, list)
+                for i in v1:
+                    assert isinstance(i, int)
+            except Exception:
+                messagebox.showerror('V1输入有误', 'V1输入有误，无法处理')
+                return 0
+        print(f'V1为: {v1}，长度为：{len(v1)}')
+        if len(v1_plus_v2) != len(v1):
+            messagebox.showerror('(V1+V2)的长度不等于V1', '(V1+V2)的长度不等于V1，无法计算')
             return 0
-        df3_text1.insert(1.0, v2)
+        v2 = Tools.subtract_lists(v1_plus_v2, v1)
+        print(f'(V1+V2)-V1的向量化结果为：{v2}，长度为：{len(v2)}')
+        if df3_type.get() == '文字':
+            try:
+                v2 = Tools.vector2text(v2)
+            except Exception as e:
+                print(e)
+                messagebox.showerror('计算失败', '计算失败，可能是(V1+V2)或v1输入有误')
+                return 0
+        df3_text1.insert(1.0, str(v2))
         cal_len_v2()
 
     def df4_cal2():
         print('计算V1+V2')
         df5_reset1()
-        v1 = Tools.text2vector(df1_text1.get(1.0, 'end').rstrip('\n').strip())
-        print(f'v1的向量化结果为: {v1}，长度为：{len(v1)}')
-        v2 = Tools.text2vector(df3_text1.get(1.0, 'end').rstrip('\n').strip())
-        print(f'v2的向量化结果为: {v2}，长度为：{len(v2)}')
-        v1_plus_v2_vector = Tools.add_lists(v1, v2)
-        print(f'V1+V2的向量化结果为：{v1_plus_v2_vector}，长度为：{len(v1_plus_v2_vector)}')
-        v1_plus_v2 = Tools.float_list_to_ascii_str(v1_plus_v2_vector)
-        df5_text1.insert(1.0, v1_plus_v2)
+        # 获取V1
+        if df1_type.get() == '文字':
+            v1 = Tools.text2vector(df1_text1.get(1.0, 'end').rstrip('\n').strip())
+            print(f'v2的向量化结果为: {v1}，长度为：{len(v1)}')
+        elif df1_type.get() == '向量':
+            try:
+                v1 = eval(df1_text1.get(1.0, 'end').rstrip('\n').strip().replace('，', ','))
+                assert isinstance(v1, list)
+                for i in v1:
+                    assert isinstance(i, int)
+            except Exception:
+                messagebox.showerror('V1输入有误', 'V1输入有误，无法处理')
+                return 0
+        print(f'V1为: {v1}，长度为：{len(v1)}')
+        # 获取V2
+        if df3_type.get() == '文字':
+            v2 = Tools.text2vector(df3_text1.get(1.0, 'end').rstrip('\n').strip())
+            print(f'v2的向量化结果为: {v2}，长度为：{len(v2)}')
+        elif df3_type.get() == '向量':
+            try:
+                v2 = eval(df3_text1.get(1.0, 'end').rstrip('\n').strip().replace('，', ','))
+                assert isinstance(v2, list)
+                for i in v2:
+                    assert isinstance(i, int)
+            except Exception:
+                messagebox.showerror('V2输入有误', 'V2输入有误，无法处理')
+                return 0
+        print(f'V2为: {v2}，长度为：{len(v2)}')
+        if len(v1) != len(v2):
+            messagebox.showerror('V1的长度不等于V2', 'V1的长度不等于V2，无法计算')
+            return 0
+        v1_plus_v2 = Tools.add_lists(v1, v2)
+        df5_text1.insert(1.0, str(v1_plus_v2))
         cal_len_v1_plus_v2()
 
     def df4_cal3():
@@ -5216,17 +5341,24 @@ def ckks_word():
                 return 0
         # 处理完之后对解密的信息进行展示
         print(f'解密[HE(V1)+HE(V2)]的向量化结果为：{np.round(result)}，长度为：{len(result)}')
-        try:
-            ans = Tools.float_list_to_ascii_str(result)
-        except Exception:
-            messagebox.showerror(title='解密失败', message='解密失败，可能是解密的私钥与加密的公钥不匹配')
-            return 0
-        df5_text1.insert(1.0, ans)
+        # try:
+        #     ans = Tools.float_list_to_ascii_str(result)
+        # except Exception:
+        #     messagebox.showerror(title='解密失败', message='解密失败，可能是解密的私钥与加密的公钥不匹配')
+        #     return 0
+        df5_text1.insert(1.0, str([int(i) for i in np.round(result)]))
         cal_len_v1_plus_v2()
 
     def cal_len_v1_plus_v2(*args):
-        len_v1_plus_v2 = len(df5_text1.get(1.0, 'end').rstrip('\n').strip())
-        df5_label3.config(text=f'V1+V2的长度为：{len_v1_plus_v2}')
+        try:
+            v1_plus_v2 = eval(df5_text1.get(1.0, 'end').rstrip('\n').strip().replace('，', ','))
+            assert isinstance(v1_plus_v2, list)
+            for i in v1_plus_v2:
+                assert isinstance(i, int)
+        except Exception:
+            df5_label3.config(text=f'V1+V2的长度为：格式错误')
+        else:
+            df5_label3.config(text=f'V1+V2的长度为：{len(v1_plus_v2)}')
 
     df5_frm1 = tk.Frame(df_frm5)
     df5_frm1.pack()
@@ -5236,6 +5368,8 @@ def ckks_word():
     df5_button1.grid(row=1, column=2, padx=5)
     df5_button2 = tk.Button(df5_frm1, text='重置', font=mid_font, command=df5_reset1)
     df5_button2.grid(row=1, column=3, padx=5)
+    df5_type_label = tk.Label(df_frm5, text='V1+V2的类型为：向量', font=mid_font)
+    df5_type_label.pack()
     df5_label3 = tk.Label(df_frm5, text='V1+V2的长度为：0', font=mid_font)
     df5_label3.pack()
     df5_text1 = tk.Text(df_frm5, width=30, font=mid_font, height=11)
@@ -5244,7 +5378,7 @@ def ckks_word():
     df5_button3 = tk.Button(df_frm5, text='解密[HE(V1)+HE(V2)]↑', font=mid_font, command=df5_cal)
     df5_button3.pack()
     df5_frm2 = tk.Frame(df_frm5)
-    df5_frm2.pack(pady=4)
+    df5_frm2.pack(pady=9)
     df5_label2 = tk.Label(df5_frm2, text='输入或计算\n[HE(V1)+HE(V2)]：', font=mid_font)
     df5_label2.grid(row=1, column=1, padx=5)
     df5_button4 = tk.Button(df5_frm2, text='打开', font=mid_font, command=open_dir)

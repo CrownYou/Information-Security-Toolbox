@@ -406,7 +406,7 @@ class Functions:
 
     @staticmethod
     def ckks_word():
-        MyTools.initiation('1604x808')
+        MyTools.initiation('1604x833')
         myenc.ckks_word()
 
     @staticmethod
@@ -438,6 +438,11 @@ class Functions:
     def hide_qr_code():
         MyTools.initiation()
         mybox.hide_qr_code()
+
+    @staticmethod
+    def invisible_qr():
+        MyTools.initiation()
+        mybox.invisible_qr()
 
     @staticmethod
     def intro():
@@ -555,6 +560,7 @@ class Functions:
         text.pack()
         word = '''    CKKS同态加密介绍
 
+一、基本介绍
     CKKS（Cloud Key Encryption and Signing）是一种高效的同态加密方案，由 Gentry 等人于2017年提出。它支持浮点向量在密文空间的加减乘运算并保持同态，但只支持有限次乘法的运算。
 
     CKKS的主要特点:
@@ -571,7 +577,10 @@ class Functions:
  * 有限的乘法次数：CKKS只支持有限次乘法运算，如果乘法次数过多，则会导致精度下降。
  * 较大的密文长度：CKKS的密文长度较大，这可能会影响存储和传输效率。
     
-    总体而言，CKKS是一种具有较强应用前景的同态加密方案。'''
+    总体而言，CKKS是一种具有较强应用前景的同态加密方案。
+    
+二、使用须知
+    进行同态加密的数据可以是文字，也可以是向量。文字参与计算时会自动转换成向量，向量的形式类似于：[1, 2, 3]或者[20]，注意：由于精度原因，向量的元素只能是整数。'''
         text.insert('end', word)
 
     @staticmethod
@@ -581,11 +590,11 @@ class Functions:
         text.pack()
         word = '''    获取像素点的HSV值/范围介绍
 
-    一、HSV值介绍
+一、HSV值介绍
     像素的HSV值是指该像素在HSV空间中的颜色表示。HSV是一种常用的颜色模型，它的名称代表着该模型中的三个分量：色调（Hue）、饱和度（Saturation）和亮度（Value）。
     在HSV空间中，色调表示颜色的基本属性，饱和度表示颜色的纯度或鲜艳度，亮度表示颜色的明暗程度。HSV空间中的每个像素都由这三个分量的值组成，通常用一个三元组 (H, S, V) 来表示。
 
-    二、获取像素点的HSV值/范围的作用
+二、获取像素点的HSV值/范围的作用
     这个功能是为了logo振动法隐写术中的logo图片抠像功能而开发的辅助功能。您可以在这里获取需要抠像部分的HSV范围，然后将范围一键粘贴到logo振动法隐写术中的logo HSV范围中。'''
         text.insert('end', word)
 
@@ -611,7 +620,7 @@ class Functions:
         text.pack()
         word = '''    反查重+反和谐神器介绍
 
-其中包括两项功能：
+    其中包括两项功能：
     1. 在文字中随机添加零宽度字符。这项功能会先将文字进行分词，然后在词语之间插入零宽度字符，这样可以避免一个词语内部被分开，导致word文档对词语标注红色下划线。但是要注意word文档中有显示零宽字符的功能，可以在‘文件’->‘选项’->‘显示’->‘显示所有格式标记’中打开该功能。
     
     2. 近形字替换。由于unicode字符集中有许多长相相近的文字，所以您可以通过这项功能将文字与它的双胞胎兄弟进行替换，这样可以避免文字被聊天平台和谐，以及降低查重率。'''
@@ -632,6 +641,19 @@ class Functions:
     1. （可跳过该步骤）双方创建并交换自己的RSA公钥，并将对方的公钥和自己的私钥拖入软件所提示的地方，该密钥会用于对第2步中对协商的内容进行加密。
     2. 会话发起人和会话参与人根据操作界面中的顺序和提示进行密钥协商，并生成临时会话的AES密钥。
     3. 将这次临时会话的密钥复制下来，之后就可以在对称加密功能界面上进行使用了。'''
+        text.insert('end', word)
+
+    @staticmethod
+    def intro_shamir():
+        MyTools.initiation()
+        text = tk.Text(frm, width=96, height=28, font=mid_font)
+        text.pack()
+        word = '''    Shamir秘密分享算法介绍
+
+    Shamir秘密分享算法可以将秘密分成秘密碎片，必须集齐设定的碎片数量阈值，才可以拼凑出完整秘密。
+    
+    您可以用它来把对称加密密钥分享给多人，然后让他们彼此间拼凑出密钥，从而避免直接告知密钥导致的密钥泄露。
+    '''
         text.insert('end', word)
 
     @staticmethod
@@ -705,7 +727,7 @@ class Functions:
         MyTools.initiation()
         text = tk.Text(frm, width=96, height=28, font=mid_font)
         text.pack()
-        word = '''    二维码图片混淆变换介绍
+        word = '''    隐藏二维码（人可见，机器不可见）介绍
 
 一、基本介绍
     这是一种帮助您隐秘传输二维码的功能，它可以使二维码图片绕过聊天平台的检测和审核，只有读取者从一个特定角度和距离进行扫码才能识别出二维码的内容。
@@ -716,6 +738,30 @@ class Functions:
 
 三、使用时的注意点
     在对经过透视变换的二维码进行扫描时，可能会出现对不上焦，或者是一部分能对焦，另一部分不能对焦。这种情况下可以尝试把图片缩小一点，使得整张图片处于清晰对焦的区间内。'''
+        text.insert('end', word)
+
+    @staticmethod
+    def intro_invisible_qr():
+        MyTools.initiation()
+        text = tk.Text(frm, width=96, height=28, font=mid_font)
+        text.pack()
+        word = '''    隐藏二维码（机器可见，人不可见）介绍
+
+一、基本介绍
+    这种技术可以把二维码隐藏在别的图片中，被隐藏的二维码肉眼无法观察到，但可以使用微信的“识别图中二维码”或者其他自动识别图片中二维码的方式来识别。
+    原理是在图片的透明度图层中进行改变，使这种改变难以察觉，但机器可以察觉到二维码的明暗特点。
+
+二、使用时的注意点
+    1. 如果选择在白色背景的环境下能够隐藏二维码，那么：
+    尽量将二维码隐藏在图片中明亮的部分，并将透明度设为60。
+    
+    2. 如果选择在黑色背景的环境下能够隐藏二维码，那么：
+    尽量将二维码隐藏在图片中黑暗的部分，并将透明度设为40。
+    
+    3. 背景越白，二维码就隐藏在图片中越白的位置，透明度就越靠近60。
+    背景越黑，二维码就隐藏在图片中越黑的位置，透明度就越靠近40。
+    
+    4. 经测验，微信的缩略图和放大图的背景均为白色。QQ的缩略图背景为白色，放大图背景为黑色'''
         text.insert('end', word)
 
     @staticmethod
@@ -864,9 +910,12 @@ stega_menu.add_command(label='图片隐藏.zip压缩包', command=Functions.hide
 stega_menu.add_command(label='零宽度字符隐写术', command=Functions.zero_width_ste, font=mid_font)
 
 qr_confuse_submenu = tk.Menu(stega_menu, tearoff=0)
-stega_menu.add_cascade(label='二维码图片混淆变换', menu=qr_confuse_submenu, underline=0, font=mid_font)
+stega_menu.add_cascade(label='隐藏二维码（人可见，机器不可见）', menu=qr_confuse_submenu, underline=0, font=mid_font)
 qr_confuse_submenu.add_command(label='第一步：逆透视变换', command=Functions.confuse_qr_code, font=mid_font)
 qr_confuse_submenu.add_command(label='第二步：藏于载体图片', command=Functions.hide_qr_code, font=mid_font)
+
+hide_qr_submenu = tk.Menu(stega_menu, tearoff=0)
+stega_menu.add_command(label='隐藏二维码（机器可见，人不可见）', command=Functions.invisible_qr, font=mid_font)
 
 fourier_ste_submenu = tk.Menu(stega_menu, tearoff=0)
 stega_menu.add_cascade(label='图片盲水印', menu=fourier_ste_submenu, underline=0, font=mid_font)
@@ -949,7 +998,8 @@ intro_ste_submenu.add_command(label='logo振动法隐写术介绍', command=Func
 intro_ste_submenu.add_command(label='最近邻插值法图像隐写介绍', command=Functions.intro_nearest_neighbor, font=mid_font)
 intro_ste_submenu.add_command(label='图片隐藏.zip压缩包介绍', command=Functions.intro_hide, font=mid_font)
 intro_ste_submenu.add_command(label='零宽度字符隐写术介绍', command=Functions.intro_zero_width_ste, font=mid_font)
-intro_ste_submenu.add_command(label='二维码图片混淆变换介绍', command=Functions.intro_qr_confuse, font=mid_font)
+intro_ste_submenu.add_command(label='隐藏二维码（人可见，机器不可见）介绍', command=Functions.intro_qr_confuse, font=mid_font)
+intro_ste_submenu.add_command(label='隐藏二维码（机器可见，人不可见）介绍', command=Functions.intro_invisible_qr, font=mid_font)
 intro_ste_submenu.add_command(label='图片盲水印介绍', command=Functions.intro_fourier, font=mid_font)
 
 toolbox_submenu = tk.Menu(intro_menu, tearoff=0)
@@ -966,6 +1016,7 @@ intro_enc_submenu.add_command(label='RSA数字签名介绍', command=Functions.i
 intro_enc_submenu.add_command(label='ECC非对称加解密介绍', command=Functions.intro_ecc, font=mid_font)
 intro_enc_submenu.add_command(label='ECC数字签名介绍', command=Functions.intro_ecc_sign, font=mid_font)
 intro_enc_submenu.add_command(label='DH密钥交换算法介绍', command=Functions.intro_dh, font=mid_font)
+intro_enc_submenu.add_command(label='Shamir秘密分享算法介绍', command=Functions.intro_shamir, font=mid_font)
 intro_enc_submenu.add_command(label='AES对称加解密介绍', command=Functions.intro_aes, font=mid_font)
 intro_enc_submenu.add_command(label='CKKS同态加密介绍', command=Functions.intro_ckks, font=mid_font)
 

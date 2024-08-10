@@ -1675,16 +1675,16 @@ class Tools:
         text = base64.b32decode(b32_text.encode()).decode()
         return text
 
-    @staticmethod
-    def float_list_to_ascii_str(vector: list) -> str:
-        '''vector里每一个元素的理论取值范围为：[-32, 32]内的整数，但实际运算中上下区间有一定误差，且不为整数
-        这里需要把vector内的每一个元素对应到序号为[41, 105]的ASCII字符'''
-        return ''.join([chr(round(i)+73) for i in vector])
+    # @staticmethod
+    # def float_list_to_ascii_str(vector: list) -> str:
+    #     '''vector里每一个元素的理论取值范围为：[-32, 32]内的整数，但实际运算中上下区间有一定误差，且不为整数
+    #     这里需要把vector内的每一个元素对应到序号为[41, 105]的ASCII字符'''
+    #     return ''.join([chr(round(i)+73) for i in vector])
 
-    @staticmethod
-    def ascii_str_to_int_list(ascii_str: str) -> list:
-        # 这里需要把序号为[41, 105]的ASCII字符转为[-32, 32]内的整数
-        return [ord(i)-73 for i in ascii_str]
+    # @staticmethod
+    # def ascii_str_to_int_list(ascii_str: str) -> list:
+    #     # 这里需要把序号为[41, 105]的ASCII字符转为[-32, 32]内的整数
+    #     return [ord(i)-73 for i in ascii_str]
 
     @staticmethod
     def subtract_lists(list1, list2):
