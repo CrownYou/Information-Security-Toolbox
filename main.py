@@ -131,7 +131,7 @@ class MyTools:
         MyTools.delete_temp_file()
 
     @staticmethod
-    def on_closing():
+    def when_closing():
 
         @Tools.run_as_thread
         def run():
@@ -443,6 +443,11 @@ class Functions:
     def invisible_qr():
         MyTools.initiation()
         mybox.invisible_qr()
+
+    @staticmethod
+    def two_faces():
+        MyTools.initiation()
+        mybox.two_faces()
 
     @staticmethod
     def intro():
@@ -765,6 +770,28 @@ class Functions:
         text.insert('end', word)
 
     @staticmethod
+    def intro_two_faces():
+        MyTools.initiation()
+        text = tk.Text(frm, width=96, height=28, font=mid_font)
+        text.pack()
+        word = '''    表里不一图像隐写术介绍
+
+一、基本介绍
+    这种技术可以让一张图片在不同背景颜色下显示出完全不一样的图像。
+    基本原理是在png图片的透明度通道上做文章，并辅以修改RGB数值以获取最佳效果。
+
+二、使用时的注意点
+    1. 表图片的总体亮度应该与能让表图显示的背景颜色的亮度越接近越好。
+    如能让表图显示的背景颜色设为[255, 255, 255]（白色），那么表图也应该整体偏白偏亮。
+
+    2. 里图片的总体亮度也应该与能让里图显示的背景颜色的亮度越接近越好。
+    如能让里图显示的背景颜色设为[0, 0, 0]（黑色），那么里图也应该整体偏黑偏暗。
+
+    3. 经测验，微信的缩略图和放大图的背景均为白色，无法实现一张图片在缩略图和放大图中显示不同图像的效果。
+    而QQ的缩略图背景为白色，放大图背景为黑色，则完美符合这个功能的需要。表图片会在缩略图中显示，里图片会在用户点击“查看原图”后显示。'''
+        text.insert('end', word)
+
+    @staticmethod
     def intro_fourier():
         MyTools.initiation()
         text = tk.Text(frm, width=96, height=28, font=mid_font)
@@ -914,8 +941,8 @@ stega_menu.add_cascade(label='隐藏二维码（人可见，机器不可见）',
 qr_confuse_submenu.add_command(label='第一步：逆透视变换', command=Functions.confuse_qr_code, font=mid_font)
 qr_confuse_submenu.add_command(label='第二步：藏于载体图片', command=Functions.hide_qr_code, font=mid_font)
 
-hide_qr_submenu = tk.Menu(stega_menu, tearoff=0)
 stega_menu.add_command(label='隐藏二维码（机器可见，人不可见）', command=Functions.invisible_qr, font=mid_font)
+stega_menu.add_command(label='表里不一图像隐写术', command=Functions.two_faces, font=mid_font)
 
 fourier_ste_submenu = tk.Menu(stega_menu, tearoff=0)
 stega_menu.add_cascade(label='图片盲水印', menu=fourier_ste_submenu, underline=0, font=mid_font)
@@ -1000,6 +1027,7 @@ intro_ste_submenu.add_command(label='图片隐藏.zip压缩包介绍', command=F
 intro_ste_submenu.add_command(label='零宽度字符隐写术介绍', command=Functions.intro_zero_width_ste, font=mid_font)
 intro_ste_submenu.add_command(label='隐藏二维码（人可见，机器不可见）介绍', command=Functions.intro_qr_confuse, font=mid_font)
 intro_ste_submenu.add_command(label='隐藏二维码（机器可见，人不可见）介绍', command=Functions.intro_invisible_qr, font=mid_font)
+intro_ste_submenu.add_command(label='表里不一图像隐写术介绍', command=Functions.intro_two_faces, font=mid_font)
 intro_ste_submenu.add_command(label='图片盲水印介绍', command=Functions.intro_fourier, font=mid_font)
 
 toolbox_submenu = tk.Menu(intro_menu, tearoff=0)
@@ -1025,5 +1053,5 @@ intro_menu.add_command(label='返回主界面', command=Functions.to_main, font=
 
 login_button = tk.Button(frm, text='登录', fg='green', font=('Noto Sans Mono', 18), command=MyTools.login)
 login_button.place(x=1118, y=596, anchor='center')
-window.protocol("WM_DELETE_WINDOW", MyTools.on_closing)
+window.protocol("WM_DELETE_WINDOW", MyTools.when_closing)
 window.mainloop()

@@ -1524,6 +1524,267 @@ def invisible_qr():
     entry3.pack()
 
 
+def two_faces():
+
+    def a_drag(files):
+        Tools.dragged_files(files, a_entry1)
+
+    def b_drag(files):
+        Tools.dragged_files(files, b_entry1)
+
+    a_label1 = tk.Label(frm, text='请拖入表图片或输入地址：\n注意：表图片的亮度和表图片能显示的背景颜色的亮度越接近效果越好', font=mid_font)
+    a_label1.pack()
+    a_entry1 = tk.Entry(frm, width=59, font=mid_font)
+    a_entry1.pack()
+    hook_dropfiles(a_entry1, func=a_drag)
+    a_frm1 = tk.Frame(frm)
+    a_frm1.pack()
+    a_label2 = tk.Label(a_frm1, text='请设置表图片在什么背景颜色下可以显示：  R:', font=mid_font)
+    a_label2.grid(row=1, column=1)
+    a_entry2 = tk.Entry(a_frm1, width=3, font=mid_font)
+    a_entry2.insert('end', '255')
+    a_entry2.grid(row=1, column=2)
+    a_label3 = tk.Label(a_frm1, text='G:', font=mid_font)
+    a_label3.grid(row=1, column=3)
+    a_entry3 = tk.Entry(a_frm1, width=3, font=mid_font)
+    a_entry3.insert('end', '255')
+    a_entry3.grid(row=1, column=4)
+    a_label4 = tk.Label(a_frm1, text='B:', font=mid_font)
+    a_label4.grid(row=1, column=5)
+    a_entry4 = tk.Entry(a_frm1, width=3, font=mid_font)
+    a_entry4.insert('end', '255')
+    a_entry4.grid(row=1, column=6)
+    a_label5 = tk.Label(frm, text='   ', font=mid_font)
+    a_label5.pack()
+
+    b_label1 = tk.Label(frm, text='请拖入里图片或输入地址：\n注意：里图片的亮度和里图片能显示的背景颜色的亮度越接近效果越好', font=mid_font)
+    b_label1.pack()
+    b_entry1 = tk.Entry(frm, width=59, font=mid_font)
+    b_entry1.pack()
+    hook_dropfiles(b_entry1, func=b_drag)
+    b_frm1 = tk.Frame(frm)
+    b_frm1.pack()
+    b_label2 = tk.Label(b_frm1, text='请设置里图片在什么背景颜色下可以显示：', font=mid_font)
+    b_label2.grid(row=1, column=1)
+    b_entry2 = tk.Entry(b_frm1, width=3, font=mid_font)
+    b_entry2.insert('end', '0')
+    b_entry2.grid(row=1, column=2)
+    b_label3 = tk.Label(b_frm1, text='G:', font=mid_font)
+    b_label3.grid(row=1, column=3)
+    b_entry3 = tk.Entry(b_frm1, width=3, font=mid_font)
+    b_entry3.insert('end', '0')
+    b_entry3.grid(row=1, column=4)
+    b_label4 = tk.Label(b_frm1, text='B:', font=mid_font)
+    b_label4.grid(row=1, column=5)
+    b_entry4 = tk.Entry(b_frm1, width=3, font=mid_font)
+    b_entry4.insert('end', '0')
+    b_entry4.grid(row=1, column=6)
+    b_label5 = tk.Label(frm, text='   ', font=mid_font)
+    b_label5.pack()
+
+    def reset():
+        Tools.reset(a_entry1)
+        Tools.reset(a_entry2)
+        a_entry2.insert('end', '255')
+        Tools.reset(a_entry3)
+        a_entry3.insert('end', '255')
+        Tools.reset(a_entry4)
+        a_entry4.insert('end', '255')
+        Tools.reset(b_entry1)
+        Tools.reset(b_entry2)
+        b_entry2.insert('end', '0')
+        Tools.reset(b_entry3)
+        b_entry3.insert('end', '0')
+        Tools.reset(b_entry4)
+        b_entry4.insert('end', '0')
+
+    def process():
+        label3.pack_forget()
+        window.update()
+        # 获取一下用户输入的r, g, b
+        try:
+            r_o = eval(a_entry2.get())
+            assert isinstance(r_o, int) and 0 <= r_o <= 255
+            g_o = eval(a_entry3.get())
+            assert isinstance(g_o, int) and 0 <= g_o <= 255
+            b_o = eval(a_entry4.get())
+            assert isinstance(b_o, int) and 0 <= b_o <= 255
+            r_i = eval(b_entry2.get())
+            assert isinstance(r_i, int) and 0 <= r_i <= 255
+            g_i = eval(b_entry3.get())
+            assert isinstance(g_i, int) and 0 <= g_i <= 255
+            b_i = eval(b_entry4.get())
+            assert isinstance(b_i, int) and 0 <= b_i <= 255
+        except Exception:
+            messagebox.showerror('RGB赋值错误', 'RGB的取值范围为[0, 255]内的正整数')
+            return 0
+
+        # 获取表图片 -> outer_img
+        outer_path = Tools.get_path_from_entry(a_entry1)
+        if os.path.exists(outer_path):
+            temp_outer_path = f'_temp_back{os.path.splitext(outer_path)[-1]}'
+            Tools.read_all_and_write_all(outer_path, temp_outer_path)
+            try:
+                outer_img = cv2.imread(temp_outer_path)
+                outer_img_rows, outer_img_cols, _ = outer_img.shape
+                if outer_img_rows > 900 or outer_img_cols > 900:
+                    zoom = min(900 / outer_img_rows, 900 / outer_img_cols)
+                else:
+                    zoom = 1.0
+                zoomed_outer_img = cv2.resize(outer_img, None, fx=zoom, fy=zoom, interpolation=cv2.INTER_AREA)
+                cv2.imshow('zoomed_outer_img', zoomed_outer_img)
+            except Exception:
+                Tools.delete_file(temp_outer_path)
+                messagebox.showerror('表图片格式错误', '表图片的格式不正确')
+                return 0
+            os.remove(temp_outer_path)
+            # cv2.waitKey()
+            cv2.destroyAllWindows()
+            outer_img_rows, outer_img_cols, _ = zoomed_outer_img.shape
+            print("outer_img_rows, outer_img_cols:", outer_img_rows, outer_img_cols)
+            outer_img = zoomed_outer_img.astype(np.float32)
+            # outer_img = copy.deepcopy(zoomed_outer_img)
+        else:
+            messagebox.showerror('表图片地址错误', '表图片地址错误')
+            return 0
+
+        # 获取里图片 -> inner_img
+        inner_path = Tools.get_path_from_entry(b_entry1)
+        if os.path.exists(inner_path):
+            temp_inner_path = f'_temp_back{os.path.splitext(inner_path)[-1]}'
+            Tools.read_all_and_write_all(inner_path, temp_inner_path)
+            try:
+                inner_img = cv2.imread(temp_inner_path)
+                inner_img_rows, inner_img_cols, _ = inner_img.shape
+                if inner_img_rows > 900 or inner_img_cols > 900:
+                    zoom = min(900 / inner_img_rows, 900 / inner_img_cols)
+                else:
+                    zoom = 1.0
+                zoomed_inner_img = cv2.resize(inner_img, None, fx=zoom, fy=zoom, interpolation=cv2.INTER_AREA)
+                cv2.imshow('zoomed_inner_img', zoomed_inner_img)
+            except Exception:
+                Tools.delete_file(temp_inner_path)
+                messagebox.showerror('里图片格式错误', '里图片的格式不正确')
+                return 0
+            os.remove(temp_inner_path)
+            # cv2.waitKey()
+            cv2.destroyAllWindows()
+            inner_img_rows, inner_img_cols, _ = zoomed_inner_img.shape
+            print('inner_img_rows, inner_img_cols:', inner_img_rows, inner_img_cols)
+            inner_img = zoomed_inner_img.astype(np.float32)
+            # inner_img = copy.deepcopy(zoomed_inner_img)
+        else:
+            messagebox.showerror('里图片地址错误', '里图片地址错误')
+            return 0
+
+        # 把表图和里图扩大成正好包含表图和里图的大图，表图填不满的地方填白色，里图填不满的地方填黑色
+        max_rows = max(inner_img_rows, outer_img_rows)
+        max_cols = max(inner_img_cols, outer_img_cols)
+        print('max_rows, max_cols:', max_rows, max_cols)
+        P_o = np.ones((max_rows, max_cols, 3), dtype=np.float32) * 255
+        outer_row_start = (max_rows - outer_img_rows) // 2  # 地板除，向下取整
+        outer_col_start = (max_cols - outer_img_cols) // 2
+        print("outer_row_start, outer_col_start:", outer_row_start, outer_col_start)
+        P_o[outer_row_start: outer_row_start + outer_img_rows, outer_col_start: outer_col_start + outer_img_cols] = outer_img
+        # cv2.imshow('P_o', P_o)
+        # cv2.waitKey()
+        # cv2.destroyAllWindows()
+
+        P_i = np.zeros((max_rows, max_cols, 3), dtype=np.float32)
+        inner_row_start = (max_rows - inner_img_rows) // 2
+        inner_col_start = (max_cols - inner_img_cols) // 2
+        print("inner_row_start, inner_col_start:", inner_row_start, inner_col_start)
+        P_i[inner_row_start: inner_row_start + inner_img_rows, inner_col_start: inner_col_start + inner_img_cols] = inner_img
+        # cv2.imshow('P_i', P_i)
+        # cv2.waitKey()
+        # cv2.destroyAllWindows()
+
+        # 从用户输入计算表图和里图能够正常显示的背景图
+        P_obg = np.zeros((max_rows, max_cols, 3), dtype=np.float32)
+        P_obg[:] = (b_o, g_o, r_o)
+        # cv2.imshow('P_obg', P_obg)
+        # cv2.waitKey()
+        # cv2.destroyAllWindows()
+
+        P_ibg = np.zeros((max_rows, max_cols, 3), dtype=np.float32)
+        P_ibg[:] = (b_i, g_i, r_i)
+        # cv2.imshow('P_ibg', P_ibg)
+        # cv2.waitKey()
+        # cv2.destroyAllWindows()
+
+        # 再将outer_bg和inner_bg两张图按算法叠加起来
+        '''
+        P_x * W_x + P_obg * (1 - W_x) = P_o
+        P_x * W_x + P_ibg * (1 - W_x) = P_i
+        P_x: 待生成的新图片
+        W_x: 待生成的新图片的权重，取值范围：[0, 1]
+        P_obg: 使得表图能显示的背景图片
+        P_o: 表图
+        P_ibg: 使得里图能显示的背景图片
+        P_i: 里图
+        解得：
+        W_x = (P_o - Pobg) / (P_x - P_obg)  # 以灰度图计算
+        P_x = (P_o * P_ibg - P_i * P_obg) / (P_o - P_obg - P_i + P_ibg)
+        '''
+        P_x = np.zeros((max_rows, max_cols, 4), dtype=np.float32)
+        # 先解P_x
+        P_x_denominator = P_o - P_obg - P_i + P_ibg
+        P_x_denominator[P_x_denominator == 0] += 1  # 把P_x分母上等于0的值加上1
+        P_x[:, :, :3] = (P_o * P_ibg - P_i * P_obg) / P_x_denominator
+        # 再解W_x。   255 * W_x 即 P_x[:, :, 3]
+        W_x_denominator = cv2.cvtColor(P_x, cv2.COLOR_BGR2GRAY) - cv2.cvtColor(P_obg, cv2.COLOR_BGR2GRAY)
+        W_x_denominator[W_x_denominator == 0] += 1  # 把W_x分母上等于0的值加上1
+        P_x[:, :, 3] = 255 * (cv2.cvtColor(P_o, cv2.COLOR_BGR2GRAY) - cv2.cvtColor(P_obg, cv2.COLOR_BGR2GRAY)) / W_x_denominator
+        P_x = P_x.clip(0, 255)
+        # print(P_x[:, :, 3])
+        P_x = P_x.astype(np.uint8)
+        # cv2.imshow('P_x 3 channels', P_x[:, :, :3])
+        # cv2.waitKey()
+        # cv2.destroyAllWindows()
+        # cv2.imshow('outcome image', P_x)
+        # cv2.waitKey()
+        # cv2.destroyAllWindows()
+        temp_outpath = f'two_faces.png'
+        outname = f'{os.path.splitext(os.path.basename(outer_path))[0]}_two_faces.png'
+        cv2.imwrite(temp_outpath, P_x)
+        if pos.get() == '表图片所在文件夹':
+            save_dir = os.path.dirname(outer_path)
+        elif pos.get() == '里图片所在文件夹':
+            save_dir = os.path.dirname(inner_path)
+        if os.getcwd() != save_dir:  # 如果软件所在文件夹不是用户选择的文件夹，那么就进行移动
+            outpath = os.path.join(save_dir, outname)
+            Tools.read_all_and_write_all(temp_outpath, outpath)
+            Tools.delete_file(temp_outpath)
+        else:
+            os.rename(temp_outpath, outname)
+        entry1.config(state='normal')
+        Tools.reset(entry1)
+        entry1.insert('end', outname)
+        entry1.config(state='readonly')
+        label3.pack()
+
+    frm1 = tk.Frame(frm)
+    frm1.pack()
+    button1 = tk.Button(frm1, text='重置', font=mid_font, command=reset)
+    button1.grid(row=1, column=1, padx=20)
+    button2 = tk.Button(frm1, text='开始生成', font=mid_font, command=process)
+    button2.grid(row=1, column=2, padx=20)
+    frm2 = tk.Frame(frm)
+    frm2.pack()
+    label1 = tk.Label(frm2, text='结果保存在：', font=mid_font)
+    label1.grid(row=1, column=1)
+    pos = tk.StringVar()
+    pos.set('表图片所在文件夹')
+    op1 = tk.OptionMenu(frm2, pos, *('表图片所在文件夹', '里图片所在文件夹'))
+    op1.config(font=mid_font)
+    op1.grid(row=1, column=2)
+    label2 = tk.Label(frm2, text='中的：', font=mid_font)
+    label2.grid(row=1, column=3)
+    entry1 = tk.Entry(frm, width=59, font=mid_font, state='readonly')
+    entry1.pack()
+    label3 = tk.Label(frm, text='处理完成！', font=mid_font, fg='red')
+
+
 def against_duplicate_check():
     # 操作零宽度字符（左边的labelframe）
     labelframe1 = tk.LabelFrame(frm, text='操作特殊字符', height=741, width=606, font=mid_font)
