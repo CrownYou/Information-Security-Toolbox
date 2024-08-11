@@ -1597,6 +1597,10 @@ def two_faces():
         b_entry3.insert('end', '0')
         Tools.reset(b_entry4)
         b_entry4.insert('end', '0')
+        entry1.config(state='normal')
+        Tools.reset(entry1)
+        entry1.config(state='readonly')
+        label3.pack_forget()
 
     def process():
         label3.pack_forget()
@@ -1744,8 +1748,8 @@ def two_faces():
         # cv2.imshow('outcome image', P_x)
         # cv2.waitKey()
         # cv2.destroyAllWindows()
-        temp_outpath = f'two_faces.png'
-        outname = f'{os.path.splitext(os.path.basename(outer_path))[0]}_two_faces.png'
+        temp_outpath = f'ego_show_on_rgb_{r_i}_{g_i}_{b_i}.png'
+        outname = f'{os.path.splitext(os.path.basename(outer_path))[0]}_ego_show_on_rgb_{r_i}_{g_i}_{b_i}.png'
         cv2.imwrite(temp_outpath, P_x)
         if pos.get() == '表图片所在文件夹':
             save_dir = os.path.dirname(outer_path)
