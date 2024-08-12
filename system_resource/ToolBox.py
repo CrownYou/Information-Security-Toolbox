@@ -919,6 +919,12 @@ def hide_qr_code():
             Tools.read_all_and_write_all(qr_path, temp_qr_path)
             try:
                 qr_img = cv2.imread(temp_qr_path)
+                qr_img_rows, qr_img_cols, _ = qr_img.shape
+                if qr_img_rows > 900 or qr_img_cols > 900:
+                    zoom = min(900 / qr_img_rows, 900 / qr_img_cols)
+                else:
+                    zoom = 1.0
+                qr_img = cv2.resize(qr_img, None, fx=zoom, fy=zoom, interpolation=cv2.INTER_AREA)
                 cv2.imshow('image', qr_img)
             except Exception:
                 Tools.delete_file(temp_qr_path)
@@ -1219,12 +1225,19 @@ def invisible_qr():
             Tools.read_all_and_write_all(qr_path, temp_qr_path)
             try:
                 qr_img = cv2.imread(temp_qr_path)
+                qr_img_rows, qr_img_cols, _ = qr_img.shape
+                if qr_img_rows > 900 or qr_img_cols > 900:
+                    zoom = min(900 / qr_img_rows, 900 / qr_img_cols)
+                else:
+                    zoom = 1.0
+                qr_img = cv2.resize(qr_img, None, fx=zoom, fy=zoom, interpolation=cv2.INTER_AREA)
                 cv2.imshow('QR code', qr_img)
             except Exception:
                 Tools.delete_file(temp_qr_path)
                 messagebox.showerror('二维码图片格式错误', '二维码图片的格式不正确')
                 return 0
             os.remove(temp_qr_path)
+            # cv2.destroyAllWindows()
         else:
             messagebox.showerror('二维码图片地址错误', '二维码图片地址错误')
             return 0
