@@ -1740,7 +1740,7 @@ def two_faces():
         P_ibg: 使得里图能显示的背景图片
         P_i: 里图
         解得：
-        W_x = (P_o - Pobg) / (P_x - P_obg)  # 以灰度图计算
+        W_x = (P_o - P_obg) / (P_x - P_obg)  # 以灰度图计算
         P_x = (P_o * P_ibg - P_i * P_obg) / (P_o - P_obg - P_i + P_ibg)
         '''
         P_x = np.zeros((max_rows, max_cols, 4), dtype=np.float32)
@@ -2986,4 +2986,3 @@ def shamir_share():
     lf2_label2.pack()
     lf2_entry1 = tk.Entry(labelframe2, width=43, font=mid_font, state='readonly')
     lf2_entry1.pack()
-
