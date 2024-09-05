@@ -23,22 +23,23 @@ from system_resource.ToolKit import Tools
 temp_video_path = temp_outvideo_path = temp_video_saving_path = 'N/A'
 base64dic = Tools.base64dic
 alive = False  # 控制线程是否存活的变量
-window = frm = mid_font = icon_path = colors = ind = ...
+window = frm = mid_font = icon_path = colors = ind = zoom = ...
 
 
-def initiation(_window, _frm, _mid_font, _icon_path, _colors, _ind):
-    global window, frm, mid_font, icon_path, colors, ind
+def initiation(_window, _frm, _mid_font, _icon_path, _colors, _ind, _zoom):
+    global window, frm, mid_font, icon_path, colors, ind, zoom
     window = _window
     frm = _frm
     mid_font = _mid_font
     icon_path = _icon_path
     colors = _colors
     ind = _ind
+    zoom = _zoom
 
 
 def video_logo():
     # 请输入隐写对象（左边的labelframe）
-    labelframe1 = tk.LabelFrame(frm, text='输入隐写的内容', height=741, width=606, font=mid_font)
+    labelframe1 = tk.LabelFrame(frm, text='输入隐写的内容', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe1.pack(side='left', padx=5, pady=5)
     labelframe1.pack_propagate(0)  # 使组件大小不变
     lf1_frm1 = tk.Frame(labelframe1)
@@ -656,7 +657,7 @@ def video_logo():
 
         def intro_demarcation():
             intro_window = tk.Toplevel()
-            intro_window.geometry('636x758')
+            intro_window.geometry(Tools.zoom_size('636x758', zoom))
             intro_window.title('背景与主体的划分方式介绍')
             intro_window.iconbitmap(icon_path)
             iw_text = tk.Text(intro_window, width=46, height=28, font=mid_font)
@@ -881,7 +882,7 @@ def video_logo():
             messagebox.showerror('视频不存在', '结果已被删除或移动')
 
     outvideo_path = 'N/A'
-    labelframe2 = tk.LabelFrame(frm, text='设置隐写的参数', height=741, width=606, font=mid_font)
+    labelframe2 = tk.LabelFrame(frm, text='设置隐写的参数', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe2.pack(side='right', padx=5, pady=5)
     labelframe2.pack_propagate(0)  # 使组件大小不变
     lf2_first_frm = tk.Frame(labelframe2)
@@ -929,7 +930,7 @@ def video_logo():
 
 def nearest_neighbor():
     # 隐写（左边的labelframe）
-    labelframe1 = tk.LabelFrame(frm, text='最近邻插值法隐写图片', height=741, width=606, font=mid_font)
+    labelframe1 = tk.LabelFrame(frm, text='最近邻插值法隐写图片', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe1.pack(side='left', padx=5, pady=5)
     labelframe1.pack_propagate(0)  # 使组件大小不变
 
@@ -1030,7 +1031,7 @@ def nearest_neighbor():
     def intro_resize():
         intro_window = tk.Toplevel()
         intro_window.title("自动微调尺寸介绍")
-        intro_window.geometry('636x758')
+        intro_window.geometry(Tools.zoom_size('636x758', zoom))
         intro_window.iconbitmap(icon_path)
         iw_text = tk.Text(intro_window, width=46, height=28, font=mid_font)
         iw_text.pack()
@@ -1080,7 +1081,7 @@ def nearest_neighbor():
     button4.pack()
 
     # 读取（右边的labelframe）
-    labelframe2 = tk.LabelFrame(frm, text='最近邻插值法读取图片', height=741, width=606, font=mid_font)
+    labelframe2 = tk.LabelFrame(frm, text='最近邻插值法读取图片', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe2.pack(side='right', padx=5, pady=5)
     labelframe2.pack_propagate(0)  # 使组件大小不变
 
@@ -1178,7 +1179,7 @@ def nearest_neighbor():
 
 def read_video_logo():
     # 定位识别对象（左边的labelframe）
-    labelframe1 = tk.LabelFrame(frm, text='定位识别对象', height=741, width=606, font=mid_font)
+    labelframe1 = tk.LabelFrame(frm, text='定位识别对象', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe1.pack(side='left', padx=5, pady=5)
     labelframe1.pack_propagate(0)  # 使组件大小不变
     lf1_frm1 = tk.Frame(labelframe1)
@@ -1326,7 +1327,8 @@ def read_video_logo():
                                     se_mean = (se_mean[0] / 4, se_mean[1] / 4)
                                     e_mean = (e_mean[0] / 4, e_mean[1] / 4)
                                     ne_mean = (ne_mean[0] / 4, ne_mean[1] / 4)
-                                    # print(c_mean, n_mean, nw_mean, w_mean, sw_mean, s_mean, se_mean, e_mean, ne_mean)
+                                    print(c_mean, n_mean, nw_mean, w_mean, sw_mean, s_mean, se_mean, e_mean, ne_mean)
+                                    # break
                             # 后面的帧负责读取有效信息
                             else:
                                 direction = Tools.close_to_which(position, c_mean, n_mean, nw_mean, w_mean, sw_mean,
@@ -1533,7 +1535,7 @@ def read_video_logo():
     def copy_result():
         Tools.copy(lf2_text1, lf2_button2)
 
-    labelframe2 = tk.LabelFrame(frm, text='获取到的隐写信息（base64格式）', height=741, width=606, font=mid_font)
+    labelframe2 = tk.LabelFrame(frm, text='获取到的隐写信息（base64格式）', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe2.pack(side='right', padx=5, pady=5)
     labelframe2.pack_propagate(0)  # 使组件大小不变
     lf2_text1 = tk.Text(labelframe2, width=43, height=25, font=mid_font)
@@ -1793,7 +1795,7 @@ def hide_zip():
 
 def zero_width_ste():
     # 生成（左边的labelframe)
-    labelframe1 = tk.LabelFrame(frm, text='生成', height=741, width=606, font=mid_font)
+    labelframe1 = tk.LabelFrame(frm, text='生成', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe1.pack(side='left', padx=5, pady=5)
     labelframe1.pack_propagate(0)  # 使组件大小不变
 
@@ -1858,7 +1860,7 @@ def zero_width_ste():
     def intro_mode():
         intro_window2 = tk.Toplevel()
         intro_window2.title("隐写模式介绍")
-        intro_window2.geometry('636x758')
+        intro_window2.geometry(Tools.zoom_size('636x758', zoom))
         intro_window2.iconbitmap(icon_path)
         iw_text = tk.Text(intro_window2, width=46, height=17, font=mid_font)
         iw_text.pack()
@@ -1931,7 +1933,7 @@ def zero_width_ste():
     lf1_text3.pack()
 
     # 解析（右边的labelframe）
-    labelframe2 = tk.LabelFrame(frm, text='解析', height=741, width=606, font=mid_font)
+    labelframe2 = tk.LabelFrame(frm, text='解析', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe2.pack(side='right', padx=5, pady=5)
     labelframe2.pack_propagate(0)
     lf2_label1 = tk.Label(labelframe2, text='请输入需要解析的文字', font=mid_font)
@@ -1984,7 +1986,7 @@ def zero_width_ste():
 
 def fourier_word():
     # 隐写文字（左边的labelframe)
-    labelframe1 = tk.LabelFrame(frm, text='盲水印法隐写文字', height=741, width=606, font=mid_font)
+    labelframe1 = tk.LabelFrame(frm, text='盲水印法隐写文字', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe1.pack(side='left', padx=5, pady=5)
     labelframe1.pack_propagate(0)  # 使组件大小不变
 
@@ -2069,7 +2071,7 @@ def fourier_word():
     lf1_button3.grid(row=1, column=3, padx=5)
 
     # 解析（右边的labelframe）
-    labelframe2 = tk.LabelFrame(frm, text='盲水印法读取文字', height=741, width=606, font=mid_font)
+    labelframe2 = tk.LabelFrame(frm, text='盲水印法读取文字', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe2.pack(side='right', padx=5, pady=5)
     labelframe2.pack_propagate(0)
 
@@ -2144,7 +2146,7 @@ def fourier_word():
 
 def fourier_pic():
     # 隐写图片（左边的labelframe)
-    labelframe1 = tk.LabelFrame(frm, text='盲水印法隐写图片', height=741, width=606, font=mid_font)
+    labelframe1 = tk.LabelFrame(frm, text='盲水印法隐写图片', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe1.pack(side='left', padx=5, pady=5)
     labelframe1.pack_propagate(0)  # 使组件大小不变
 
@@ -2268,7 +2270,7 @@ def fourier_pic():
     lf1_button4.pack()
 
     # 解析（右边的labelframe）
-    labelframe2 = tk.LabelFrame(frm, text='盲水印法读取图片', height=741, width=606, font=mid_font)
+    labelframe2 = tk.LabelFrame(frm, text='盲水印法读取图片', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe2.pack(side='right', padx=5, pady=5)
     labelframe2.pack_propagate(0)
     out_pic_path = ...

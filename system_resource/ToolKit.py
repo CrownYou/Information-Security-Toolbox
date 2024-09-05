@@ -25,16 +25,17 @@ import hashlib
 import string
 import tenseal as ts
 
-frm = mid_font = icon_path = colors = ind = ...
+frm = mid_font = icon_path = colors = ind = zoom = ...
 
 
-def initiation(_frm, _mid_font, _icon_path, _colors, _ind):
-    global frm, mid_font, icon_path, colors, ind
+def initiation(_frm, _mid_font, _icon_path, _colors, _ind, _zoom):
+    global frm, mid_font, icon_path, colors, ind, zoom
     frm = _frm
     mid_font = _mid_font
     icon_path = _icon_path
     colors = _colors
     ind = _ind
+    zoom = _zoom
 
 
 class ZebrizedFile:
@@ -379,6 +380,21 @@ class Tools:
                  'w': [(1, -1), (-1, 0)], 'x': [(1, -1), (-1, 1)], 'y': [(1, -1), (0, 1)], 'z': [(1, -1), (1, 1)],
                  '+': [(1, -1), (1, 0)], '/': [(1, -1), (1, -1)], '=': [(0, 0), (1, 1)]}
 
+    @property
+    def width(self):
+        # zoom = Tools.get_zoom()
+        return round(606 * zoom)
+
+    @property
+    def height(self):
+        # zoom = Tools.get_zoom()
+        return round(741 * zoom)
+
+    @property
+    def half_height(self):
+        # zoom = Tools.get_zoom()
+        return round(457 * zoom)
+
     @staticmethod
     def clean_all_widget(frame: tk.Frame):
         for widget in frame.winfo_children():
@@ -594,7 +610,7 @@ class Tools:
                     position = auto.center(auto.locate(logo, frame[constraint[0][1]: constraint[1][1], constraint[0][0]: constraint[1][0]], confidence=confidence))
             except Exception:
                 confidence = max(confidence - 0.02, 0)
-                print('confidence: ', confidence)
+                print('\rconfidence: ', confidence, end=', ')
                 if confidence <= 0:
                     return 0, 0
             else:
@@ -1232,7 +1248,7 @@ class Tools:
     def intro_enc_head():
         intro_window = tk.Toplevel()
         intro_window.title("加密大小介绍")
-        intro_window.geometry('636x758')
+        intro_window.geometry(Tools.zoom_size('636x758', zoom))
         intro_window.iconbitmap(icon_path)
         iw_text = tk.Text(intro_window, width=46, height=28, font=mid_font)
         iw_text.pack()
@@ -1266,7 +1282,7 @@ class Tools:
     def intro_destroy():
         intro_window = tk.Toplevel()
         intro_window.title("阅后即焚功能介绍")
-        intro_window.geometry('636x758')
+        intro_window.geometry(Tools.zoom_size('636x758', zoom))
         intro_window.iconbitmap(icon_path)
         iw_text = tk.Text(intro_window, width=46, height=28, font=mid_font)
         iw_text.pack()
@@ -1368,7 +1384,7 @@ class Tools:
     def intro_iv():
         intro_window = tk.Toplevel()
         intro_window.title('说明')
-        intro_window.geometry("636x758")
+        intro_window.geometry(Tools.zoom_size("636x758", zoom))
         intro_window.iconbitmap(icon_path)
         iw_text = tk.Text(intro_window, width=46, height=28, font=mid_font)
         iw_text.pack()
@@ -1436,7 +1452,7 @@ class Tools:
         global ind
         setting_window = tk.Toplevel()
         setting_window.title("设置1单位加密块的大小")
-        setting_window.geometry("450x158")
+        setting_window.geometry(Tools.zoom_size("450x158", zoom))
         setting_window.iconbitmap(icon_path)
         label1 = tk.Label(setting_window, text='请设置1单位加密块的大小：', font=mid_font)
         label1.pack()
@@ -1611,7 +1627,7 @@ class Tools:
     def intro_emoji():
         intro_window = tk.Toplevel()
         intro_window.title('emoji编码介绍')
-        intro_window.geometry("636x758")
+        intro_window.geometry(Tools.zoom_size("636x758", zoom))
         intro_window.iconbitmap(icon_path)
         iw_text = tk.Text(intro_window, width=46, height=28, font=mid_font)
         iw_text.pack()
@@ -1729,3 +1745,9 @@ class Tools:
             return math.floor(num)
         elif math.ceil(num) % 2 == 0:
             return math.ceil(num)
+
+    @staticmethod
+    def zoom_size(size: str, zoom: float):
+        width, height = size.split('x')
+        width, height = int(width), int(height)
+        return f'{round(width*zoom)}x{round(height*zoom)}'

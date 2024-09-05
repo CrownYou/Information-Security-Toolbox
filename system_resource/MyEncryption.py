@@ -25,24 +25,25 @@ from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import ec
 from system_resource.ToolKit import Tools  # 注意：这里没有写错，因为这句话是交给main.py执行的，必须从它的视角进行相对引用
 
-window = frm = mid_font = icon_path = colors = ind = ...
+window = frm = mid_font = icon_path = colors = ind = zoom = ...
 
 
-def initiation(_window, _frm, _mid_font, _icon_path, _colors, _ind):
-    global window, frm, mid_font, icon_path, colors, ind
+def initiation(_window, _frm, _mid_font, _icon_path, _colors, _ind, _zoom):
+    global window, frm, mid_font, icon_path, colors, ind, zoom
     window = _window
     frm = _frm
     mid_font = _mid_font
     icon_path = _icon_path
     colors = _colors
     ind = _ind
+    zoom = _zoom
 
 
 def create_rsa_key():
     frm_of_labelframe = tk.Frame(frm)
     frm_of_labelframe.pack()
     # 连续随机生成
-    labelframe1 = tk.LabelFrame(frm_of_labelframe, text='连续随机生成RSA密钥对', height=457, width=606, font=mid_font)
+    labelframe1 = tk.LabelFrame(frm_of_labelframe, text='连续随机生成RSA密钥对', height=Tools().half_height, width=Tools().width, font=mid_font)
     labelframe1.pack(side='left', padx=5, pady=5)
     labelframe1.pack_propagate(0)  # 使组件大小不变
 
@@ -192,7 +193,7 @@ def create_rsa_key():
 
     def tell_detail():
         detail_window = tk.Toplevel(window)
-        detail_window.geometry('1290x900')
+        detail_window.geometry(Tools.zoom_size('1290x900', zoom))
         detail_window.title('RSA密钥详情')
         detail_window.iconbitmap(icon_path)
         top_lay.append(detail_window)
@@ -439,7 +440,7 @@ def create_rsa_key():
     open_dir_button.grid(row=1, column=2, padx=20)
 
     # 随机生成一对
-    labelframe2 = tk.LabelFrame(frm_of_labelframe, text='随机生成一对RSA密钥', height=457, width=606, font=mid_font)
+    labelframe2 = tk.LabelFrame(frm_of_labelframe, text='随机生成一对RSA密钥', height=Tools().half_height, width=Tools().width, font=mid_font)
     labelframe2.pack(side='left', padx=5, pady=5)
     labelframe2.pack_propagate(0)  # 使组件大小不变
     lf2_label1 = tk.Label(labelframe2, text='请选择密钥的长度：', font=mid_font)
@@ -515,7 +516,7 @@ def create_rsa_key():
 
 def set_pwd_of_rsa_privkey():
     # 添加密码或去除密码（左边的labelframe）
-    labelframe1 = tk.LabelFrame(frm, text='为RSA私钥添加或去除使用密码', height=741, width=606, font=mid_font)
+    labelframe1 = tk.LabelFrame(frm, text='为RSA私钥添加或去除使用密码', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe1.pack(side='left', padx=5, pady=5)
     labelframe1.pack_propagate(0)  # 使组件大小不变
     lf1_frm1 = tk.Frame(labelframe1)
@@ -648,7 +649,7 @@ def set_pwd_of_rsa_privkey():
     lf1_label4.pack()
 
     # 修改密码（右边的labelframe）
-    labelframe2 = tk.LabelFrame(frm, text='为RSA私钥修改使用密码', height=741, width=606, font=mid_font)
+    labelframe2 = tk.LabelFrame(frm, text='为RSA私钥修改使用密码', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe2.pack(side='right', padx=5, pady=5)
     labelframe2.pack_propagate(0)  # 使组件大小不变
     lf2_frm1 = tk.Frame(labelframe2)
@@ -792,7 +793,7 @@ def rsa_word():
     frm_of_labelframe.pack()
 
     # 加密（左边的labelframe）
-    labelframe1 = tk.LabelFrame(frm_of_labelframe, text='RSA加密文字', height=708, width=606, font=mid_font)
+    labelframe1 = tk.LabelFrame(frm_of_labelframe, text='RSA加密文字', height=round(708*zoom), width=Tools().width, font=mid_font)
     labelframe1.pack(side='left', padx=5)
     labelframe1.pack_propagate(0)  # 使组件大小不变
     frm3 = tk.Frame(labelframe1)
@@ -882,7 +883,7 @@ def rsa_word():
     text1.bind('<KeyRelease>', process)
 
     # 解密（右边的labelframe）
-    labelframe2 = tk.LabelFrame(frm_of_labelframe, text='RSA解密文字', height=708, width=606, font=mid_font)
+    labelframe2 = tk.LabelFrame(frm_of_labelframe, text='RSA解密文字', height=round(708*zoom), width=Tools().width, font=mid_font)
     labelframe2.pack(side='left', padx=5)
     labelframe2.pack_propagate(0)  # 使组件大小不变
     lf2_frm1 = tk.Frame(labelframe2)
@@ -996,7 +997,7 @@ def rsa_word():
 
 def rsa_file():
     # 加密文件（夹）（左边的labelframe）
-    labelframe1 = tk.LabelFrame(frm, text='RSA加密文件（夹）', height=741, width=606, font=mid_font)
+    labelframe1 = tk.LabelFrame(frm, text='RSA加密文件（夹）', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe1.pack(side='left', padx=5, pady=5)
     labelframe1.pack_propagate(0)  # 使组件大小不变
     frm3 = tk.Frame(labelframe1)
@@ -1230,7 +1231,7 @@ def rsa_file():
     frm4.pack()
 
     # 解密文件（夹）（右边的labelframe）
-    labelframe2 = tk.LabelFrame(frm, text='RSA解密文件（夹）', height=741, width=606, font=mid_font)
+    labelframe2 = tk.LabelFrame(frm, text='RSA解密文件（夹）', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe2.pack(side='right', padx=5, pady=5)
     labelframe2.pack_propagate(0)  # 使组件大小不变
 
@@ -1401,7 +1402,7 @@ def rsa_file():
 
 def rsa_sign_and_verify():
     # 数字签名（左边的labelframe）
-    labelframe1 = tk.LabelFrame(frm, text='RSA数字签名', height=741, width=606, font=mid_font)
+    labelframe1 = tk.LabelFrame(frm, text='RSA数字签名', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe1.pack(side='left', padx=5, pady=5)
     labelframe1.pack_propagate(0)  # 使组件大小不变
     frm1 = tk.Frame(labelframe1)
@@ -1548,7 +1549,7 @@ def rsa_sign_and_verify():
     frm4 = tk.Frame(frm3)
 
     # 验证签名（右边的labelframe）
-    labelframe2 = tk.LabelFrame(frm, text='RSA验证签名', height=741, width=606, font=mid_font)
+    labelframe2 = tk.LabelFrame(frm, text='RSA验证签名', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe2.pack(side='right', padx=5, pady=5)
     labelframe2.pack_propagate(0)  # 使组件大小不变
     lf2_frm1 = tk.Frame(labelframe2)
@@ -1735,7 +1736,7 @@ def create_ecc_key():
     frm_of_labelframe.pack()
 
     # 连续随机生成
-    labelframe1 = tk.LabelFrame(frm_of_labelframe, text='连续随机生成ECC密钥对', height=457, width=606, font=mid_font)
+    labelframe1 = tk.LabelFrame(frm_of_labelframe, text='连续随机生成ECC密钥对', height=Tools().half_height, width=Tools().width, font=mid_font)
     labelframe1.pack(side='left', padx=5, pady=5)
     labelframe1.pack_propagate(0)  # 使组件大小不变
     frm1 = tk.Frame(labelframe1)
@@ -1861,7 +1862,7 @@ def create_ecc_key():
 
     def tell_detail():
         detail_window = tk.Toplevel(window)
-        detail_window.geometry('1290x900')
+        detail_window.geometry(Tools.zoom_size('1290x900', zoom))
         detail_window.title('ECC密钥详情')
         detail_window.iconbitmap(icon_path)
         top_lay.append(detail_window)
@@ -2114,7 +2115,7 @@ def create_ecc_key():
     open_dir_button.grid(row=1, column=2, padx=20)
 
     # 随机生成一对
-    labelframe2 = tk.LabelFrame(frm_of_labelframe, text='随机生成一对ECC密钥', height=457, width=606, font=mid_font)
+    labelframe2 = tk.LabelFrame(frm_of_labelframe, text='随机生成一对ECC密钥', height=Tools().half_height, width=Tools().width, font=mid_font)
     labelframe2.pack(side='left', padx=5, pady=5)
     labelframe2.pack_propagate(0)  # 使组件大小不变
     lf2_label1 = tk.Label(labelframe2, text='请选择密钥的长度：', font=mid_font)
@@ -2169,7 +2170,7 @@ def create_ecc_key():
 
 def set_pwd_of_ecc_privkey():
     # 添加密码或去除密码（左边的labelframe）
-    labelframe1 = tk.LabelFrame(frm, text='为ECC私钥添加或去除使用密码', height=741, width=606, font=mid_font)
+    labelframe1 = tk.LabelFrame(frm, text='为ECC私钥添加或去除使用密码', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe1.pack(side='left', padx=5, pady=5)
     labelframe1.pack_propagate(0)  # 使组件大小不变
     lf1_frm1 = tk.Frame(labelframe1)
@@ -2302,7 +2303,7 @@ def set_pwd_of_ecc_privkey():
     lf1_label4.pack()
 
     # 修改密码（右边的labelframe）
-    labelframe2 = tk.LabelFrame(frm, text='为ECC私钥修改使用密码', height=741, width=606, font=mid_font)
+    labelframe2 = tk.LabelFrame(frm, text='为ECC私钥修改使用密码', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe2.pack(side='right', padx=5, pady=5)
     labelframe2.pack_propagate(0)  # 使组件大小不变
     lf2_frm1 = tk.Frame(labelframe2)
@@ -2498,7 +2499,7 @@ def ecc_word():
     down_frm.pack()
 
     # 加密（左边的labelframe）
-    labelframe1 = tk.LabelFrame(down_frm, text='ECC加密文字', height=560, width=606, font=mid_font)
+    labelframe1 = tk.LabelFrame(down_frm, text='ECC加密文字', height=round(560*zoom), width=Tools().width, font=mid_font)
     labelframe1.pack(side='left', padx=5)
     labelframe1.pack_propagate(0)  # 使组件大小不变
     lf1_text1 = tk.Text(labelframe1, font=mid_font, width=43, height=9)
@@ -2557,7 +2558,7 @@ def ecc_word():
     lf1_text1.bind("<KeyRelease>", enc)
 
     # 解密（右边的labelframe)
-    labelframe2 = tk.LabelFrame(down_frm, text='ECC解密文字', height=560, width=606, font=mid_font)
+    labelframe2 = tk.LabelFrame(down_frm, text='ECC解密文字', height=round(560*zoom), width=Tools().width, font=mid_font)
     labelframe2.pack(side='right', padx=5)
     labelframe2.pack_propagate(0)  # 使组件大小不变
     lf2_text1 = tk.Text(labelframe2, font=mid_font, width=43, height=9)
@@ -2693,7 +2694,7 @@ def ecc_file():
     frm_of_labelframe.pack()
 
     # 加密（左边的labelframe）
-    labelframe1 = tk.LabelFrame(frm_of_labelframe, text='ECC加密文件（夹）', height=606, width=606, font=mid_font)
+    labelframe1 = tk.LabelFrame(frm_of_labelframe, text='ECC加密文件（夹）', height=round(606*zoom), width=Tools().width, font=mid_font)
     labelframe1.pack(side='left', padx=5)
     labelframe1.pack_propagate(0)  # 使组件大小不变
 
@@ -2901,7 +2902,7 @@ def ecc_file():
     frm4.pack()
 
     # 解密（右边的labelframe）
-    labelframe2 = tk.LabelFrame(frm_of_labelframe, text='ECC解密文件（夹）', height=606, width=606, font=mid_font)
+    labelframe2 = tk.LabelFrame(frm_of_labelframe, text='ECC解密文件（夹）', height=round(606*zoom), width=Tools().width, font=mid_font)
     labelframe2.pack(side='right', padx=5)
     labelframe2.pack_propagate(0)  # 使组件大小不变
 
@@ -3092,7 +3093,7 @@ def ecc_file():
 
     def tell_difference():
         tell_window = tk.Toplevel(window)
-        tell_window.geometry('636x758')
+        tell_window.geometry(Tools.zoom_size('636x758', zoom))
         tell_window.title('说明')
         tell_window.iconbitmap(icon_path)
         tw_text = tk.Text(tell_window, width=46, height=28, font=mid_font)
@@ -3135,7 +3136,7 @@ def ecc_file():
 
 def ecc_sign_and_verify():
     # 数字签名（左边的labelframe）
-    labelframe1 = tk.LabelFrame(frm, text='ECC数字签名', height=741, width=606, font=mid_font)
+    labelframe1 = tk.LabelFrame(frm, text='ECC数字签名', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe1.pack(side='left', padx=5, pady=5)
     labelframe1.pack_propagate(0)  # 使组件大小不变
     frm1 = tk.Frame(labelframe1)
@@ -3288,7 +3289,7 @@ def ecc_sign_and_verify():
     frm4 = tk.Frame(frm3)
 
     # 验证签名（右边的labelframe）
-    labelframe2 = tk.LabelFrame(frm, text='ECC验证签名', height=741, width=606, font=mid_font)
+    labelframe2 = tk.LabelFrame(frm, text='ECC验证签名', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe2.pack(side='right', padx=5, pady=5)
     labelframe2.pack_propagate(0)  # 使组件大小不变
     lf2_frm1 = tk.Frame(labelframe2)
@@ -3696,7 +3697,7 @@ def aes_word():
     frm_of_labelframe.pack()
 
     # 加密（左边的labelframe）
-    labelframe1 = tk.LabelFrame(frm_of_labelframe, text='AES加密文字', height=560, width=606, font=mid_font)
+    labelframe1 = tk.LabelFrame(frm_of_labelframe, text='AES加密文字', height=round(560*zoom), width=Tools().width, font=mid_font)
     labelframe1.pack(side='left', padx=5)
     labelframe1.pack_propagate(0)  # 使组件大小不变
     text1 = tk.Text(labelframe1, font=mid_font, width=43, height=9)
@@ -3760,7 +3761,7 @@ def aes_word():
     text1.bind("<KeyRelease>", process)
 
     # 解密（右边的labelframe）
-    labelframe2 = tk.LabelFrame(frm_of_labelframe, text='AES解密文字', height=560, width=606, font=mid_font)
+    labelframe2 = tk.LabelFrame(frm_of_labelframe, text='AES解密文字', height=round(560*zoom), width=Tools().width, font=mid_font)
     labelframe2.pack(side='right', padx=5)
     labelframe2.pack_propagate(0)  # 使组件大小不变
 
@@ -3901,7 +3902,7 @@ def aes_file():
     frm_of_labelframe.pack()
 
     # 加密（左边的labelframe）
-    labelframe1 = tk.LabelFrame(frm_of_labelframe, text='AES加密文件（夹）', height=606, width=606, font=mid_font)
+    labelframe1 = tk.LabelFrame(frm_of_labelframe, text='AES加密文件（夹）', height=round(606*zoom), width=Tools().width, font=mid_font)
     labelframe1.pack(side='left', padx=5)
     labelframe1.pack_propagate(0)  # 使组件大小不变
 
@@ -4113,7 +4114,7 @@ def aes_file():
     frm4.pack()
 
     # 解密（右边的labelframe）
-    labelframe2 = tk.LabelFrame(frm_of_labelframe, text='AES解密文件（夹）', height=606, width=606, font=mid_font)
+    labelframe2 = tk.LabelFrame(frm_of_labelframe, text='AES解密文件（夹）', height=round(606*zoom), width=Tools().width, font=mid_font)
     labelframe2.pack(side='right', padx=5)
     labelframe2.pack_propagate(0)  # 使组件大小不变
 
@@ -4357,7 +4358,7 @@ def create_ckks_key():
     frm_of_labelframe = tk.Frame(frm)
     frm_of_labelframe.pack()
     # 随机生成CKKS同态加密对称加密密钥
-    labelframe1 = tk.LabelFrame(frm_of_labelframe, text='随机生成CKKS同态加密对称加密密钥', height=457, width=606, font=mid_font)
+    labelframe1 = tk.LabelFrame(frm_of_labelframe, text='随机生成CKKS同态加密对称加密密钥', height=Tools().half_height, width=Tools().width, font=mid_font)
     labelframe1.pack(side='left', padx=5, pady=5)
     labelframe1.pack_propagate(0)  # 使组件大小不变
 
@@ -4414,7 +4415,7 @@ def create_ckks_key():
     frm3.pack()
 
     # 随机生成CKKS同态加密非对称加密密钥
-    labelframe2 = tk.LabelFrame(frm_of_labelframe, text='随机生成CKKS同态加密非对称加密密钥', height=457, width=606, font=mid_font)
+    labelframe2 = tk.LabelFrame(frm_of_labelframe, text='随机生成CKKS同态加密非对称加密密钥', height=Tools().half_height, width=Tools().width, font=mid_font)
     labelframe2.pack(side='right', padx=5, pady=5)
     labelframe2.pack_propagate(0)  # 使组件大小不变
 
@@ -4488,7 +4489,7 @@ def create_ckks_key():
 
 def set_pwd_of_ckks_privkey():
     # 添加密码或去除密码（左边的labelframe）
-    labelframe1 = tk.LabelFrame(frm, text='为CKKS私钥添加或去除使用密码', height=741, width=606, font=mid_font)
+    labelframe1 = tk.LabelFrame(frm, text='为CKKS私钥添加或去除使用密码', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe1.pack(side='left', padx=5, pady=5)
     labelframe1.pack_propagate(0)  # 使组件大小不变
     lf1_frm1 = tk.Frame(labelframe1)
@@ -4629,7 +4630,7 @@ def set_pwd_of_ckks_privkey():
     lf1_label4.pack()
 
     # 修改密码（右边的labelframe）
-    labelframe2 = tk.LabelFrame(frm, text='为CKKS私钥修改使用密码', height=741, width=606, font=mid_font)
+    labelframe2 = tk.LabelFrame(frm, text='为CKKS私钥修改使用密码', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe2.pack(side='right', padx=5, pady=5)
     labelframe2.pack_propagate(0)  # 使组件大小不变
     lf2_frm1 = tk.Frame(labelframe2)
@@ -5393,7 +5394,7 @@ def ckks_word():
 
 def hash_word():
     # 哈希计算（左边的labelframe）
-    labelframe1 = tk.LabelFrame(frm, text='哈希计算', height=741, width=606, font=mid_font)
+    labelframe1 = tk.LabelFrame(frm, text='哈希计算', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe1.pack(side='left', padx=5, pady=5)
     labelframe1.pack_propagate(0)  # 使组件大小不变
 
@@ -5504,7 +5505,7 @@ def hash_word():
     text1.bind("<KeyRelease>", process)
 
     # 哈希校验（右边的labelframe）
-    labelframe2 = tk.LabelFrame(frm, text='哈希校验', height=741, width=606, font=mid_font)
+    labelframe2 = tk.LabelFrame(frm, text='哈希校验', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe2.pack(side='right', padx=5, pady=5)
     labelframe2.pack_propagate(0)
     lf2_label1 = tk.Label(labelframe2, text='请输入哈希值1：', font=mid_font)
@@ -5753,7 +5754,7 @@ def hash_file():
 
         com_window = tk.Toplevel()
         com_window.title("哈希计算与校验")
-        com_window.geometry("595x515")
+        com_window.geometry(Tools.zoom_size("595x515", zoom))
         com_window.iconbitmap(icon_path)
         _label1 = tk.Label(com_window, text='请拖入文件1或输入地址：', font=mid_font)
         _label1.pack()

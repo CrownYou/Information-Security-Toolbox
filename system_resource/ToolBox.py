@@ -23,18 +23,19 @@ from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from Crypto.Protocol.SecretSharing import Shamir
 from system_resource.ToolKit import Tools
 
-window = frm = mid_font = icon_path = colors = ind = ...
+window = frm = mid_font = icon_path = colors = ind = zoom = ...
 alive = False
 
 
-def initiation(_window, _frm, _mid_font, _icon_path, _colors, _ind):
-    global window, frm, mid_font, icon_path, colors, ind
+def initiation(_window, _frm, _mid_font, _icon_path, _colors, _ind, _zoom):
+    global window, frm, mid_font, icon_path, colors, ind, zoom
     window = _window
     frm = _frm
     mid_font = _mid_font
     icon_path = _icon_path
     colors = _colors
     ind = _ind
+    zoom = _zoom
 
 
 def generate_random_char():
@@ -560,16 +561,26 @@ def confuse_qr_code():
         def intro_perspective():
             intro_window = tk.Toplevel()
             intro_window.title("图像透视变换介绍")
-            intro_window.geometry('1272x758')
+            intro_window.geometry(Tools.zoom_size('1272x758', zoom))
             intro_window.iconbitmap(icon_path)
-            intro_canvas = tk.Canvas(intro_window, width=950, height=550)
-            intro_image_file = tk.PhotoImage(file='system_resource\perspective_intro.png')
+            intro_canvas = tk.Canvas(intro_window, width=round(950 * zoom), height=round(550 * zoom))
             intro_canvas.pack()
+            img = cv2.imread('system_resource\perspective_intro.png')
+            if zoom > 1:
+                img_resized = cv2.resize(img, dsize=None, fx=zoom, fy=zoom, interpolation=cv2.INTER_LINEAR)
+            elif zoom < 1:
+                img_resized = cv2.resize(img, dsize=None, fx=zoom, fy=zoom, interpolation=cv2.INTER_AREA)
+            else:
+                img_resized = copy.deepcopy(img)
+            new_path = 'system_resource\perspective_intro2.png'
+            cv2.imwrite(new_path, img_resized)
+            intro_image_file = tk.PhotoImage(file=new_path)
+            Tools.delete_file(new_path)
             intro_text = tk.Text(intro_window, font=mid_font, width=96, height=7)
             intro_text.pack()
             intro_text.insert('end', '''    由于一些互联网平台对于二维码的发布有严格限制，所以为了规避一些简单的常规审核，特此开发了这个二维码透视变换功能。它可以将二维码进行一定的畸变，从而导致二维码无法被直接读取，但是只要观察者从特定角度和位置进行扫码就能识别图像中的二维码内容。
 
-    具体原理如上图所示，将原图像ABCD通过透视变换生成图像ABEF，并将ABEF显示在屏幕上。当人眼从特定角度和位置观察时，便可从ABEF中观察到原图ABCD的像。在本软件中，您可以通过调整代表眼睛位置的滑块，即可自由设置这个特定的观察角度和位置。（本软件中，1cm=28像素）''')
+            具体原理如上图所示，将原图像ABCD通过透视变换生成图像ABEF，并将ABEF显示在屏幕上。当人眼从特定角度和位置观察时，便可从ABEF中观察到原图ABCD的像。在本软件中，您可以通过调整代表眼睛位置的滑块，即可自由设置这个特定的观察角度和位置。（本软件中，1cm=28像素）''')
             while True:
                 try:
                     intro_canvas.create_image(0, 0, anchor='nw', image=intro_image_file)
@@ -1804,7 +1815,7 @@ def two_faces():
 
 def against_duplicate_check():
     # 操作零宽度字符（左边的labelframe）
-    labelframe1 = tk.LabelFrame(frm, text='操作特殊字符', height=741, width=606, font=mid_font)
+    labelframe1 = tk.LabelFrame(frm, text='操作特殊字符', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe1.pack(side='left', padx=5, pady=5)
     labelframe1.pack_propagate(0)  # 使组件大小不变
     frm2 = tk.Frame(labelframe1)
@@ -1888,7 +1899,7 @@ def against_duplicate_check():
     def intro_mode():
         intro_window2 = tk.Toplevel()
         intro_window2.title("特殊字符操作介绍")
-        intro_window2.geometry('636x758')
+        intro_window2.geometry(Tools.zoom_size('636x758', zoom))
         intro_window2.iconbitmap(icon_path)
         iw_text = tk.Text(intro_window2, width=46, height=18, font=mid_font)
         iw_text.pack()
@@ -1946,7 +1957,7 @@ def against_duplicate_check():
     text2.pack()
 
     # 近形字替换
-    labelframe2 = tk.LabelFrame(frm, text='近形字替换', height=741, width=606, font=mid_font)
+    labelframe2 = tk.LabelFrame(frm, text='近形字替换', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe2.pack(side='right', padx=5, pady=5)
     labelframe2.pack_propagate(0)
     lf2_label1 = tk.Label(labelframe2, text='请输入需要替换近形字的文字：（长度：0）', font=mid_font)
@@ -2013,7 +2024,7 @@ def against_duplicate_check():
     def intro_similar():
         intro_window2 = tk.Toplevel()
         intro_window2.title("近形字替换介绍与设置")
-        intro_window2.geometry('636x758')
+        intro_window2.geometry(Tools.zoom_size('636x758', zoom))
         intro_window2.iconbitmap(icon_path)
 
         def save():
@@ -2062,7 +2073,7 @@ def against_duplicate_check():
 
 def rs_code_word():
     # 添加RS纠错码（左边的labelframe）
-    labelframe1 = tk.LabelFrame(frm, text='添加RS纠错码', height=745, width=606, font=mid_font)
+    labelframe1 = tk.LabelFrame(frm, text='添加RS纠错码', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe1.pack(side='left', padx=5, pady=5)
     labelframe1.pack_propagate(0)  # 使组件大小不变
 
@@ -2144,7 +2155,7 @@ def rs_code_word():
     text2.pack()
 
     # 纠正并去除RS纠错码（左边的labelframe）
-    labelframe2 = tk.LabelFrame(frm, text='纠正错误并去除RS纠错码', height=745, width=606, font=mid_font)
+    labelframe2 = tk.LabelFrame(frm, text='纠正错误并去除RS纠错码', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe2.pack(side='right', padx=5, pady=5)
     labelframe2.pack_propagate(0)  # 使组件大小不变
     lf2_frm3 = tk.Frame(labelframe2)
@@ -2219,7 +2230,7 @@ def rs_code_word():
 
 def rs_code_file():
     # 添加RS纠错码（左边的labelframe）
-    labelframe1 = tk.LabelFrame(frm, text='添加RS纠错码', height=745, width=606, font=mid_font)
+    labelframe1 = tk.LabelFrame(frm, text='添加RS纠错码', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe1.pack(side='left', padx=5, pady=5)
     labelframe1.pack_propagate(0)  # 使组件大小不变
 
@@ -2322,7 +2333,7 @@ def rs_code_file():
     entry3.pack()
 
     # 纠正并去除RS纠错码（右边的labelframe）
-    labelframe2 = tk.LabelFrame(frm, text='纠正错误并去除RS纠错码', height=745, width=606, font=mid_font)
+    labelframe2 = tk.LabelFrame(frm, text='纠正错误并去除RS纠错码', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe2.pack(side='right', padx=5, pady=5)
     labelframe2.pack_propagate(0)  # 使组件大小不变
 
@@ -2429,7 +2440,7 @@ def rs_code_file():
 
 def dh_exchange():
     # 会话发起人创建临时密钥（左边的labelframe）
-    labelframe1 = tk.LabelFrame(frm, text='会话发起人', height=745, width=606, font=mid_font)
+    labelframe1 = tk.LabelFrame(frm, text='会话发起人', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe1.pack(side='left', padx=5, pady=5)
     labelframe1.pack_propagate(0)  # 使组件大小不变
     lf1_frm1 = tk.Frame(labelframe1)
@@ -2441,7 +2452,9 @@ def dh_exchange():
         lf1_frm7.pack_forget()
         Tools.reset(lf1_text1)
         Tools.reset(lf1_text2)
+        lf1_text3.config(state='normal')
         Tools.reset(lf1_text3)
+        lf1_text3.config(state='disabled')
         if lf1_with_rsa.get() == 'on':
             lf1_frm2.pack()
             lf1_text1.config(height=5)
@@ -2457,7 +2470,9 @@ def dh_exchange():
     def lf1_re_generate():
         Tools.reset(lf1_text1)
         Tools.reset(lf1_text2)
+        lf1_text3.config(state='normal')
         Tools.reset(lf1_text3)
+        lf1_text3.config(state='disabled')
         with_rsa = lf1_with_rsa.get()
         if with_rsa == 'on':
             pubkey_cipher = Tools.get_key(lf1_entry1, method='cipher')
@@ -2496,7 +2511,9 @@ def dh_exchange():
             lf1_text1.insert('end', dic)
 
     def lf1_generate():
+        lf1_text3.config(state='normal')
         Tools.reset(lf1_text3)
+        lf1_text3.config(state='disabled')
         with_rsa = lf1_with_rsa.get()
         if with_rsa == 'on':
             privkey_cipher = Tools.get_key(lf1_entry2, method='decipher', pwd_entry=lf1_pwd_entry)
@@ -2551,7 +2568,9 @@ def dh_exchange():
             length=30,
             salt=None,
             info=b'handshake data').derive(shared_key)
+        lf1_text3.config(state='normal')
         lf1_text3.insert('end', base64.b64encode(derived_key))
+        lf1_text3.config(state='disabled')
 
     def lf1_copy1():
         Tools.copy(lf1_text1, lf1_button1)
@@ -2562,18 +2581,24 @@ def dh_exchange():
     def lf1_drag1(files):
         Tools.reset(lf1_text1)
         Tools.reset(lf1_text2)
+        lf1_text3.config(state='normal')
         Tools.reset(lf1_text3)
+        lf1_text3.config(state='disabled')
         Tools.dragged_files(files, lf1_entry1)
 
     def lf1_drag2(files):
         Tools.reset(lf1_text1)
         Tools.reset(lf1_text2)
+        lf1_text3.config(state='normal')
         Tools.reset(lf1_text3)
+        lf1_text3.config(state='disabled')
         Tools.dragged_files(files, lf1_entry2)
 
     def lf1_reset():
         Tools.reset(lf1_text2)
+        lf1_text3.config(state='normal')
         Tools.reset(lf1_text3)
+        lf1_text3.config(state='disabled')
 
     lf1_with_rsa = tk.StringVar()
     lf1_with_rsa.set('on')
@@ -2641,11 +2666,11 @@ def dh_exchange():
     lf1_button4.grid(row=1, column=3, padx=20)
     lf1_label5 = tk.Label(lf1_frm7, text='此次会话的临时密钥为：（无需告知参与人）', font=mid_font)
     lf1_label5.pack()
-    lf1_text3 = tk.Text(lf1_frm7, width=43, height=1, font=mid_font)
+    lf1_text3 = tk.Text(lf1_frm7, width=43, height=1, font=mid_font, state='disabled')
     lf1_text3.pack()
 
     # 会话参与人获取临时密钥（左边的labelframe）
-    labelframe2 = tk.LabelFrame(frm, text='会话参与人', height=745, width=606, font=mid_font)
+    labelframe2 = tk.LabelFrame(frm, text='会话参与人', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe2.pack(side='right', padx=5, pady=5)
     labelframe2.pack_propagate(0)  # 使组件大小不变
     lf2_frm1 = tk.Frame(labelframe2)
@@ -2657,7 +2682,9 @@ def dh_exchange():
         lf2_frm7.pack_forget()
         Tools.reset(lf2_text1)
         Tools.reset(lf2_text2)
+        lf2_text3.config(state='normal')
         Tools.reset(lf2_text3)
+        lf2_text3.config(state='disabled')
         if lf2_with_rsa.get() == 'on':
             lf2_frm2.pack()
             lf2_text1.config(height=5)
@@ -2675,7 +2702,9 @@ def dh_exchange():
             return 0
         nonlocal peer_dh_private_key, y1, _p, _g
         Tools.reset(lf2_text2)
+        lf2_text3.config(state='normal')
         Tools.reset(lf2_text3)
+        lf2_text3.config(state='disabled')
         with_rsa = lf2_with_rsa.get()
         # 首先获取会话发起人发送的信息
         if with_rsa == 'on':
@@ -2745,7 +2774,9 @@ def dh_exchange():
             os.remove(ontology_sec_path)
 
     def lf2_generate():
+        lf2_text3.config(state='normal')
         Tools.reset(lf2_text3)
+        lf2_text3.config(state='disabled')
         try:
             dh_public_key = dh.DHPublicNumbers(y1, dh.DHParameterNumbers(_p, _g)).public_key()
         except Exception:
@@ -2758,7 +2789,9 @@ def dh_exchange():
             length=30,
             salt=None,
             info=b'handshake data').derive(shared_key)
+        lf2_text3.config(state='normal')
         lf2_text3.insert('end', base64.b64encode(derived_key))
+        lf2_text3.config(state='disabled')
 
     def lf2_copy1():
         Tools.copy(lf2_text2, lf2_button2)
@@ -2769,19 +2802,25 @@ def dh_exchange():
     def lf2_drag1(files):
         Tools.reset(lf2_text1)
         Tools.reset(lf2_text2)
+        lf2_text3.config(state='normal')
         Tools.reset(lf2_text3)
+        lf2_text3.config(state='disabled')
         Tools.dragged_files(files, lf2_entry1)
 
     def lf2_drag2(files):
         Tools.reset(lf2_text1)
         Tools.reset(lf2_text2)
+        lf2_text3.config(state='normal')
         Tools.reset(lf2_text3)
+        lf2_text3.config(state='disabled')
         Tools.dragged_files(files, lf2_entry2)
 
     def lf2_reset():
         Tools.reset(lf2_text1)
         Tools.reset(lf2_text2)
+        lf2_text3.config(state='normal')
         Tools.reset(lf2_text3)
+        lf2_text3.config(state='disabled')
 
     lf2_with_rsa = tk.StringVar()
     lf2_with_rsa.set('on')
@@ -2838,13 +2877,13 @@ def dh_exchange():
     lf2_button4.grid(row=1, column=3, padx=20)
     lf2_label5 = tk.Label(lf2_frm7, text='此次会话的临时密钥为：（无需告知发起人）', font=mid_font)
     lf2_label5.pack()
-    lf2_text3 = tk.Text(lf2_frm7, width=43, height=1, font=mid_font)
+    lf2_text3 = tk.Text(lf2_frm7, width=43, height=1, font=mid_font, state='disabled')
     lf2_text3.pack()
 
 
 def shamir_share():
     # 会话发起人创建并分发密钥（左边的labelframe）
-    labelframe1 = tk.LabelFrame(frm, text='会话发起人创建并分发密钥', height=745, width=606, font=mid_font)
+    labelframe1 = tk.LabelFrame(frm, text='会话发起人创建并分发密钥', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe1.pack(side='left', padx=5, pady=5)
     labelframe1.pack_propagate(0)  # 使组件大小不变
 
@@ -2921,7 +2960,7 @@ def shamir_share():
     refresh()
 
     # 会话参与人拼凑密钥（右边的labelframe）
-    labelframe2 = tk.LabelFrame(frm, text='会话参与人拼凑密钥', height=745, width=606, font=mid_font)
+    labelframe2 = tk.LabelFrame(frm, text='会话参与人拼凑密钥', height=Tools().height, width=Tools().width, font=mid_font)
     labelframe2.pack(side='right', padx=5, pady=5)
     labelframe2.pack_propagate(0)  # 使组件大小不变
 

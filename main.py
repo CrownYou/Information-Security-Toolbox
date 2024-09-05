@@ -1,5 +1,4 @@
 import base64
-import copy
 import re
 import math
 import tenseal as ts
@@ -40,6 +39,7 @@ from blind_watermark import WaterMark  # pip install blind-watermark==0.4.4
 import tenseal as ts  # pip install tenseal==0.3.14
 import pickle
 # 上面的是其他文件需要调用的库，打包文件的时候需要用上
+import copy
 import blind_watermark
 import os
 import time
@@ -51,7 +51,6 @@ from system_resource import MyEncryption as myenc, MySteganography as myste, Too
 from system_resource.ToolKit import Tools
 '''为了防止项目文件调用的库被误删，这里以注释的方式写在这里
 import base64
-import copy
 import re
 import math
 import tenseal as ts
@@ -93,9 +92,17 @@ import tenseal as ts  # pip install tenseal
 import pickle
 '''
 
+standard_window_size = '1272x758'
+try:
+    with open('system_resource/size.dll', 'r', encoding='utf-8') as f:
+        zoom = eval(f.read())
+except Exception:
+    zoom = 1
+    with open('system_resource/size.dll', 'w', encoding='utf-8') as f:
+        f.write(str(zoom))
 window = tk.Tk()
 window.title('信安工具箱')
-window.geometry('1272x758')
+window.geometry(Tools.zoom_size(standard_window_size, zoom))
 mid_font = ('Noto Sans Mono', 13)
 frm = tk.Frame(window)
 frm.pack()
@@ -119,14 +126,17 @@ class MyTools:
         run()
 
     @staticmethod
-    def initiation(size='1272x758'):
+    def initiation(size=0):
         myste.alive = False
         mybox.alive = False
         try:
             cv2.destroyAllWindows()
         except Exception:
             pass
-        window.geometry(size)
+        window.geometry(Tools.zoom_size(standard_window_size, zoom) if not size else size)
+        # 这里之所以不把形参的默认值设为Tools.zoom_size(standard_window_size, zoom)
+        # 是因为形参默认值一旦设定之后，不会再跟随zoom的变化而变化了
+        # 所以只能把新参的初始默认值设为0，如果用户没有传参，再使用Tools.zoom_size(standard_window_size, zoom)作为默认值
         Tools.clean_all_widget(frm)
         MyTools.delete_temp_file()
 
@@ -155,7 +165,7 @@ class MyTools:
         login_button.destroy()
         login_window = tk.Toplevel()
         login_window.title('登录界面')
-        login_window.geometry('525x300')
+        login_window.geometry(Tools.zoom_size('525x300', zoom))
         login_window.iconbitmap(icon_path)
         label1 = tk.Label(login_window, text='请输入登录密码：', font=mid_font)
         label1.pack()
@@ -406,7 +416,7 @@ class Functions:
 
     @staticmethod
     def ckks_word():
-        MyTools.initiation('1604x833')
+        MyTools.initiation(Tools.zoom_size('1604x833', zoom))
         myenc.ckks_word()
 
     @staticmethod
@@ -819,7 +829,7 @@ class Functions:
         word = '''    logo振动法隐写术说明
 
 一、基本原理
-    logo振动法隐写术是通过logo的微小振动来隐写信息的方式。程序会先将要隐写的信息进行 base64 编码，这种编码方式可以将信息用65种字符（每个字符的信息熵：65 bit）进行表示，\
+    logo振动法隐写术是通过视频中logo的微小振动来隐写信息的方式。程序会先将要隐写的信息进行 base64 编码，这种编码方式可以将信息用65种字符（每个字符的信息熵：65 bit）进行表示，\
 而logo的一次振动有9种可能的方向（即中心点、上、左上、左、左下、下、右下、右、右上），那么两帧视频即可表示9*9，即81种信息（两次振动的信息熵：81 bit）大于一个base64字节的信息熵，\
 所以程序采用了两帧视频隐写一个 base64字节的方式。
     在读取隐写的信息时，用户只要框选出视频中用于隐写信息的logo，程序会逐帧定位它的位置信息，将隐写的信息还原出来，之后，用户仅需将信息转码成自己需要的格式即可正常读取。
@@ -864,10 +874,60 @@ class Functions:
 
     @staticmethod
     def to_main():
+        global main_img_resized, image_file  # 这里声明global并不必要，声明global只是为了减少创建的内部变量，减少内存占用
         MyTools.initiation()
-        _canvas = tk.Canvas(frm, height=752, width=1266)
+        if zoom > 1:
+            main_img_resized = cv2.resize(main_img, dsize=None, fx=zoom, fy=zoom, interpolation=cv2.INTER_LINEAR)
+        elif zoom < 1:
+            main_img_resized = cv2.resize(main_img, dsize=None, fx=zoom, fy=zoom, interpolation=cv2.INTER_AREA)
+        else:
+            main_img_resized = copy.deepcopy(main_img)
+        cv2.imwrite(f'system_resource/{os.path.basename(main_path)}', main_img_resized)
+        image_file = tk.PhotoImage(file=f'system_resource/{os.path.basename(main_path)}')
+        Tools.delete_file(f'system_resource/{os.path.basename(main_path)}')
+        _canvas = tk.Canvas(frm, width=round(1266*zoom), height=round(752*zoom))
         _canvas.create_image(0, 0, anchor='nw', image=image_file)
         _canvas.pack()
+
+    @staticmethod
+    def change_size():
+        top = tk.Toplevel(window)
+        top.geometry(Tools.zoom_size('500x310', zoom))
+        label = tk.Label(top, text='请设置缩放的倍数：', font=mid_font)
+        label.pack()
+
+        def change_zoom(value):
+            global zoom
+            zoom = value
+            print('change_zoom:', zoom)
+
+        def save():
+            global ind, zoom
+            zoom = zoom_var.get()
+            print('save:', zoom)
+            ind = (ind + 1) % 6
+            label2.pack_forget()
+            with open('system_resource/size.dll', 'w', encoding='utf-8') as f:
+                f.write(str(zoom_var.get()))
+            label2.pack()
+            # 把新的zoom参数传递给工程文件
+            myste.initiation(window, frm, mid_font, icon_path, colors, ind, zoom)
+            myenc.initiation(window, frm, mid_font, icon_path, colors, ind, zoom)
+            mybox.initiation(window, frm, mid_font, icon_path, colors, ind, zoom)
+            kit.initiation(frm, mid_font, icon_path, colors, ind, zoom)
+
+        zoom_var = tk.DoubleVar()
+        try:
+            with open('system_resource/size.dll', 'r', encoding='utf-8') as f:
+                    zoom_var.set(eval(f.read()))
+        except Exception:
+            zoom_var.set(1)
+        scale = tk.Scale(top, from_=0, to=5, orient=tk.HORIZONTAL, variable=zoom_var, length=400, tickinterval=1,
+                         resolution=0.05, showvalue=1, command=change_zoom)
+        scale.pack()
+        button = tk.Button(top, text='保存', font=mid_font, command=save)
+        button.pack()
+        label2 = tk.Label(top, text='保存成功', font=mid_font, fg=colors[ind])
 
     @staticmethod
     def sponsor():
@@ -887,10 +947,19 @@ class Functions:
     此外，如果您是一位从事信息安全相关的程序员，期待您与我合作开发这一款软件，我可以将我的开发成果与您分享。'''
         text.insert('end', word)
         window.update()
-        sponsor_canvas = tk.Canvas(frm, width=1256, height=435)
+        sponsor_canvas = tk.Canvas(frm, width=round(1256*zoom), height=round(435*zoom))
         sponsor_canvas.pack(pady=10)
         sponsor_image = Image('system_resource/support.dll', 'png')
         sponsor_image_path = sponsor_image.decrypt
+        s_img = cv2.imread(f'system_resource/{os.path.basename(sponsor_image_path)}')
+        Tools.delete_file(sponsor_image_path)
+        if zoom > 1:
+            s_img_resized = cv2.resize(s_img, dsize=None, fx=zoom, fy=zoom, interpolation=cv2.INTER_LINEAR)
+        elif zoom < 1:
+            s_img_resized = cv2.resize(s_img, dsize=None, fx=zoom, fy=zoom, interpolation=cv2.INTER_AREA)
+        else:
+            s_img_resized = copy.deepcopy(s_img)
+        cv2.imwrite(f'system_resource/{os.path.basename(sponsor_image_path)}', s_img_resized)
         sponsor_image_file = tk.PhotoImage(file=sponsor_image_path)
         sponsor_image.destroy()
         while True:
@@ -899,14 +968,23 @@ class Functions:
             except Exception:
                 break
             window.update()
-            time.sleep(0.1)
+            time.sleep(0.3)
 
 
-# 展示主界面图片
-canvas = tk.Canvas(frm, width=1266, height=752)
+# 展示主界面图片，并缩放至合适比例
+canvas = tk.Canvas(frm, width=round(1266*zoom), height=round(752*zoom))
 canvas.pack()
 main_image = Image('system_resource/main.dll', 'png')
 main_path = main_image.decrypt
+main_img = cv2.imread(f'system_resource/{os.path.basename(main_path)}')  # main_path 就是这里的路径，不写直接main_path是因为cv2的路径里不能有中文
+Tools.delete_file(main_path)
+if zoom > 1:
+    main_img_resized = cv2.resize(main_img, dsize=None, fx=zoom, fy=zoom, interpolation=cv2.INTER_LINEAR)
+elif zoom < 1:
+    main_img_resized = cv2.resize(main_img, dsize=None, fx=zoom, fy=zoom, interpolation=cv2.INTER_AREA)
+else:
+    main_img_resized = copy.deepcopy(main_img)
+cv2.imwrite(f'system_resource/{os.path.basename(main_path)}', main_img_resized)
 image_file = tk.PhotoImage(file=main_path)
 main_image.destroy()
 canvas.create_image(0, 0, anchor='nw', image=image_file)
@@ -915,10 +993,10 @@ icon_image = Image('system_resource/icon.dll', 'ico')
 icon_path = icon_image.decrypt
 window.iconbitmap(icon_path)  # 设定主界面的icon
 # 给工程文件传参
-myste.initiation(window, frm, mid_font, icon_path, colors, ind)
-myenc.initiation(window, frm, mid_font, icon_path, colors, ind)
-mybox.initiation(window, frm, mid_font, icon_path, colors, ind)
-kit.initiation(frm, mid_font, icon_path, colors, ind)
+myste.initiation(window, frm, mid_font, icon_path, colors, ind, zoom)
+myenc.initiation(window, frm, mid_font, icon_path, colors, ind, zoom)
+mybox.initiation(window, frm, mid_font, icon_path, colors, ind, zoom)
+kit.initiation(frm, mid_font, icon_path, colors, ind, zoom)
 # 部署菜单栏
 menubar = tk.Menu(window)
 # window.config(menu=menubar)  # 在登录后才能展示菜单栏
@@ -1051,7 +1129,12 @@ intro_enc_submenu.add_command(label='CKKS同态加密介绍', command=Functions.
 intro_menu.add_command(label='哈希算法介绍', command=Functions.intro_hash, font=mid_font)
 intro_menu.add_command(label='返回主界面', command=Functions.to_main, font=mid_font)
 
+'''设置部分'''
+setting_menu = tk.Menu(menubar, tearoff=0)
+menubar.add_cascade(label='设置', menu=setting_menu)
+setting_menu.add_command(label='更改界面大小', command=Functions.change_size, font=mid_font)
+
 login_button = tk.Button(frm, text='登录', fg='green', font=('Noto Sans Mono', 18), command=MyTools.login)
-login_button.place(x=1118, y=596, anchor='center')
+login_button.place(x=round(1118*zoom), y=round(596*zoom), anchor='center')
 window.protocol("WM_DELETE_WINDOW", MyTools.when_closing)
 window.mainloop()
