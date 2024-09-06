@@ -893,6 +893,7 @@ class Functions:
     def change_size():
         top = tk.Toplevel(window)
         top.geometry(Tools.zoom_size('500x310', zoom))
+        top.title('修改界面大小')
         top.iconbitmap(icon_path)
         label = tk.Label(top, text='请设置缩放的倍数：', font=mid_font)
         label.pack()
