@@ -480,12 +480,7 @@ def confuse_qr_code():
             cv2.namedWindow('QR code')
             try:
                 qr_img = cv2.imread(temp_qr_path)
-                qr_rows, qr_cols, _ = qr_img.shape
-                if qr_rows > 900 or qr_cols > 900:
-                    zoom = min(900 / qr_rows, 900 / qr_cols)  # 对过大的图片进行缩放
-                else:
-                    zoom = 1.0
-                zoomed_qr_img = cv2.resize(qr_img, None, fx=zoom, fy=zoom, interpolation=cv2.INTER_AREA)
+                zoomed_qr_img = Tools.resize_pic(qr_img)
                 cv2.imshow('QR code', zoomed_qr_img)
             except Exception as e:
                 cv2.destroyAllWindows()
@@ -827,9 +822,9 @@ def confuse_qr_code():
                         dst = np.rot90(dst, -3)
                     elif selected_location.get() == '右侧':
                         dst = np.rot90(dst, -1)
-                    # 对结果进行缩放，只要把最长的那一条边缩放到900像素即可
+                    # 对结果进行缩放，只要把最长的那一条边缩放到round(900*zoom)像素即可
                     dst_cols, dst_rows, dst_channels = dst.shape
-                    zoom_scale = round(900 / dst_cols, 2) if dst_cols > dst_rows else round(900 / dst_rows, 2)
+                    zoom_scale = round(900*zoom / dst_cols, 2) if dst_cols > dst_rows else round(900*zoom / dst_rows, 2)
                     true_width = round(zoom_scale * d / 28)
                     width_text_variable.set(f'当前图像所属观察点的真实水平距离：{true_width} cm')
                     true_height = round(zoom_scale * h / 28)
@@ -873,8 +868,8 @@ def confuse_qr_code():
     hf_entry1.pack()
 
     def open_outcome_folder():
-        if os.path.exists(entry1.get()):
-            save_dir = os.path.dirname(entry1.get())
+        if os.path.exists(Tools.get_path_from_entry(entry1)):
+            save_dir = os.path.dirname(Tools.get_path_from_entry(entry1))
             os.startfile(save_dir)
         else:
             messagebox.showerror('找不到该文件', '找不到该文件了')
@@ -930,12 +925,7 @@ def hide_qr_code():
             Tools.read_all_and_write_all(qr_path, temp_qr_path)
             try:
                 qr_img = cv2.imread(temp_qr_path)
-                qr_img_rows, qr_img_cols, _ = qr_img.shape
-                if qr_img_rows > 900 or qr_img_cols > 900:
-                    zoom = min(900 / qr_img_rows, 900 / qr_img_cols)
-                else:
-                    zoom = 1.0
-                qr_img = cv2.resize(qr_img, None, fx=zoom, fy=zoom, interpolation=cv2.INTER_AREA)
+                qr_img = Tools.resize_pic(qr_img)
                 cv2.imshow('image', qr_img)
             except Exception:
                 Tools.delete_file(temp_qr_path)
@@ -954,12 +944,7 @@ def hide_qr_code():
             Tools.read_all_and_write_all(back_path, temp_back_path)
             try:
                 back_img = cv2.imread(temp_back_path)
-                bg_img_rows, bg_img_cols, _ = back_img.shape
-                if bg_img_rows > 900 or bg_img_cols > 900:
-                    zoom = min(900 / bg_img_rows, 900/ bg_img_cols)
-                else:
-                    zoom = 1.0
-                zoomed_bg_img = cv2.resize(back_img, None, fx=zoom, fy=zoom, interpolation=cv2.INTER_AREA)
+                zoomed_bg_img = Tools.resize_pic(back_img)
                 cv2.imshow('outcome image', zoomed_bg_img)
             except Exception:
                 Tools.delete_file(temp_back_path)
@@ -1209,12 +1194,7 @@ def invisible_qr():
             Tools.read_all_and_write_all(back_path, temp_back_path)
             try:
                 back_img = cv2.imread(temp_back_path, cv2.IMREAD_UNCHANGED)  # 读取时保留原格式包括alpha通道
-                bg_img_rows, bg_img_cols, _ = back_img.shape
-                if bg_img_rows > 900 or bg_img_cols > 900:
-                    zoom = min(900 / bg_img_rows, 900 / bg_img_cols)
-                else:
-                    zoom = 1.0
-                zoomed_bg_img = cv2.resize(back_img, None, fx=zoom, fy=zoom, interpolation=cv2.INTER_AREA)
+                zoomed_bg_img = Tools.resize_pic(back_img)
                 zoomed_bg_img = cv2.cvtColor(zoomed_bg_img, cv2.COLOR_BGR2BGRA)
                 cv2.imshow('image', zoomed_bg_img)
             except Exception:
@@ -1236,12 +1216,7 @@ def invisible_qr():
             Tools.read_all_and_write_all(qr_path, temp_qr_path)
             try:
                 qr_img = cv2.imread(temp_qr_path)
-                qr_img_rows, qr_img_cols, _ = qr_img.shape
-                if qr_img_rows > 900 or qr_img_cols > 900:
-                    zoom = min(900 / qr_img_rows, 900 / qr_img_cols)
-                else:
-                    zoom = 1.0
-                qr_img = cv2.resize(qr_img, None, fx=zoom, fy=zoom, interpolation=cv2.INTER_AREA)
+                qr_img = Tools.resize_pic(qr_img)
                 cv2.imshow('QR code', qr_img)
             except Exception:
                 Tools.delete_file(temp_qr_path)
@@ -1655,11 +1630,12 @@ def two_faces():
             try:
                 outer_img = cv2.imread(temp_outer_path)
                 outer_img_rows, outer_img_cols, _ = outer_img.shape
-                if outer_img_rows > 900 or outer_img_cols > 900:
-                    zoom = min(900 / outer_img_rows, 900 / outer_img_cols)
-                else:
-                    zoom = 1.0
-                zoomed_outer_img = cv2.resize(outer_img, None, fx=zoom, fy=zoom, interpolation=cv2.INTER_AREA)
+                # if outer_img_rows > 900 or outer_img_cols > 900:
+                #     zoom = min(900 / outer_img_rows, 900 / outer_img_cols)
+                # else:
+                #     zoom = 1.0
+                # zoomed_outer_img = cv2.resize(outer_img, None, fx=zoom, fy=zoom, interpolation=cv2.INTER_AREA)
+                zoomed_outer_img = Tools.resize_pic(outer_img, outer_img_rows, outer_img_cols)
                 cv2.imshow('zoomed_outer_img', zoomed_outer_img)
             except Exception:
                 Tools.delete_file(temp_outer_path)
@@ -1684,11 +1660,12 @@ def two_faces():
             try:
                 inner_img = cv2.imread(temp_inner_path)
                 inner_img_rows, inner_img_cols, _ = inner_img.shape
-                if inner_img_rows > 900 or inner_img_cols > 900:
-                    zoom = min(900 / inner_img_rows, 900 / inner_img_cols)
-                else:
-                    zoom = 1.0
-                zoomed_inner_img = cv2.resize(inner_img, None, fx=zoom, fy=zoom, interpolation=cv2.INTER_AREA)
+                # if inner_img_rows > 900 or inner_img_cols > 900:
+                #     zoom = min(900 / inner_img_rows, 900 / inner_img_cols)
+                # else:
+                #     zoom = 1.0
+                # zoomed_inner_img = cv2.resize(inner_img, None, fx=zoom, fy=zoom, interpolation=cv2.INTER_AREA)
+                zoomed_inner_img = Tools.resize_pic(inner_img, inner_img_rows, inner_img_cols)
                 cv2.imshow('zoomed_inner_img', zoomed_inner_img)
             except Exception:
                 Tools.delete_file(temp_inner_path)

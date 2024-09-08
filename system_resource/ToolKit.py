@@ -380,6 +380,26 @@ class Tools:
                  'w': [(1, -1), (-1, 0)], 'x': [(1, -1), (-1, 1)], 'y': [(1, -1), (0, 1)], 'z': [(1, -1), (1, 1)],
                  '+': [(1, -1), (1, 0)], '/': [(1, -1), (1, -1)], '=': [(0, 0), (1, 1)]}
 
+    @staticmethod
+    def resize_pic(pic: np.ndarray, rows=None, cols=None):
+        '''
+        调整图片的显示大小，如果过大就进行缩小，如果过小就进行放大
+        :param rows: 可以告诉该函数高宽，以避免重复计算造成资源浪费
+        :param cols:
+        :param pic: 通过cv2.imread()得到的图片
+        :return: 返回合适大小的图片
+        '''
+        if not rows or not cols:
+            rows, cols, _ = pic.shape
+        if rows > round(900 * zoom) or cols > round(900 * zoom):  # 长或宽有一个超过900，就要进行缩小
+            _zoom = min(round(900 * zoom) / rows, round(900 * zoom) / cols)
+            return cv2.resize(pic, dsize=None, fx=_zoom, fy=_zoom, interpolation=cv2.INTER_AREA)
+        elif rows < round(900 * zoom) and cols < round(900 * zoom):  # 长或宽都小于900，才进行放大
+            _zoom = min(round(900 * zoom) / rows, round(900 * zoom) / cols)
+            return cv2.resize(pic, dsize=None, fx=_zoom, fy=_zoom, interpolation=cv2.INTER_LINEAR)
+        else:
+            return pic
+
     @property
     def width(self):
         # zoom = Tools.get_zoom()

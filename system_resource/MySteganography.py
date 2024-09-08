@@ -547,26 +547,36 @@ def video_logo():
                                         time_label2.config(text=f'音频：{minutes}分{seconds}秒')
 
                                 counting_time_for_saving_audio()
-                                audio_clip = AudioFileClip(temp_video_path)  # temp_video_path = f'_temp_video{os.path.splitext(video_path)[-1]}'
+                                audio_clip = AudioFileClip(
+                                    temp_video_path)  # temp_video_path = f'_temp_video{os.path.splitext(video_path)[-1]}'
                                 audio_clip.write_audiofile('my_audio.wav')  # 将原视频中的音频临时保存在my_audio.wav中
-                                dst_video = VideoFileClip(temp_outvideo_path)  # temp_outvideo_path = f'Video_WithLogo.{video_format.get()}'
+                                dst_video = VideoFileClip(
+                                    temp_outvideo_path)  # temp_outvideo_path = f'Video_WithLogo.{video_format.get()}'
                                 dst_video = dst_video.set_audio(AudioFileClip('my_audio.wav'))  # 为临时结果视频添加音频
-                                audio_label.config(text='已完成音频文件的提取，正在合成视频\n等待时间约为上方进度条走过的时间的1.5倍\n时间过长则意味着音频处理可能出错')
+                                audio_label.config(
+                                    text='已完成音频文件的提取，正在合成视频\n等待时间约为上方进度条走过的时间的1.5倍\n时间过长则意味着音频处理可能出错')
                                 window.update()
                                 if save_path.get() == 'logo图片所在文件夹':
                                     save_dir = os.path.dirname(logo_path)
                                 elif save_path.get() == '背景视频所在文件夹':
                                     save_dir = os.path.dirname(video_path)
                                 current_time = time.localtime()
-                                outvideo_path = ''.join([save_dir, rf"\{os.path.splitext(os.path.basename(video_path))[0][:8].replace('.', '')}..._WithLogo_", str(current_time.tm_mon), 'm', str(current_time.tm_mday), 'd', str(current_time.tm_hour), 'h', str(current_time.tm_min), 'm', str(current_time.tm_sec), 's', '.', video_format.get()])
-                                dst_video.write_videofile(outvideo_path, audio_codec='aac')  # 保存合成视频，注意加上参数audio_codec='aac'，否则音频无声音
+                                outvideo_path = ''.join([save_dir,
+                                                         rf"\{os.path.splitext(os.path.basename(video_path))[0][:8].replace('.', '')}..._WithLogo_",
+                                                         str(current_time.tm_mon), 'm', str(current_time.tm_mday),
+                                                         'd', str(current_time.tm_hour), 'h',
+                                                         str(current_time.tm_min), 'm', str(current_time.tm_sec),
+                                                         's', '.', video_format.get()])
+                                dst_video.write_videofile(outvideo_path,
+                                                          audio_codec='aac')  # 保存合成视频，注意加上参数audio_codec='aac'，否则音频无声音
                                 Tools.delete_file(temp_outvideo_path)
                                 Tools.delete_file('my_audio.wav')
                                 lf2_label16.config(text=f'视频保存在{save_path.get()}中的：')
                                 lf2_entry9.insert(0, os.path.basename(outvideo_path))
                                 lf2_frm9.pack()
                                 break
-                        if cv2.waitKey(interval_between_frames) == ord('q') or cv2.getWindowProperty('Video', cv2.WND_PROP_VISIBLE) != 1:
+                        if cv2.waitKey(interval_between_frames) == ord('q') or cv2.getWindowProperty('Video',
+                                                                                                     cv2.WND_PROP_VISIBLE) != 1:
                             outwriter.release()
                             Tools.delete_file(temp_outvideo_path)
                             break
@@ -690,7 +700,8 @@ def video_logo():
         threshold_method = tk.StringVar()
         threshold_method.set('背景阈值')
         lf2_threshold_optionmenu1 = tk.OptionMenu(lf2_frm5, threshold_method,
-                                                  *('背景阈值', '自适应阈值', "Otsu's二值化算法", 'logo HSV范围', '原图'),
+                                                  *('背景阈值', '自适应阈值', "Otsu's二值化算法", 'logo HSV范围',
+                                                    '原图'),
                                                   command=change_grid_of_threshold_parameter_frm)
         lf2_threshold_optionmenu1.grid(row=1, column=1)
         lf2_threshold_optionmenu1.config(font=mid_font)
@@ -788,7 +799,8 @@ def video_logo():
         color_name = tk.StringVar()
         color_name.set('黄')
         lf2_threshold_optionmenu5 = tk.OptionMenu(hsv_threshold_frm2, color_name,
-                                                  *('黄', '黑', '灰', '白', '红1', '红2', '橙', '绿', '青', '蓝', '紫', '一键粘贴'),
+                                                  *('黄', '黑', '灰', '白', '红1', '红2', '橙', '绿', '青', '蓝',
+                                                    '紫', '一键粘贴'),
                                                   command=change_hsv)
         lf2_threshold_optionmenu5.grid(row=1, column=2)
         lf2_threshold_optionmenu5.config(font=mid_font)
@@ -857,7 +869,9 @@ def video_logo():
         lf2_button6 = tk.Button(lf2_frm7, text='保存', font=mid_font, command=save)
         lf2_button6.grid(row=1, column=3, padx=10)
         lf2_frm8 = tk.Frame(lf2_second_frm)
-        lf2_label15 = tk.Label(lf2_frm8, text='正在保存中，请勿进行其他操作\n进度条走完后，还需为视频处理音频\n关闭软件可能造成程序所在文件夹内多出垃圾文件', font=mid_font, fg='red')
+        lf2_label15 = tk.Label(lf2_frm8,
+                               text='正在保存中，请勿进行其他操作\n进度条走完后，还需为视频处理音频\n关闭软件可能造成程序所在文件夹内多出垃圾文件',
+                               font=mid_font, fg='red')
         lf2_label15.pack()
         # 再加一个进度条
         progress_frm = tk.Frame(lf2_frm8)
@@ -1327,8 +1341,7 @@ def read_video_logo():
                                     se_mean = (se_mean[0] / 4, se_mean[1] / 4)
                                     e_mean = (e_mean[0] / 4, e_mean[1] / 4)
                                     ne_mean = (ne_mean[0] / 4, ne_mean[1] / 4)
-                                    print(c_mean, n_mean, nw_mean, w_mean, sw_mean, s_mean, se_mean, e_mean, ne_mean)
-                                    # break
+                                    # print(c_mean, n_mean, nw_mean, w_mean, sw_mean, s_mean, se_mean, e_mean, ne_mean)
                             # 后面的帧负责读取有效信息
                             else:
                                 direction = Tools.close_to_which(position, c_mean, n_mean, nw_mean, w_mean, sw_mean,
@@ -1407,12 +1420,12 @@ def read_video_logo():
 
     def change_format():
         change_window = tk.Toplevel()
-        change_window.geometry('1272x758')
+        change_window.geometry(Tools.zoom_size('1272x758', zoom))
         change_window.title('格式转换')
         change_window.iconbitmap(icon_path)
 
         # 左边的labelframe
-        cw_labelframe1 = tk.LabelFrame(change_window, text='需要转换格式的信息：', height=741, width=606, font=mid_font)
+        cw_labelframe1 = tk.LabelFrame(change_window, text='需要转换格式的信息：', height=Tools().height, width=Tools().width, font=mid_font)
         cw_labelframe1.pack(side='left', padx=15, pady=5)
         cw_labelframe1.pack_propagate(0)
         cw_lf1_text1 = tk.Text(cw_labelframe1, width=43, height=27, font=mid_font)
@@ -1420,7 +1433,7 @@ def read_video_logo():
         cw_lf1_text1.insert(1.0, lf2_text1.get(1.0, 'end'))
 
         # 右边的labelframe
-        cw_labelframe2 = tk.LabelFrame(change_window, text='选择转换的格式', height=741, width=606, font=mid_font)
+        cw_labelframe2 = tk.LabelFrame(change_window, text='选择转换的格式', height=Tools().height, width=Tools().width, font=mid_font)
         cw_labelframe2.pack(side='right', padx=15, pady=5)
         cw_labelframe2.pack_propagate(0)
         cw_lf2_frm1 = tk.Frame(cw_labelframe2)
