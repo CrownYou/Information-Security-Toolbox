@@ -1,6 +1,7 @@
 cryptography==39.0.1
 reedsolo==2.0.13
 numpy==1.23.1
+pandas==1.5.2
 sympy==1.11.1
 windnd==1.0.7
 matplotlib==3.5.2
