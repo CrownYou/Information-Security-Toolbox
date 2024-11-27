@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import tkinter as tk
 from tkinter import messagebox
+import pandas as pd
+import re
 import random
 import os
 from windnd import hook_dropfiles
@@ -2046,6 +2048,103 @@ def against_duplicate_check():
     lf2_text2 = tk.Text(labelframe2, width=43, height=10, font=mid_font)
     lf2_text2.pack()
     lf2_text1.bind("<KeyRelease>", cal_len2)
+
+
+def vertical_against_examine():
+    label2 = tk.Label(frm, text='请输入需要变为纵向排列的文字：', font=mid_font)
+    label2.pack()
+    text1 = tk.Text(frm, width=59, height=10, font=mid_font)
+    text1.pack()
+
+    def reset():
+        Tools.reset(text1)
+        Tools.reset(text2)
+
+    def copy():
+        Tools.copy(text2, button3)
+
+    def confirm():
+        n = entry1.get()
+        try:
+            n = eval(n)
+            assert isinstance(n, int) and n > 0
+        except Exception:
+            messagebox.showerror('类型错误', '每一行文字的长度应为正整数')
+            return 0
+        words = text1.get(1.0, 'end').rstrip('\n')
+
+        def vertical_text(text, n):
+            res_list = []
+            length = len(text)
+            m = math.ceil(length / n)  # m: 列的宽度
+            if length < m * n and m >= 1:
+                text += '\0' * (m * n - length)
+            data = [list(text[i * m: (i + 1) * m]) for i in range(n)]
+            df = pd.DataFrame(data)
+            res_df = df.T
+            for ind, row in res_df.iterrows():
+                if sep.get() == 0:
+                    new_row = ' '.join(row.values.tolist())
+                elif sep.get() == 1:
+                    new_row = ''.join(row.values.tolist())
+                elif sep.get() == 2:
+                    new_row = entry2.get().join(row.values.tolist())
+                elif sep.get() == 3:
+                    new_row = '|'.join(row.values.tolist())
+                new_row = new_row.replace('\0','  ')
+                if direction.get() == 1:
+                    new_row = new_row[::-1]
+                res_list.append(new_row)
+            return re.sub(r'([a-zA-Z])', r'\1 ', '\n'.join(res_list))  # 需要在每个英文字母后面添加个空格以保证对齐
+
+        Tools.reset(text2)
+        text2.insert('end', vertical_text(words, n))
+
+    frm1 = tk.Frame(frm)
+    frm1.pack()
+    label1 = tk.Label(frm1, text='请输入每一行放置文字的个数：', font=mid_font)
+    label1.grid(row=1, column=1, padx=5)
+    entry1 = tk.Entry(frm1, width=5, font=mid_font)
+    entry1.grid(row=1, column=2, padx=5)
+    frm2 = tk.Frame(frm)
+    frm2.pack()
+    label4 = tk.Label(frm2, text='阅读方向：', font=mid_font)
+    label4.grid(row=1, column=1, padx=5)
+    direction = tk.IntVar()
+    direction.set(0)
+    rb1 = tk.Radiobutton(frm2, variable=direction, text='从左往右', font=mid_font, value=0)
+    rb1.grid(row=1, column=2, padx=5)
+    rb2 = tk.Radiobutton(frm2, variable=direction, text='从右往左', font=mid_font, value=1)
+    rb2.grid(row=1, column=3, padx=5)
+    frm4 = tk.Frame(frm)
+    frm4.pack()
+    sep = tk.IntVar()
+    sep.set(0)
+    label5 = tk.Label(frm4, text='分隔符：', font=mid_font)
+    label5.grid(row=1, column=1, padx=10)
+    rb3 = tk.Radiobutton(frm4, variable=sep, text='空格', font=mid_font, value=0)
+    rb3.grid(row=1, column=2, padx=10)
+    rb4 = tk.Radiobutton(frm4, variable=sep, text='无', font=mid_font, value=1)
+    rb4.grid(row=1, column=3, padx=10)
+    rb6 = tk.Radiobutton(frm4, variable=sep, text='|', font=mid_font, value=3)
+    rb6.grid(row=1, column=4, padx=10)
+    rb5 = tk.Radiobutton(frm4, variable=sep, text='其他：', font=mid_font, value=2)
+    rb5.grid(row=1, column=5, padx=10)
+    entry2 = tk.Entry(frm4, width=5, font=mid_font)
+    entry2.grid(row=1, column=6, padx=5)
+    frm3 = tk.Frame(frm)
+    frm3.pack()
+    button1 = tk.Button(frm3, text='重置', font=mid_font, command=reset)
+    button1.grid(row=1, column=1, padx=20)
+    button2 = tk.Button(frm3, text='确定', font=mid_font, command=confirm)
+    button2.grid(row=1, column=2, padx=20)
+    button3 = tk.Button(frm3, text='复制结果', font=mid_font, command=copy, fg=colors[ind])
+    button3.grid(row=1, column=3, padx=20)
+    label3 = tk.Label(frm, text='纵向排列的结果为：', font=mid_font)
+    label3.pack()
+    text2 = tk.Text(frm, width=59, height=11, font=mid_font)
+    text2.pack()
+
 
 
 def rs_code_word():

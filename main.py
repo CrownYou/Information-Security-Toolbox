@@ -8,6 +8,7 @@ import random
 from random import randint, choice
 from tkinter import ttk
 import numpy as np  # pip install numpy
+import pandas as pd
 from windnd import hook_dropfiles  # pip install windnd
 import matplotlib.pyplot as plt  # pip install matplotlib
 import sympy as sp  # pip install sympy
@@ -60,6 +61,7 @@ import random
 from random import randint, choice
 from tkinter import ttk
 import numpy as np  # pip install numpy
+import pandas as pd
 from windnd import hook_dropfiles  # pip install windnd
 import matplotlib.pyplot as plt  # pip install matplotlib
 import sympy as sp  # pip install sympy
@@ -328,6 +330,11 @@ class Functions:
     def against_duplicate_check():
         MyTools.initiation()
         mybox.against_duplicate_check()
+
+    @staticmethod
+    def vertical_against_examine():
+        MyTools.initiation()
+        mybox.vertical_against_examine()
 
     @staticmethod
     def create_rsa_key():
@@ -1035,7 +1042,8 @@ menubar.add_cascade(label='工具箱', menu=tools_menu)
 tools_menu.add_command(label='获取像素点的HSV值/范围', command=Functions.get_hsv_value, font=mid_font)
 tools_menu.add_command(label='强密码生成器', command=Functions.generate_random_char, font=mid_font)
 tools_menu.add_command(label='base64转码器', command=Functions.base64converter, font=mid_font)
-tools_menu.add_command(label='反查重+反和谐神器', command=Functions.against_duplicate_check, font=mid_font)
+tools_menu.add_command(label='抗关键字审核工具-零宽度字符、近形字法', command=Functions.against_duplicate_check, font=mid_font)
+tools_menu.add_command(label='抗关键字审核工具-文字纵向排列法', command=Functions.vertical_against_examine, font=mid_font)
 
 rs_menu = tk.Menu(tools_menu, tearoff=0)
 tools_menu.add_cascade(label='ReedSolomon纠错码', menu=rs_menu, underline=0, font=mid_font)
