@@ -2630,7 +2630,7 @@ def ecc_word():
     lf2_button1.grid(row=1, column=2, padx=15)
     lf2_button2 = tk.Button(lf2_frm1, font=mid_font, text='加密', command=dec)
     lf2_button2.grid(row=1, column=3, padx=15)
-    lf2_button3 = tk.Button(lf2_frm1, font=mid_font, text='复制密文', command=lf2_copy, fg=colors[ind])
+    lf2_button3 = tk.Button(lf2_frm1, font=mid_font, text='复制明文', command=lf2_copy, fg=colors[ind])
     lf2_button3.grid(row=1, column=4, padx=15)
     lf2_text2 = tk.Text(labelframe2, font=mid_font, width=43, height=9)
     lf2_text2.pack()
