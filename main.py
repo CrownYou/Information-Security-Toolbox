@@ -467,6 +467,11 @@ class Functions:
         mybox.two_faces()
 
     @staticmethod
+    def brightness():
+        MyTools.initiation()
+        mybox.brightness()
+
+    @staticmethod
     def intro():
         MyTools.initiation()
         text = tk.Text(frm, width=96, height=28, font=mid_font)
@@ -791,7 +796,7 @@ class Functions:
         MyTools.initiation()
         text = tk.Text(frm, width=96, height=28, font=mid_font)
         text.pack()
-        word = '''    表里不一图像隐写术介绍
+        word = '''    基于背景颜色的表里不一图像隐写术介绍
 
 一、基本介绍
     这种技术可以让一张图片在不同背景颜色下显示出完全不一样的图像。
@@ -806,6 +811,24 @@ class Functions:
 
     3. 经测验，微信的缩略图和放大图的背景均为白色，无法实现一张图片在缩略图和放大图中显示不同图像的效果。
     而QQ的缩略图背景为白色，放大图背景为黑色，则完美符合这个功能的需要。表图片会在缩略图中显示，里图片会在用户点击“查看原图”后显示。'''
+        text.insert('end', word)
+
+    @staticmethod
+    def intro_brightness():
+        MyTools.initiation()
+        text = tk.Text(frm, width=96, height=28, font=mid_font)
+        text.pack()
+        word = '''    基于亮度、曝光度的光棱坦克图像隐写术介绍
+
+一、基本介绍
+    这种技术可以让一张图片在不同亮度、曝光度下显示出完全不一样的图像。
+    基本原理是在缩放表里两张图片的色阶取值范围，使表图片的色阶变暗或变亮来空出亮部或暗部，里图片变亮或变暗，使里图片的色阶取值范围刚好在表图片的亮部或暗部。
+    再将两张图片的像素间隔交叉排放，使其在不同亮度、曝光度下呈现不同的图像
+
+二、使用时的注意点
+    1. 为达到最佳的隐藏的效果，表里两张图片最好比较相似。
+    
+    2. 可以在美图秀秀这样软件中调整亮度和曝光度来查看被隐藏的图片。'''
         text.insert('end', word)
 
     @staticmethod
@@ -1029,7 +1052,8 @@ qr_confuse_submenu.add_command(label='第一步：逆透视变换', command=Func
 qr_confuse_submenu.add_command(label='第二步：藏于载体图片', command=Functions.hide_qr_code, font=mid_font)
 
 stega_menu.add_command(label='隐藏二维码（机器可见，人不可见）', command=Functions.invisible_qr, font=mid_font)
-stega_menu.add_command(label='表里不一图像隐写术', command=Functions.two_faces, font=mid_font)
+stega_menu.add_command(label='基于背景颜色的表里不一图像隐写术', command=Functions.two_faces, font=mid_font)
+stega_menu.add_command(label='基于亮度、曝光度的光棱坦克图像隐写术', command=Functions.brightness, font=mid_font)
 
 fourier_ste_submenu = tk.Menu(stega_menu, tearoff=0)
 stega_menu.add_cascade(label='图片盲水印', menu=fourier_ste_submenu, underline=0, font=mid_font)
@@ -1115,7 +1139,8 @@ intro_ste_submenu.add_command(label='图片隐藏.zip压缩包介绍', command=F
 intro_ste_submenu.add_command(label='零宽度字符隐写术介绍', command=Functions.intro_zero_width_ste, font=mid_font)
 intro_ste_submenu.add_command(label='隐藏二维码（人可见，机器不可见）介绍', command=Functions.intro_qr_confuse, font=mid_font)
 intro_ste_submenu.add_command(label='隐藏二维码（机器可见，人不可见）介绍', command=Functions.intro_invisible_qr, font=mid_font)
-intro_ste_submenu.add_command(label='表里不一图像隐写术介绍', command=Functions.intro_two_faces, font=mid_font)
+intro_ste_submenu.add_command(label='基于背景颜色的表里不一图像隐写术介绍', command=Functions.intro_two_faces, font=mid_font)
+intro_ste_submenu.add_command(label='基于亮度、曝光度的光棱坦克图像隐写术介绍', command=Functions.intro_brightness, font=mid_font)
 intro_ste_submenu.add_command(label='图片盲水印介绍', command=Functions.intro_fourier, font=mid_font)
 
 toolbox_submenu = tk.Menu(intro_menu, tearoff=0)

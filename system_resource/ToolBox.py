@@ -1792,6 +1792,157 @@ def two_faces():
     label3 = tk.Label(frm, text='处理完成！', font=mid_font, fg='red')
 
 
+def brightness():
+    def drag1(files):
+        Tools.dragged_files(files, entry1)
+
+    def drag2(files):
+        Tools.dragged_files(files, entry2)
+
+    label1 = tk.Label(frm, text='请拖入正常亮度、曝光度情况下希望显示的图片（表图片）或输入地址：', font=mid_font)
+    label1.pack()
+    entry1 = tk.Entry(frm, width=59, font=mid_font)
+    entry1.pack()
+    hook_dropfiles(entry1, func=drag1)
+    label2 = tk.Label(frm, text='请拖入亮度、曝光度调整后才能显示的图片（里图片）或输入地址：', font=mid_font)
+    label2.pack()
+    entry2 = tk.Entry(frm, width=59, font=mid_font)
+    entry2.pack()
+    hook_dropfiles(entry2, func=drag2)
+    label3 = tk.Label(frm, text='你希望如何调整亮度、曝光度才能显示被隐藏的图片（里图片）', font=mid_font)
+    label3.pack()
+    frm1 = tk.Frame(frm)
+    frm1.pack()
+    choice = tk.StringVar()
+    choice.set('improve')
+    rb1 = tk.Radiobutton(frm1, text='降低亮度、曝光度', value='reduce', font=mid_font, variable=choice)
+    rb1.grid(row=1, column=2, padx=20)
+    rb2 = tk.Radiobutton(frm1, text='提高亮度、曝光度（效果更好）', value='improve', font=mid_font, variable=choice)
+    rb2.grid(row=1, column=1, padx=20)
+
+    def reset():
+        Tools.reset(entry1)
+        Tools.reset(entry2)
+        entry3.config(state='normal')
+        Tools.reset(entry3)
+        entry3.config(state='readonly')
+        label6.pack_forget()
+
+    def process():
+        label6.pack_forget()
+        entry3.config(state='normal')
+        Tools.reset(entry3)
+        entry3.config(state='readonly')
+        window.update()
+
+        # 获取表图片 -> outer_img
+        outer_path = Tools.get_path_from_entry(entry1)
+        if os.path.exists(outer_path):
+            temp_outer_path = f'_temp_back{os.path.splitext(outer_path)[-1]}'
+            Tools.read_all_and_write_all(outer_path, temp_outer_path)
+            try:
+                outer_img = cv2.imread(temp_outer_path)
+                outer_img_rows, outer_img_cols, _ = outer_img.shape
+                cv2.imshow('outer_img', outer_img)
+            except Exception:
+                Tools.delete_file(temp_outer_path)
+                messagebox.showerror('表图片格式错误', '表图片的格式不正确')
+                return 0
+            os.remove(temp_outer_path)
+            cv2.destroyAllWindows()
+            print("outer_img_rows, outer_img_cols:", outer_img_rows, outer_img_cols)
+        else:
+            messagebox.showerror('表图片地址错误', '表图片地址错误')
+            return 0
+
+        # 获取里图片 -> inner_img
+        inner_path = Tools.get_path_from_entry(entry2)
+        if os.path.exists(inner_path):
+            temp_inner_path = f'_temp_back{os.path.splitext(inner_path)[-1]}'
+            Tools.read_all_and_write_all(inner_path, temp_inner_path)
+            try:
+                inner_img = cv2.imread(temp_inner_path)
+                inner_img_rows, inner_img_cols, _ = inner_img.shape
+                cv2.imshow('inner_img', inner_img)
+            except Exception:
+                Tools.delete_file(temp_inner_path)
+                messagebox.showerror('里图片格式错误', '里图片的格式不正确')
+                return 0
+            os.remove(temp_inner_path)
+            cv2.destroyAllWindows()
+            print('inner_img_rows, inner_img_cols:', inner_img_rows, inner_img_cols)
+        else:
+            messagebox.showerror('里图片地址错误', '里图片地址错误')
+            return 0
+
+        # 第一步，将两张图片的大小通过缩放进行统一
+        max_rows = max(inner_img_rows, outer_img_rows)
+        max_cols = max(inner_img_cols, outer_img_cols)
+        zoomed_outer_img = cv2.resize(outer_img, (max_cols, max_rows), interpolation=cv2.INTER_LINEAR)
+        zoomed_inner_img = cv2.resize(inner_img, (max_cols, max_rows), interpolation=cv2.INTER_LINEAR)
+
+        # 第二步：根据要求调整表里图片的色阶
+        if choice.get() == 'reduce':
+            # 表图片变暗[0,199]，里图片变亮[200, 255]
+            normalized_outer_img = cv2.normalize(zoomed_outer_img, None, 0, 199, cv2.NORM_MINMAX)
+            normalized_inner_img = cv2.normalize(zoomed_inner_img, None, 200, 255, cv2.NORM_MINMAX)
+        elif choice.get() == 'improve':
+            # 表图片变亮[26, 255]，里图片变暗[0, 25]
+            normalized_outer_img = cv2.normalize(zoomed_outer_img, None, 26, 255, cv2.NORM_MINMAX)
+            normalized_inner_img = cv2.normalize(zoomed_inner_img, None, 0, 25, cv2.NORM_MINMAX)
+
+        # 第三步，合并(表图片的奇数行的奇数列和偶数行的偶数列)和(里图片的奇数行的偶数列和偶数行的奇数列)
+        output = np.zeros_like(normalized_outer_img)  # 创建输出图像
+        for r in range(max_rows-1):  # 遍历奇偶行和列组合，按条件赋值
+            for c in range(max_cols-1):
+                if r % 2 == c % 2:  # 表图：行列同为奇或同为偶
+                    output[r, c] = normalized_outer_img[r, c]
+                else:  # 里图：行列一奇一偶
+                    output[r, c] = normalized_inner_img[r, c]
+
+        # 第四步，保存结果
+        temp_outpath = f'ego_show_on_{choice.get()}d_brightness.png'
+        outname = f'{os.path.splitext(os.path.basename(outer_path))[0]}_{temp_outpath}'
+        cv2.imwrite(temp_outpath, output)
+        print(pos.get())
+        if pos.get() == '表图片所在文件夹':
+            save_dir = os.path.dirname(outer_path)
+        elif pos.get() == '里图片所在文件夹':
+            save_dir = os.path.dirname(inner_path)
+        if os.getcwd() != save_dir:  # 如果软件所在文件夹不是用户选择的文件夹，那么就进行移动
+            outpath = os.path.join(save_dir, outname)
+            Tools.read_all_and_write_all(temp_outpath, outpath)
+            Tools.delete_file(temp_outpath)
+        else:
+            os.rename(temp_outpath, outname)
+        entry3.config(state='normal')
+        Tools.reset(entry3)
+        entry3.insert('end', outname)
+        entry3.config(state='readonly')
+        label6.pack()
+
+    frm2 = tk.Frame(frm)
+    frm2.pack()
+    button1 = tk.Button(frm2, text='重置', font=mid_font, command=reset)
+    button1.grid(row=1, column=1, padx=20)
+    button2 = tk.Button(frm2, text='开始生成', font=mid_font, command=process)
+    button2.grid(row=1, column=2, padx=20)
+    frm3 = tk.Frame(frm)
+    frm3.pack()
+    label4 = tk.Label(frm3, text='结果保存在：', font=mid_font)
+    label4.grid(row=1, column=1)
+    pos = tk.StringVar()
+    pos.set('表图片所在文件夹')
+    op1 = tk.OptionMenu(frm3, pos, *('表图片所在文件夹', '里图片所在文件夹'))
+    op1.config(font=mid_font)
+    op1.grid(row=1, column=2)
+    label5 = tk.Label(frm3, text='中的：', font=mid_font)
+    label5.grid(row=1, column=3)
+    entry3 = tk.Entry(frm, width=59, font=mid_font, state='readonly')
+    entry3.pack()
+    label6 = tk.Label(frm, text='处理完成！', font=mid_font, fg='red')
+
+
 def against_duplicate_check():
     # 操作零宽度字符（左边的labelframe）
     labelframe1 = tk.LabelFrame(frm, text='操作特殊字符', height=Tools().height, width=Tools().width, font=mid_font)
