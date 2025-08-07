@@ -1819,6 +1819,20 @@ def brightness():
     rb1.grid(row=1, column=2, padx=20)
     rb2 = tk.Radiobutton(frm1, text='提高亮度、曝光度（效果更好）', value='improve', font=mid_font, variable=choice)
     rb2.grid(row=1, column=1, padx=20)
+    frm4 = tk.Frame(frm)
+    frm4.pack()
+    label7 = tk.Label(frm4, text='隐藏效果：', font=mid_font)
+    label7.grid(row=1, column=1, padx=10)
+    strength = tk.StringVar()
+    strength.set('强')
+    rb3 = tk.Radiobutton(frm4, text='强', value='强', font=mid_font, variable=strength)
+    rb3.grid(row=1, column=2, padx=10)
+    rb4 = tk.Radiobutton(frm4, text='中', value='中', font=mid_font, variable=strength)
+    rb4.grid(row=1, column=3, padx=10)
+    rb5 = tk.Radiobutton(frm4, text='弱', value='弱', font=mid_font, variable=strength)
+    rb5.grid(row=1, column=4, padx=10)
+    label8 = tk.Label(frm4, text='隐藏效果强会降低解读的效果', font=mid_font, fg=colors[3])
+    label8.grid(row=1, column=5, padx=10)
 
     def reset():
         Tools.reset(entry1)
@@ -1882,14 +1896,18 @@ def brightness():
         zoomed_inner_img = cv2.resize(inner_img, (max_cols, max_rows), interpolation=cv2.INTER_LINEAR)
 
         # 第二步：根据要求调整表里图片的色阶
-        if choice.get() == 'reduce':
-            # 表图片变暗[0,199]，里图片变亮[200, 255]
-            normalized_outer_img = cv2.normalize(zoomed_outer_img, None, 0, 199, cv2.NORM_MINMAX)
-            normalized_inner_img = cv2.normalize(zoomed_inner_img, None, 200, 255, cv2.NORM_MINMAX)
-        elif choice.get() == 'improve':
-            # 表图片变亮[26, 255]，里图片变暗[0, 25]
-            normalized_outer_img = cv2.normalize(zoomed_outer_img, None, 26, 255, cv2.NORM_MINMAX)
-            normalized_inner_img = cv2.normalize(zoomed_inner_img, None, 0, 25, cv2.NORM_MINMAX)
+        if strength.get() == '强':
+            delta = 25
+        elif strength.get() == '中':
+            delta = 40
+        elif strength.get() == '弱':
+            delta = 55
+        if choice.get() == 'reduce':  # 表图片变暗，里图片变亮
+            normalized_outer_img = cv2.normalize(zoomed_outer_img, None, 0, 255-delta, cv2.NORM_MINMAX)
+            normalized_inner_img = cv2.normalize(zoomed_inner_img, None, 255-delta, 255, cv2.NORM_MINMAX)
+        elif choice.get() == 'improve':  # 表图片变亮，里图片变暗
+            normalized_outer_img = cv2.normalize(zoomed_outer_img, None, delta, 255, cv2.NORM_MINMAX)
+            normalized_inner_img = cv2.normalize(zoomed_inner_img, None, 0, delta, cv2.NORM_MINMAX)
 
         # 第三步，合并(表图片的奇数行的奇数列和偶数行的偶数列)和(里图片的奇数行的偶数列和偶数行的奇数列)
         output = np.zeros_like(normalized_outer_img)  # 创建输出图像
