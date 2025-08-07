@@ -1911,8 +1911,8 @@ def brightness():
 
         # 第三步，合并(表图片的奇数行的奇数列和偶数行的偶数列)和(里图片的奇数行的偶数列和偶数行的奇数列)
         output = np.zeros_like(normalized_outer_img)  # 创建输出图像
-        for r in range(max_rows-1):  # 遍历奇偶行和列组合，按条件赋值
-            for c in range(max_cols-1):
+        for r in range(max_rows):  # 遍历奇偶行和列组合，按条件赋值
+            for c in range(max_cols):
                 if r % 2 == c % 2:  # 表图：行列同为奇或同为偶
                     output[r, c] = normalized_outer_img[r, c]
                 else:  # 里图：行列一奇一偶
