@@ -2240,7 +2240,7 @@ def vertical_against_examine():
         except Exception:
             messagebox.showerror('类型错误', '每一行文字的长度应为正整数')
             return 0
-        words = text1.get(1.0, 'end').rstrip('\n')
+        words = text1.get(1.0, 'end').rstrip('\n').replace('\n', '  ')
 
         def vertical_text(text, n):
             res_list = []
@@ -2252,19 +2252,31 @@ def vertical_against_examine():
             df = pd.DataFrame(data)
             res_df = df.T
             for ind, row in res_df.iterrows():
-                if sep.get() == 0:
-                    new_row = ' '.join(row.values.tolist())
-                elif sep.get() == 1:
+                if sep.get() == 0:  # 空格
+                    new_row = '\3'.join(row.values.tolist())  # 先用'\3'占位，最后再替换掉
+                elif sep.get() == 1:  # 无分隔符
                     new_row = ''.join(row.values.tolist())
-                elif sep.get() == 2:
-                    new_row = entry2.get().join(row.values.tolist())
-                elif sep.get() == 3:
+                elif sep.get() == 2:  # 自定义分隔符
+                    separator = '\4' + entry2.get() + '\4'  # 在自定义的分隔符两边加上标记，以防止自定义分隔符在后续处理中后面被加空格
+                    new_row = separator.join(row.values.tolist())
+                elif sep.get() == 3:  # |
                     new_row = '|'.join(row.values.tolist())
-                new_row = new_row.replace('\0','  ')
+                elif sep.get() == 4:  # I
+                    new_row = '\5'.join(row.values.tolist())  # 先用'\5'占位，最后再替换掉
+                new_row = new_row.replace('\0',' ')
                 if direction.get() == 1:
                     new_row = new_row[::-1]
                 res_list.append(new_row)
-            return re.sub(r'([a-zA-Z])', r'\1 ', '\n'.join(res_list))  # 需要在每个英文字母后面添加个空格以保证对齐
+            res = re.sub(r'([a-zA-Z0-9 ])', r'\1 ', '\n'.join(res_list))  # 需要在每个英文字母、数字、空格后面添加个空格以保证对齐
+            if sep.get() == 0:
+                return res.replace('\3', ' ')
+            elif sep.get() == 2:
+                possible_separator = '\4' + entry2.get() + ' \4'
+                return res.replace(possible_separator, separator).replace('\4', '')
+            elif sep.get() == 4:
+                return res.replace('\5', 'I')
+            else:
+                return res
 
         Tools.reset(text2)
         text2.insert('end', vertical_text(words, n))
@@ -2275,6 +2287,7 @@ def vertical_against_examine():
     label1.grid(row=1, column=1, padx=5)
     entry1 = tk.Entry(frm1, width=5, font=mid_font)
     entry1.grid(row=1, column=2, padx=5)
+    entry1.insert('end', '20')
     frm2 = tk.Frame(frm)
     frm2.pack()
     label4 = tk.Label(frm2, text='阅读方向：', font=mid_font)
@@ -2288,7 +2301,7 @@ def vertical_against_examine():
     frm4 = tk.Frame(frm)
     frm4.pack()
     sep = tk.IntVar()
-    sep.set(0)
+    sep.set(3)
     label5 = tk.Label(frm4, text='分隔符：', font=mid_font)
     label5.grid(row=1, column=1, padx=10)
     rb3 = tk.Radiobutton(frm4, variable=sep, text='空格', font=mid_font, value=0)
@@ -2297,10 +2310,12 @@ def vertical_against_examine():
     rb4.grid(row=1, column=3, padx=10)
     rb6 = tk.Radiobutton(frm4, variable=sep, text='|', font=mid_font, value=3)
     rb6.grid(row=1, column=4, padx=10)
+    rb7 = tk.Radiobutton(frm4, variable=sep, text='I（大写i，对AI干扰更强）', font=mid_font, value=4)
+    rb7.grid(row=1, column=5, padx=10)
     rb5 = tk.Radiobutton(frm4, variable=sep, text='其他：', font=mid_font, value=2)
-    rb5.grid(row=1, column=5, padx=10)
+    rb5.grid(row=1, column=6, padx=10)
     entry2 = tk.Entry(frm4, width=5, font=mid_font)
-    entry2.grid(row=1, column=6, padx=5)
+    entry2.grid(row=1, column=7, padx=5)
     frm3 = tk.Frame(frm)
     frm3.pack()
     button1 = tk.Button(frm3, text='重置', font=mid_font, command=reset)

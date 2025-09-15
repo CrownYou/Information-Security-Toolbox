@@ -654,6 +654,18 @@ class Functions:
         text.insert('end', word)
 
     @staticmethod
+    def intro_vertical_against_examine():
+        MyTools.initiation()
+        text = tk.Text(frm, width=96, height=28, font=mid_font)
+        text.pack()
+        word = '''    抗关键字审核工具-文字纵向排列法介绍介绍
+
+    通过调整文字阅读方向并嵌入分隔符可以在保持文字可读性的基础上规避简单的关键字和AI审核。
+    
+    要获得最佳的文字阅读效果，可以把字体设置为楷体或者字体名称中带有Mono的等宽字体。因为这一类字体中，一个汉字的宽度等于两个英文符号的宽度，这样可以使得纵向排列的文字更加整齐。'''
+        text.insert('end', word)
+
+    @staticmethod
     def intro_dh():
         MyTools.initiation()
         text = tk.Text(frm, width=96, height=28, font=mid_font)
@@ -1147,7 +1159,8 @@ toolbox_submenu = tk.Menu(intro_menu, tearoff=0)
 intro_menu.add_cascade(label='工具箱介绍', menu=toolbox_submenu, underline=0, font=mid_font)
 toolbox_submenu.add_command(label='获取像素点的HSV值/范围介绍', command=Functions.intro_hsv, font=mid_font)
 toolbox_submenu.add_command(label='base64转码器介绍', command=Functions.intro_base64, font=mid_font)
-toolbox_submenu.add_command(label='反查重+反和谐神器介绍', command=Functions.intro_anti, font=mid_font)
+toolbox_submenu.add_command(label='抗关键字审核工具-零宽度字符、近形字法介绍', command=Functions.intro_anti, font=mid_font)
+toolbox_submenu.add_command(label='抗关键字审核工具-文字纵向排列法介绍', command=Functions.intro_vertical_against_examine, font=mid_font)
 toolbox_submenu.add_command(label='ReedSolomon纠错码介绍', command=Functions.intro_rs, font=mid_font)
 
 intro_enc_submenu = tk.Menu(intro_menu, tearoff=0)
