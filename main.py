@@ -808,7 +808,7 @@ class Functions:
         MyTools.initiation()
         text = tk.Text(frm, width=96, height=28, font=mid_font)
         text.pack()
-        word = '''    基于背景颜色的表里不一图像隐写术介绍
+        word = '''    基于背景颜色的幻影坦克图像隐写术介绍
 
 一、基本介绍
     这种技术可以让一张图片在不同背景颜色下显示出完全不一样的图像。
@@ -1064,7 +1064,7 @@ qr_confuse_submenu.add_command(label='第一步：逆透视变换', command=Func
 qr_confuse_submenu.add_command(label='第二步：藏于载体图片', command=Functions.hide_qr_code, font=mid_font)
 
 stega_menu.add_command(label='隐藏二维码（机器可见，人不可见）', command=Functions.invisible_qr, font=mid_font)
-stega_menu.add_command(label='基于背景颜色的表里不一图像隐写术', command=Functions.two_faces, font=mid_font)
+stega_menu.add_command(label='基于背景颜色的幻影坦克图像隐写术', command=Functions.two_faces, font=mid_font)
 stega_menu.add_command(label='基于亮度、曝光度的光棱坦克图像隐写术', command=Functions.brightness, font=mid_font)
 
 fourier_ste_submenu = tk.Menu(stega_menu, tearoff=0)
@@ -1151,7 +1151,7 @@ intro_ste_submenu.add_command(label='图片隐藏.zip压缩包介绍', command=F
 intro_ste_submenu.add_command(label='零宽度字符隐写术介绍', command=Functions.intro_zero_width_ste, font=mid_font)
 intro_ste_submenu.add_command(label='隐藏二维码（人可见，机器不可见）介绍', command=Functions.intro_qr_confuse, font=mid_font)
 intro_ste_submenu.add_command(label='隐藏二维码（机器可见，人不可见）介绍', command=Functions.intro_invisible_qr, font=mid_font)
-intro_ste_submenu.add_command(label='基于背景颜色的表里不一图像隐写术介绍', command=Functions.intro_two_faces, font=mid_font)
+intro_ste_submenu.add_command(label='基于背景颜色的幻影坦克图像隐写术介绍', command=Functions.intro_two_faces, font=mid_font)
 intro_ste_submenu.add_command(label='基于亮度、曝光度的光棱坦克图像隐写术介绍', command=Functions.intro_brightness, font=mid_font)
 intro_ste_submenu.add_command(label='图片盲水印介绍', command=Functions.intro_fourier, font=mid_font)
 
