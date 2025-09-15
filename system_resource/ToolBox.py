@@ -2240,43 +2240,34 @@ def vertical_against_examine():
         except Exception:
             messagebox.showerror('类型错误', '每一行文字的长度应为正整数')
             return 0
-        words = text1.get(1.0, 'end').rstrip('\n').replace('\n', '  ')
+        # 把换行符换成4个空格
+        words = text1.get(1.0, 'end').rstrip('\n').replace('\n', '    ')
 
         def vertical_text(text, n):
             res_list = []
             length = len(text)
             m = math.ceil(length / n)  # m: 列的宽度
             if length < m * n and m >= 1:
-                text += '\0' * (m * n - length)
+                text += ' ' * (m * n - length)
             data = [list(text[i * m: (i + 1) * m]) for i in range(n)]
             df = pd.DataFrame(data)
             res_df = df.T
             for ind, row in res_df.iterrows():
-                if sep.get() == 0:  # 空格
-                    new_row = '\3'.join(row.values.tolist())  # 先用'\3'占位，最后再替换掉
-                elif sep.get() == 1:  # 无分隔符
-                    new_row = ''.join(row.values.tolist())
-                elif sep.get() == 2:  # 自定义分隔符
-                    separator = '\4' + entry2.get() + '\4'  # 在自定义的分隔符两边加上标记，以防止自定义分隔符在后续处理中后面被加空格
-                    new_row = separator.join(row.values.tolist())
-                elif sep.get() == 3:  # |
-                    new_row = '|'.join(row.values.tolist())
-                elif sep.get() == 4:  # I
-                    new_row = '\5'.join(row.values.tolist())  # 先用'\5'占位，最后再替换掉
-                new_row = new_row.replace('\0',' ')
+                new_row = '\3'.join(row.values.tolist())  # 先用'\3'占位，最后再替换掉
                 if direction.get() == 1:
                     new_row = new_row[::-1]
                 res_list.append(new_row)
             res = re.sub(r'([a-zA-Z0-9 ])', r'\1 ', '\n'.join(res_list))  # 需要在每个英文字母、数字、空格后面添加个空格以保证对齐
             if sep.get() == 0:
                 return res.replace('\3', ' ')
+            elif sep.get() == 1:
+                return res.replace('\3', '')
             elif sep.get() == 2:
-                possible_separator = '\4' + entry2.get() + ' \4'
-                return res.replace(possible_separator, separator).replace('\4', '')
+                return res.replace('\3', entry2.get())
+            elif sep.get() == 3:
+                return res.replace('\3', '|')
             elif sep.get() == 4:
-                return res.replace('\5', 'I')
-            else:
-                return res
+                return res.replace('\3', 'I')
 
         Tools.reset(text2)
         text2.insert('end', vertical_text(words, n))
