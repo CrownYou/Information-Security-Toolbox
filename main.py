@@ -307,6 +307,11 @@ class Functions:
         mybox.base64converter()
 
     @staticmethod
+    def fancy_text():
+        MyTools.initiation()
+        mybox.fancy_text()
+
+    @staticmethod
     def dh_exchange():
         MyTools.initiation()
         mybox.dh_exchange()
@@ -638,6 +643,16 @@ class Functions:
     
 二、base64转码器功能介绍
     它可以将文字转化为base64编码，并且可以将base64编码再转化为原文字，也可以将base64编码转为字节码。'''
+        text.insert('end', word)
+
+    @staticmethod
+    def intro_fancy_text():
+        MyTools.initiation()
+        text = tk.Text(frm, width=96, height=28, font=mid_font)
+        text.pack()
+        word = '''    英文花式字体转换器介绍
+
+    它能够使你在纯文本编辑器中打出花式字体，如：粗体、斜体、花体。这可以让你在社交媒体上的评论和发言更具特色。'''
         text.insert('end', word)
 
     @staticmethod
@@ -1078,6 +1093,7 @@ menubar.add_cascade(label='工具箱', menu=tools_menu)
 tools_menu.add_command(label='获取像素点的HSV值/范围', command=Functions.get_hsv_value, font=mid_font)
 tools_menu.add_command(label='强密码生成器', command=Functions.generate_random_char, font=mid_font)
 tools_menu.add_command(label='base64转码器', command=Functions.base64converter, font=mid_font)
+tools_menu.add_command(label='英文花式字体转换器', command=Functions.fancy_text, font=mid_font)
 tools_menu.add_command(label='抗关键字审核工具-零宽度字符、近形字法', command=Functions.against_duplicate_check, font=mid_font)
 tools_menu.add_command(label='抗关键字审核工具-文字纵向排列法', command=Functions.vertical_against_examine, font=mid_font)
 
@@ -1159,6 +1175,7 @@ toolbox_submenu = tk.Menu(intro_menu, tearoff=0)
 intro_menu.add_cascade(label='工具箱介绍', menu=toolbox_submenu, underline=0, font=mid_font)
 toolbox_submenu.add_command(label='获取像素点的HSV值/范围介绍', command=Functions.intro_hsv, font=mid_font)
 toolbox_submenu.add_command(label='base64转码器介绍', command=Functions.intro_base64, font=mid_font)
+toolbox_submenu.add_command(label='英文花式字体转换器介绍', command=Functions.intro_fancy_text, font=mid_font)
 toolbox_submenu.add_command(label='抗关键字审核工具-零宽度字符、近形字法介绍', command=Functions.intro_anti, font=mid_font)
 toolbox_submenu.add_command(label='抗关键字审核工具-文字纵向排列法介绍', command=Functions.intro_vertical_against_examine, font=mid_font)
 toolbox_submenu.add_command(label='ReedSolomon纠错码介绍', command=Functions.intro_rs, font=mid_font)

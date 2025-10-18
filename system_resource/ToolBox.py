@@ -465,6 +465,76 @@ def base64converter():
     button8.grid(row=1, column=2, padx=20)
 
 
+def fancy_text():
+    label1 = tk.Label(frm, text='请输入要转化为花式字体的英文字符：', font=mid_font)
+    label1.pack()
+    text1 = tk.Text(frm, font=mid_font, width=59, height=11)
+    text1.pack()
+
+    def reset():
+        Tools.reset(text1)
+        Tools.reset(text2)
+
+    def process():
+        Tools.reset(text2)
+        origin = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        italic = "𝑎𝑏𝑐𝑑𝑒𝑓𝑔ℎ𝑖𝑗𝑘𝑙𝑚𝑛𝑜𝑝𝑞𝑟𝑠𝑡𝑢𝑣𝑤𝑥𝑦𝑧𝐴𝐵𝐶𝐷𝐸𝐹𝐺𝐻𝐼𝐽𝐾𝐿𝑀𝑁𝑂𝑃𝑄𝑅𝑆𝑇𝑈𝑉𝑊𝑋𝑌𝑍0123456789"
+        bold = "𝐚𝐛𝐜𝐝𝐞𝐟𝐠𝐡𝐢𝐣𝐤𝐥𝐦𝐧𝐨𝐩𝐪𝐫𝐬𝐭𝐮𝐯𝐰𝐱𝐲𝐳𝐀𝐁𝐂𝐃𝐄𝐅𝐆𝐇𝐈𝐉𝐊𝐋𝐌𝐍𝐎𝐏𝐐𝐑𝐒𝐓𝐔𝐕𝐖𝐗𝐘𝐙𝟎𝟏𝟐𝟑𝟒𝟓𝟔𝟕𝟖𝟗"
+        bold_italic = "𝒂𝒃𝒄𝒅𝒆𝒇𝒈𝒉𝒊𝒋𝒌𝒍𝒎𝒏𝒐𝒑𝒒𝒓𝒔𝒕𝒖𝒗𝒘𝒙𝒚𝒛𝑨𝑩𝑪𝑫𝑬𝑭𝑮𝑯𝑰𝑱𝑲𝑳𝑴𝑵𝑶𝑷𝑄𝑹𝑺𝑻𝑼𝑽𝑾𝑿𝒀𝒁0123456789"
+        cursive = "𝒶𝒷𝒸𝒹ℯ𝒻ℊ𝒽𝒾𝒿𝓀𝓁𝓂𝓃ℴ𝓅𝓆𝓇𝓈𝓉𝓊𝓋𝓌𝓍𝓎𝓏𝒜ℬ𝒞𝒟ℰℱ𝒢ℋℐ𝒥𝒦ℒℳ𝒩𝒪𝒫𝒬ℛ𝒮𝒯𝒰𝒱𝒲𝒳𝒴𝒵0123456789"
+        bold_cursive = "𝓪𝓫𝓬𝓭𝓮𝓯𝓰𝓱𝓲𝓳𝓴𝓵𝓶𝓷𝓸𝓹𝓺𝓻𝓼𝓽𝓾𝓿𝔀𝔁𝔂𝔃𝓐𝓑𝓒𝓓𝓔𝓕𝓖𝓗𝓘𝓙𝓚𝓛𝓜𝓝𝓞𝓟𝓠𝓡𝓢𝓣𝓤𝓥𝓦𝓧𝓨𝓩0123456789"
+        text = text1.get(1.0, 'end')
+        res = ""
+        for i in text:
+            if i in origin:
+                ind = origin.index(i)
+                if choice.get() == "𝐴𝐵𝐶（斜体）":
+                    res += italic[ind]
+                elif choice.get() == "𝐀𝐁𝐂（粗体）":
+                    res += bold[ind]
+                elif choice.get() == "𝑨𝑩𝑪（粗斜体）":
+                    res += bold_italic[ind]
+                elif choice.get() == "𝒜ℬ𝒞（花体）":
+                    res += cursive[ind]
+                elif choice.get() == "𝓐𝓑𝓒（粗花体）":
+                    res += bold_cursive[ind]
+            else:
+                res += i
+        text2.insert('end', res)
+
+    def _copy():
+        Tools.copy(text2, button3)
+
+    label2 = tk.Label(frm, text='你希望转化成什么字体：', font=mid_font)
+    label2.pack()
+    frm1 = tk.Frame(frm)
+    frm1.pack()
+    choice = tk.StringVar()
+    choice.set('𝐴𝐵𝐶（斜体）')
+    rb1 = tk.Radiobutton(frm1, text='𝐴𝐵𝐶（斜体）', value='𝐴𝐵𝐶（斜体）', font=mid_font, variable=choice, command=process)
+    rb1.grid(row=1, column=1, padx=20)
+    rb2 = tk.Radiobutton(frm1, text='𝐀𝐁𝐂（粗体）', value='𝐀𝐁𝐂（粗体）', font=mid_font, variable=choice, command=process)
+    rb2.grid(row=1, column=2, padx=20)
+    rb3 = tk.Radiobutton(frm1, text='𝑨𝑩𝑪（粗斜体）', value='𝑨𝑩𝑪（粗斜体）', font=mid_font, variable=choice, command=process)
+    rb3.grid(row=1, column=3, padx=20)
+    rb4 = tk.Radiobutton(frm1, text='𝒜ℬ𝒞（花体）', value='𝒜ℬ𝒞（花体）', font=mid_font, variable=choice, command=process)
+    rb4.grid(row=1, column=4, padx=20)
+    rb5 = tk.Radiobutton(frm1, text='𝓐𝓑𝓒（粗花体）', value='𝓐𝓑𝓒（粗花体）', font=mid_font, variable=choice, command=process)
+    rb5.grid(row=1, column=5, padx=20)
+    frm2 = tk.Frame(frm)
+    frm2.pack()
+    button1 = tk.Button(frm2, text='重置', font=mid_font, command=reset)
+    button1.grid(row=1, column=1, padx=20)
+    button2 = tk.Button(frm2, text='转换', font=mid_font, command=process)
+    button2.grid(row=1, column=2, padx=20)
+    button3 = tk.Button(frm2, text='复制结果', font=mid_font, command=_copy, fg=colors[ind])
+    button3.grid(row=1, column=3, padx=20)
+    label3 = tk.Label(frm, text='转换后的字体为：', font=mid_font)
+    label3.pack()
+    text2 = tk.Text(frm, font=mid_font, width=59, height=11)
+    text2.pack()
+
+
 def confuse_qr_code():
     def drag(files):
         Tools.dragged_files(files, entry1)
@@ -2319,7 +2389,6 @@ def vertical_against_examine():
     label3.pack()
     text2 = tk.Text(frm, width=59, height=11, font=mid_font)
     text2.pack()
-
 
 
 def rs_code_word():
