@@ -652,7 +652,9 @@ class Functions:
         text.pack()
         word = '''    英文花式字体转换器介绍
 
-    它能够使你在纯文本编辑器中打出花式字体，如：粗体、斜体、花体。这可以让你在社交媒体上的评论和发言更具特色。'''
+    它能够使你在纯文本编辑器中打出花式字体，如：粗体、斜体、花体。这可以让你在社交媒体上的评论和发言更具特色。
+    
+    如果你需要尝试更多英文花体字，可以访问这个网站：https://lingojam.com/FancyTextGenerator'''
         text.insert('end', word)
 
     @staticmethod

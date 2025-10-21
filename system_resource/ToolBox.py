@@ -468,7 +468,7 @@ def base64converter():
 def fancy_text():
     label1 = tk.Label(frm, text='请输入要转化为花式字体的英文字符：', font=mid_font)
     label1.pack()
-    text1 = tk.Text(frm, font=mid_font, width=59, height=11)
+    text1 = tk.Text(frm, font=mid_font, width=59, height=10)
     text1.pack()
 
     def reset():
@@ -483,6 +483,9 @@ def fancy_text():
         bold_italic = "𝒂𝒃𝒄𝒅𝒆𝒇𝒈𝒉𝒊𝒋𝒌𝒍𝒎𝒏𝒐𝒑𝒒𝒓𝒔𝒕𝒖𝒗𝒘𝒙𝒚𝒛𝑨𝑩𝑪𝑫𝑬𝑭𝑮𝑯𝑰𝑱𝑲𝑳𝑴𝑵𝑶𝑷𝑄𝑹𝑺𝑻𝑼𝑽𝑾𝑿𝒀𝒁0123456789"
         cursive = "𝒶𝒷𝒸𝒹ℯ𝒻ℊ𝒽𝒾𝒿𝓀𝓁𝓂𝓃ℴ𝓅𝓆𝓇𝓈𝓉𝓊𝓋𝓌𝓍𝓎𝓏𝒜ℬ𝒞𝒟ℰℱ𝒢ℋℐ𝒥𝒦ℒℳ𝒩𝒪𝒫𝒬ℛ𝒮𝒯𝒰𝒱𝒲𝒳𝒴𝒵0123456789"
         bold_cursive = "𝓪𝓫𝓬𝓭𝓮𝓯𝓰𝓱𝓲𝓳𝓴𝓵𝓶𝓷𝓸𝓹𝓺𝓻𝓼𝓽𝓾𝓿𝔀𝔁𝔂𝔃𝓐𝓑𝓒𝓓𝓔𝓕𝓖𝓗𝓘𝓙𝓚𝓛𝓜𝓝𝓞𝓟𝓠𝓡𝓢𝓣𝓤𝓥𝓦𝓧𝓨𝓩0123456789"
+        gothic = "𝔞𝔟𝔠𝔡𝔢𝔣𝔤𝔥𝔦𝔧𝔨𝔩𝔪𝔫𝔬𝔭𝔮𝔯𝔰𝔱𝔲𝔳𝔴𝔵𝔶𝔷𝔄𝔅ℭ𝔇𝔈𝔉𝔊ℌℑ𝔍𝔎𝔏𝔐𝔑𝔒𝔓𝔔ℜ𝔖𝔗𝔘𝔙𝔚𝔛𝔜ℨ0123456789"
+        bold_gothic = "𝖆𝖇𝖈𝖉𝖊𝖋𝖌𝖍𝖎𝖏𝖐𝖑𝖒𝖓𝖔𝖕𝖖𝖗𝖘𝖙𝖚𝖛𝖜𝖝𝖞𝖟𝕬𝕭𝕮𝕯𝕰𝕱𝕲𝕳𝕴𝕵𝕶𝕷𝕸𝕹𝕺𝕻𝕼𝕽𝕾𝕿𝖀𝖁𝖂𝖃𝖄𝖅0123456789"
+        double_struck = "𝕒𝕓𝕔𝕕𝕖𝕗𝕘𝕙𝕚𝕛𝕜𝕝𝕞𝕟𝕠𝕡𝕢𝕣𝕤𝕥𝕦𝕧𝕨𝕩𝕪𝕫𝔸𝔹ℂ𝔻𝔼𝔽𝔾ℍ𝕀𝕁𝕂𝕃𝕄ℕ𝕆ℙℚℝ𝕊𝕋𝕌𝕍𝕎𝕏𝕐ℤ𝟘𝟙𝟚𝟛𝟜𝟝𝟞𝟟𝟠𝟡"
         text = text1.get(1.0, 'end')
         res = ""
         for i in text:
@@ -498,6 +501,12 @@ def fancy_text():
                     res += cursive[ind]
                 elif choice.get() == "𝓐𝓑𝓒（粗花体）":
                     res += bold_cursive[ind]
+                elif choice.get() == "𝔄𝔅ℭ（哥特体）":
+                    res += gothic[ind]
+                elif choice.get() == "𝕬𝕭𝕮（粗哥特体）":
+                    res += bold_gothic[ind]
+                elif choice.get() == "𝔸𝔹ℂ（双线体）":
+                    res += double_struck[ind]
             else:
                 res += i
         text2.insert('end', res)
@@ -520,7 +529,13 @@ def fancy_text():
     rb4 = tk.Radiobutton(frm1, text='𝒜ℬ𝒞（花体）', value='𝒜ℬ𝒞（花体）', font=mid_font, variable=choice, command=process)
     rb4.grid(row=1, column=4, padx=20)
     rb5 = tk.Radiobutton(frm1, text='𝓐𝓑𝓒（粗花体）', value='𝓐𝓑𝓒（粗花体）', font=mid_font, variable=choice, command=process)
-    rb5.grid(row=1, column=5, padx=20)
+    rb5.grid(row=2, column=1, padx=20)
+    rb6 = tk.Radiobutton(frm1, text='𝔄𝔅ℭ（哥特体）', value='𝔄𝔅ℭ（哥特体）', font=mid_font, variable=choice, command=process)
+    rb6.grid(row=2, column=2, padx=20)
+    rb7 = tk.Radiobutton(frm1, text='𝕬𝕭𝕮（粗哥特体）', value='𝕬𝕭𝕮（粗哥特体）', font=mid_font, variable=choice, command=process)
+    rb7.grid(row=2, column=3, padx=20)
+    rb8 = tk.Radiobutton(frm1, text='𝔸𝔹ℂ（双线体）', value='𝔸𝔹ℂ（双线体）', font=mid_font, variable=choice, command=process)
+    rb8.grid(row=2, column=4, padx=20)
     frm2 = tk.Frame(frm)
     frm2.pack()
     button1 = tk.Button(frm2, text='重置', font=mid_font, command=reset)
@@ -531,7 +546,7 @@ def fancy_text():
     button3.grid(row=1, column=3, padx=20)
     label3 = tk.Label(frm, text='转换后的字体为：', font=mid_font)
     label3.pack()
-    text2 = tk.Text(frm, font=mid_font, width=59, height=11)
+    text2 = tk.Text(frm, font=mid_font, width=59, height=10)
     text2.pack()
 
 
